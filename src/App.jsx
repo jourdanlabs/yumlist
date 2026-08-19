@@ -14,6 +14,7 @@ import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
 import Home from '@/pages/Home';
 import Items from '@/pages/Items';
+import ShoppingList from '@/pages/ShoppingList';
 import Recipes from '@/pages/Recipes';
 import Share from '@/pages/Share';
 import Family from '@/pages/Family';
@@ -53,6 +54,7 @@ const AuthenticatedApp = () => {
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
           <Route path="/items" element={<Items />} />
+          <Route path="/shopping-list" element={<ShoppingList />} />
           <Route path="/recipes" element={<Recipes />} />
           <Route path="/share" element={<Share />} />
           <Route path="/family" element={<Family />} />

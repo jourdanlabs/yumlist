@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, Outlet, useLocation, Navigate } from "react-router-dom";
-import { Home as HomeIcon, Carrot, ChefHat, Share2, Users, LogOut } from "lucide-react";
+import { Home as HomeIcon, Carrot, ChefHat, Share2, Users, LogOut, ShoppingCart } from "lucide-react";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { base44 } from "@/api/base44Client";
 import { cn } from "@/lib/utils";
@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 const nav = [
   { to: "/", label: "Home", icon: HomeIcon },
   { to: "/items", label: "Pantry", icon: Carrot },
+  { to: "/shopping-list", label: "Shopping", icon: ShoppingCart },
   { to: "/recipes", label: "Recipes", icon: ChefHat },
   { to: "/share", label: "Share", icon: Share2 },
   { to: "/family", label: "Family", icon: Users },
@@ -99,7 +100,7 @@ export default function Layout() {
 
       {/* Mobile bottom nav */}
       <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-card border-t border-border">
-        <div className="grid grid-cols-5">
+        <div className="grid grid-cols-6">
           {nav.map((item) => {
             const active = location.pathname === item.to;
             return (
