@@ -2,13 +2,17 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent } from "@/components/ui/card";
-import { Carrot, ChefHat, ThumbsUp, ArrowRight } from "lucide-react";
+import { Carrot, ChefHat, ThumbsUp, ArrowRight, AlertTriangle } from "lucide-react";
+import { differenceInCalendarDays } from "date-fns";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+
+const EXPIRY_WINDOW_DAYS = 3;
 
 export default function Home() {
   const { user } = useCurrentUser();
   const [items, setItems] = useState([]);
   const [recipes, setRecipes] = useState([]);
+  const [expiring, setExpiring] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -17,8 +21,19 @@ export default function Home() {
     Promise.all([
       base44.entities.GroceryItem.filter({ family_id: user.family_id }, "-created_date", 5),
       base44.entities.Recipe.filter({ family_id: user.family_id }, "-created_date", 5),
-    ]).then(([i, r]) => {
-      if (active) { setItems(i); setRecipes(r); setLoading(false); }
+      base44.entities.GroceryItem.filter({ family_id: user.family_id }, "expiration_date", 50),
+    ]).then(([i, r, all]) => {
+      if (!active) return;
+      setItems(i); setRecipes(r);
+      const today = new Date();
+      setExpiring(
+        (all || [])
+          .filter((it) => it.expiration_date)
+          .map((it) => ({ ...it, daysLeft: differenceInCalendarDays(new Date(it.expiration_date), today) }))
+          .filter((it) => it.daysLeft <= EXPIRY_WINDOW_DAYS)
+          .sort((a, b) => a.daysLeft - b.daysLeft)
+      );
+      setLoading(false);
     }).catch(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, [user?.family_id]);
@@ -37,6 +52,29 @@ export default function Home() {
         <StatCard icon={ChefHat} label="Recipes" value={loading ? "—" : recipes.length === 5 ? "5+" : recipes.length} to="/recipes" />
         <StatCard icon={ThumbsUp} label="Share your likes" value="" to="/share" wide />
       </div>
+
+      {!loading && expiring.length > 0 && (
+        <section className="rounded-2xl border border-amber-500/30 bg-amber-50 dark:bg-amber-950/30 p-5">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-heading text-lg font-semibold flex items-center gap-2 text-amber-700 dark:text-amber-400">
+              <AlertTriangle className="w-5 h-5" /> Use them soon · {expiring.length}
+            </h2>
+            <Link to="/items" className="text-sm text-amber-700/80 dark:text-amber-400/80 hover:text-amber-700 dark:hover:text-amber-400 flex items-center gap-1">
+              Pantry <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
+            {expiring.map((it) => (
+              <div key={it.id} className="flex items-center justify-between gap-2 rounded-lg bg-card border border-amber-500/20 px-3 py-2">
+                <span className="font-medium text-sm truncate">{it.name}</span>
+                <span className={`text-xs font-medium whitespace-nowrap ${it.daysLeft < 0 ? "text-destructive" : it.daysLeft === 0 ? "text-amber-700 dark:text-amber-400" : "text-muted-foreground"}`}>
+                  {it.daysLeft < 0 ? "Expired" : it.daysLeft === 0 ? "Today" : `${it.daysLeft}d left`}
+                </span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <div className="grid md:grid-cols-2 gap-6">
         <section>
