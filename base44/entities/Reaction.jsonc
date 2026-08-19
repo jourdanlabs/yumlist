@@ -1,0 +1,36 @@
+{
+  "name": "Reaction",
+  "type": "object",
+  "properties": {
+    "target_type": {
+      "type": "string",
+      "title": "Target type",
+      "enum": [
+        "item",
+        "recipe"
+      ]
+    },
+    "target_id": {
+      "type": "string",
+      "title": "Target ID"
+    },
+    "reaction": {
+      "type": "string",
+      "title": "Reaction",
+      "enum": [
+        "like",
+        "dislike"
+      ]
+    },
+    "family_id": {
+      "type": "string",
+      "title": "Family ID"
+    }
+  },
+  "required": [
+    "target_type",
+    "target_id",
+    "reaction",
+    "family_id"
+  ]
+}

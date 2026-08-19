@@ -1,0 +1,100 @@
+import React, { useEffect, useState } from "react";
+import { base44 } from "@/api/base44Client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Plus, Search } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useReactions } from "@/hooks/useReactions";
+import ItemCard from "@/components/ItemCard";
+import AddItemDialog from "@/components/AddItemDialog";
+
+export default function Items() {
+  const { user } = useCurrentUser();
+  const familyId = user?.family_id;
+  const { countsFor, react, reload: reloadReactions } = useReactions(familyId, "item", user?.id);
+  const { toast } = useToast();
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [query, setQuery] = useState("");
+  const [addOpen, setAddOpen] = useState(false);
+
+  const load = async () => {
+    if (!familyId) return;
+    setLoading(true);
+    try {
+      const data = await base44.entities.GroceryItem.filter({ family_id: familyId }, "-created_date");
+      setItems(data);
+    } catch (e) {
+      toast({ title: "Could not load items", variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { load(); }, [familyId]);
+
+  const handleDelete = async (item) => {
+    try {
+      await base44.entities.GroceryItem.delete(item.id);
+      setItems((prev) => prev.filter((i) => i.id !== item.id));
+      toast({ title: "Item removed" });
+    } catch (e) {
+      toast({ title: "Could not delete", variant: "destructive" });
+    }
+  };
+
+  const filtered = items.filter((i) => {
+    const q = query.toLowerCase();
+    if (!q) return true;
+    return (i.name || "").toLowerCase().includes(q) || (i.brand || "").toLowerCase().includes(q) || (i.category || "").toLowerCase().includes(q);
+  });
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h1 className="font-heading text-2xl font-semibold">Pantry</h1>
+          <p className="text-sm text-muted-foreground">Grocery items your family has added.</p>
+        </div>
+        <Button onClick={() => setAddOpen(true)} className="flex-shrink-0">
+          <Plus className="w-4 h-4 mr-1" /> Add item
+        </Button>
+      </div>
+
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search items…" className="pl-9" />
+      </div>
+
+      {loading ? (
+        <div className="space-y-3">
+          {[0, 1, 2].map((i) => <div key={i} className="h-24 rounded-2xl bg-muted animate-pulse" />)}
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="text-center py-16 border border-dashed border-border rounded-2xl">
+          <p className="text-muted-foreground">{query ? "No items match your search." : "Your pantry is empty. Add your first item."}</p>
+        </div>
+      ) : (
+        <div className="grid sm:grid-cols-2 gap-4">
+          {filtered.map((item) => (
+            <ItemCard
+              key={item.id}
+              item={item}
+              counts={countsFor(item.id)}
+              onReact={(r) => react(item.id, r)}
+              onDelete={() => handleDelete(item)}
+            />
+          ))}
+        </div>
+      )}
+
+      <AddItemDialog
+        open={addOpen}
+        onOpenChange={setAddOpen}
+        familyId={familyId}
+        onAdded={() => { load(); reloadReactions(); }}
+      />
+    </div>
+  );
+}

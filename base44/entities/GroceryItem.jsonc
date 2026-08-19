@@ -1,0 +1,35 @@
+{
+  "name": "GroceryItem",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "Item name"
+    },
+    "brand": {
+      "type": "string",
+      "title": "Brand"
+    },
+    "barcode": {
+      "type": "string",
+      "title": "Barcode"
+    },
+    "image_url": {
+      "type": "string",
+      "title": "Image URL",
+      "format": "uri"
+    },
+    "category": {
+      "type": "string",
+      "title": "Category"
+    },
+    "family_id": {
+      "type": "string",
+      "title": "Family ID"
+    }
+  },
+  "required": [
+    "name",
+    "family_id"
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "name": "Recipe",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "title": "Recipe title"
+    },
+    "ingredients": {
+      "type": "array",
+      "title": "Ingredients",
+      "items": {
+        "type": "string"
+      }
+    },
+    "instructions": {
+      "type": "string",
+      "title": "Instructions"
+    },
+    "image_url": {
+      "type": "string",
+      "title": "Image URL",
+      "format": "uri"
+    },
+    "source": {
+      "type": "string",
+      "title": "Source"
+    },
+    "family_id": {
+      "type": "string",
+      "title": "Family ID"
+    }
+  },
+  "required": [
+    "title",
+    "family_id"
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "name": "Family",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "Family name"
+    },
+    "invite_code": {
+      "type": "string",
+      "title": "Invite code"
+    }
+  },
+  "required": [
+    "name",
+    "invite_code"
+  ]
+}
