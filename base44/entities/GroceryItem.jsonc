@@ -23,6 +23,33 @@
       "type": "string",
       "title": "Category"
     },
+    "quantity": {
+      "type": "number",
+      "title": "Quantity in stock",
+      "default": 1
+    },
+    "unit": {
+      "type": "string",
+      "title": "Unit",
+      "enum": [
+        "units",
+        "packs",
+        "boxes",
+        "bottles",
+        "cans",
+        "bags",
+        "kg",
+        "g",
+        "L",
+        "mL"
+      ],
+      "default": "units"
+    },
+    "expiration_date": {
+      "type": "string",
+      "title": "Expiration date",
+      "format": "date"
+    },
     "family_id": {
       "type": "string",
       "title": "Family ID"

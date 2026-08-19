@@ -14,9 +14,9 @@ export default function AddItemDialog({ open, onOpenChange, familyId, onAdded })
   const [scanning, setScanning] = useState(false);
   const [looking, setLooking] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ name: "", brand: "", barcode: "", category: "", image_url: "" });
+  const [form, setForm] = useState({ name: "", brand: "", barcode: "", category: "", image_url: "", quantity: 1, unit: "units", expiration_date: "" });
 
-  const reset = () => setForm({ name: "", brand: "", barcode: "", category: "", image_url: "" });
+  const reset = () => setForm({ name: "", brand: "", barcode: "", category: "", image_url: "", quantity: 1, unit: "units", expiration_date: "" });
 
   const handleDetected = async (code) => {
     setScanning(false);
@@ -31,6 +31,9 @@ export default function AddItemDialog({ open, onOpenChange, familyId, onAdded })
           barcode: data.barcode,
           category: data.category || "",
           image_url: data.image_url || "",
+          quantity: 1,
+          unit: "units",
+          expiration_date: "",
         });
         toast({ title: "Product found", description: data.name || data.brand || "Prefilled from barcode" });
       } else {
@@ -137,6 +140,29 @@ function FormFields({ form, setForm, onImage, looking }) {
           <Label htmlFor="i-barcode">Barcode</Label>
           <Input id="i-barcode" value={form.barcode} onChange={(e) => setForm({ ...form, barcode: e.target.value })} placeholder="Optional" />
         </div>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-2">
+          <Label htmlFor="i-qty">Quantity</Label>
+          <Input id="i-qty" type="number" min="0" step="1" value={form.quantity} onChange={(e) => setForm({ ...form, quantity: parseFloat(e.target.value) || 0 })} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="i-unit">Unit</Label>
+          <select
+            id="i-unit"
+            value={form.unit}
+            onChange={(e) => setForm({ ...form, unit: e.target.value })}
+            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          >
+            {["units", "packs", "boxes", "bottles", "cans", "bags", "kg", "g", "L", "mL"].map((u) => (
+              <option key={u} value={u}>{u}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="i-exp">Expiration date</Label>
+        <Input id="i-exp" type="date" value={form.expiration_date} onChange={(e) => setForm({ ...form, expiration_date: e.target.value })} />
       </div>
       <div className="space-y-2">
         <Label>Image</Label>
