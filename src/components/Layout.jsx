@@ -36,14 +36,10 @@ export default function Layout() {
     <div className="min-h-screen bg-muted/30">
       {/* Desktop sidebar */}
       <aside className="hidden md:flex fixed inset-y-0 left-0 w-64 flex-col border-r border-border bg-card">
-        <div className="px-6 py-7">
-          <div className="flex items-center gap-2">
-            <img src="https://media.base44.com/images/public/6a85c116bb660295b89c8343/25976f754_FPLogo.png" alt="Family Pantry" className="w-10 h-10 rounded-xl object-cover" />
-            <div>
-              <div className="font-heading font-semibold leading-tight">Family Pantry</div>
-              <div className="text-xs text-muted-foreground">{user?.family_name || "No family"}</div>
-            </div>
-          </div>
+        <div className="px-6 py-7 flex flex-col items-center text-center">
+          <img src="https://media.base44.com/images/public/6a85c116bb660295b89c8343/25976f754_FPLogo.png" alt="Family Pantry" className="w-12 h-12 rounded-xl object-cover mb-2" />
+          <div className="font-heading font-semibold leading-tight">Family Pantry</div>
+          <div className="text-xs text-muted-foreground">{user?.family_name || "No family"}</div>
         </div>
         <nav className="flex-1 px-3 space-y-1">
           {nav.map((item) => {
