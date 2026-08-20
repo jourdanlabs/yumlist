@@ -40,7 +40,7 @@ export default function Home() {
 
   return (
     <div className="space-y-8">
-      <div>
+      <div className="text-center">
         <h1 className="font-heading text-3xl font-semibold tracking-tight">
           {user?.family_name ? `${user.family_name}'s Pantry` : "Family Pantry"}
         </h1>
