@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ClipboardList, Loader2, Package, RefreshCw, ShoppingCart } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { GROCERY_CATEGORIES, categoryStyle, normalizeCategory } from "@/lib/groceryCategories";
 
 const LOW_THRESHOLD = 2;
 const RESTOCK_DEFAULT = 5;
@@ -163,9 +164,16 @@ function Section({ title, items, checked, onToggle, accent }) {
                   <div className={`font-medium truncate ${isChecked ? "line-through text-muted-foreground" : ""}`}>
                     {item.name}
                   </div>
-                  {item.brand && <div className="text-xs text-muted-foreground truncate">{item.brand}</div>}
+                  <div className="flex items-center gap-2 mt-0.5">
+                    {item.brand && <span className="text-xs text-muted-foreground truncate">{item.brand}</span>}
+                    {item.category && (
+                      <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full whitespace-nowrap ${categoryStyle(normalizeCategory(item.category))}`}>
+                        {normalizeCategory(item.category)}
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <span className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full ${qty <= 0 ? "bg-destructive/10 text-destructive" : "bg-amber-500/15 text-amber-700 dark:text-amber-400"}`}>
+                <span className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full whitespace-nowrap ${qty <= 0 ? "bg-destructive/10 text-destructive" : "bg-amber-500/15 text-amber-700 dark:text-amber-400"}`}>
                   <Package className="w-3 h-3" />
                   {qty <= 0 ? "Out of stock" : `${qty} ${unit}`}
                 </span>

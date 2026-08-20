@@ -8,6 +8,7 @@ import { ScanLine, Loader2, Upload } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
 import BarcodeScanner from "@/components/BarcodeScanner";
+import { GROCERY_CATEGORIES } from "@/lib/groceryCategories";
 
 export default function AddItemDialog({ open, onOpenChange, familyId, onAdded }) {
   const { toast } = useToast();
@@ -134,7 +135,17 @@ function FormFields({ form, setForm, onImage, looking }) {
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
           <Label htmlFor="i-cat">Category</Label>
-          <Input id="i-cat" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="Dairy" />
+          <select
+            id="i-cat"
+            value={form.category}
+            onChange={(e) => setForm({ ...form, category: e.target.value })}
+            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          >
+            <option value="">Select…</option>
+            {GROCERY_CATEGORIES.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
         </div>
         <div className="space-y-2">
           <Label htmlFor="i-barcode">Barcode</Label>
