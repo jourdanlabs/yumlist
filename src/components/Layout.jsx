@@ -38,9 +38,7 @@ export default function Layout() {
       <aside className="hidden md:flex fixed inset-y-0 left-0 w-64 flex-col border-r border-border bg-card">
         <div className="px-6 py-7">
           <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center">
-              <Carrot className="w-5 h-5" />
-            </div>
+            <img src="https://media.base44.com/images/public/6a85c116bb660295b89c8343/25976f754_FPLogo.png" alt="Family Pantry" className="w-10 h-10 rounded-xl object-cover" />
             <div>
               <div className="font-heading font-semibold leading-tight">Family Pantry</div>
               <div className="text-xs text-muted-foreground">{user?.family_name || "No family"}</div>
@@ -83,9 +81,7 @@ export default function Layout() {
       <header className="md:hidden sticky top-0 z-30 bg-card/80 backdrop-blur border-b border-border">
         <div className="flex items-center justify-between px-4 h-14">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center">
-              <Carrot className="w-4 h-4" />
-            </div>
+            <img src="https://media.base44.com/images/public/6a85c116bb660295b89c8343/25976f754_FPLogo.png" alt="Family Pantry" className="w-8 h-8 rounded-lg object-cover" />
             <span className="font-heading font-semibold">Family Pantry</span>
           </div>
           <span className="text-xs text-muted-foreground">{user?.family_name || ""}</span>
