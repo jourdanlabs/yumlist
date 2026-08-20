@@ -22,10 +22,12 @@ export default function Family() {
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
   const [family, setFamily] = useState(null);
+  const [members, setMembers] = useState([]);
 
   useEffect(() => {
     if (user?.family_id) {
       base44.entities.Family.get(user.family_id).then(setFamily).catch(() => {});
+      base44.entities.User.filter({ family_id: user.family_id }).then(setMembers).catch(() => setMembers([]));
     }
   }, [user?.family_id]);
 
@@ -105,6 +107,28 @@ export default function Family() {
               {copied ? <Check className="w-4 h-4 mr-2" /> : <Copy className="w-4 h-4 mr-2" />}
               {copied ? "Copied" : "Copy code"}
             </Button>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2"><Users className="w-4 h-4" /> Members</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {members.length === 0 && (
+              <p className="text-sm text-muted-foreground">No members found.</p>
+            )}
+            {members.map((m) => (
+              <div key={m.id} className="flex items-center gap-3 p-2 rounded-lg bg-muted/40">
+                <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
+                  {(m.full_name || m.email || "?").charAt(0).toUpperCase()}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">{m.full_name || "Unnamed member"}</p>
+                  <p className="text-xs text-muted-foreground truncate">{m.email}</p>
+                </div>
+                {m.id === user.id && <span className="ml-auto text-xs text-muted-foreground">You</span>}
+              </div>
+            ))}
           </CardContent>
         </Card>
         <Button variant="outline" className="w-full text-destructive" onClick={leave} disabled={busy}>
