@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, ThumbsUp, Users } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useReactions } from "@/hooks/useReactions";
@@ -18,6 +18,49 @@ export default function Recipes() {
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [addOpen, setAddOpen] = useState(false);
+  const [matchMode, setMatchMode] = useState("off"); // "off" | "one" | "all"
+  const [items, setItems] = useState([]);
+  const [itemLikes, setItemLikes] = useState([]);
+
+  useEffect(() => {
+    if (!familyId) return;
+    Promise.all([
+      base44.entities.GroceryItem.filter({ family_id: familyId }),
+      base44.entities.Reaction.filter({ family_id: familyId, target_type: "item" }),
+    ]).then(([its, rx]) => {
+      setItems(its);
+      setItemLikes((rx || []).filter((r) => r.reaction === "like"));
+    }).catch(() => {});
+  }, [familyId]);
+
+  // userId -> Set of lowercased liked item names
+  const likedNamesByUser = useMemo(() => {
+    const itemById = {};
+    items.forEach((i) => { itemById[i.id] = i; });
+    const map = {};
+    itemLikes.forEach((r) => {
+      const item = itemById[r.target_id];
+      if (!item || !item.name) return;
+      if (!map[r.created_by_id]) map[r.created_by_id] = new Set();
+      map[r.created_by_id].add(item.name.toLowerCase());
+    });
+    return map;
+  }, [items, itemLikes]);
+
+  const allLikedNames = useMemo(() => {
+    const s = new Set();
+    Object.values(likedNamesByUser).forEach((set) => set.forEach((n) => s.add(n)));
+    return s;
+  }, [likedNamesByUser]);
+
+  const recipeMatchesLikes = (recipe, mode) => {
+    const ings = (recipe.ingredients || []).map((i) => (i || "").toLowerCase());
+    const hasName = (name) => ings.some((i) => i.includes(name) || name.includes(i));
+    if (mode === "one") return [...allLikedNames].some(hasName);
+    const users = Object.keys(likedNamesByUser);
+    if (users.length === 0) return false;
+    return users.every((u) => [...likedNamesByUser[u]].some(hasName));
+  };
 
   const load = async () => {
     if (!familyId) return;
@@ -46,9 +89,13 @@ export default function Recipes() {
 
   const filtered = recipes.filter((r) => {
     const q = query.toLowerCase();
-    if (!q) return true;
-    return (r.title || "").toLowerCase().includes(q) || (r.ingredients || []).some((i) => i.toLowerCase().includes(q));
+    const matchesQuery = !q || (r.title || "").toLowerCase().includes(q) || (r.ingredients || []).some((i) => i.toLowerCase().includes(q));
+    const matchesLikes = matchMode === "off" || recipeMatchesLikes(r, matchMode);
+    return matchesQuery && matchesLikes;
   });
+
+  const likeUserCount = Object.keys(likedNamesByUser).length;
+  const likeItemCount = allLikedNames.size;
 
   return (
     <div className="space-y-6">
@@ -67,13 +114,43 @@ export default function Recipes() {
         <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search recipes or ingredients…" className="pl-9" />
       </div>
 
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-sm text-muted-foreground flex items-center gap-1.5"><ThumbsUp className="w-4 h-4" /> Match family likes:</span>
+        {[
+          { v: "off", label: "Off" },
+          { v: "one", label: "1 user" },
+          { v: "all", label: "All users" },
+        ].map((opt) => (
+          <Button
+            key={opt.v}
+            size="sm"
+            variant={matchMode === opt.v ? "default" : "outline"}
+            onClick={() => setMatchMode(opt.v)}
+          >
+            {opt.v === "all" && <Users className="w-3.5 h-3.5 mr-1" />}
+            {opt.label}
+          </Button>
+        ))}
+        <span className="text-xs text-muted-foreground">
+          {likeUserCount > 0 ? `${likeUserCount} ${likeUserCount === 1 ? "member" : "members"} · ${likeItemCount} liked ${likeItemCount === 1 ? "item" : "items"}` : "No likes yet"}
+        </span>
+      </div>
+
       {loading ? (
         <div className="space-y-3">
           {[0, 1, 2].map((i) => <div key={i} className="h-24 rounded-2xl bg-muted animate-pulse" />)}
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-16 border border-dashed border-border rounded-2xl">
-          <p className="text-muted-foreground">{query ? "No recipes match your search." : "No recipes yet. Add your first recipe."}</p>
+          <p className="text-muted-foreground">
+            {matchMode !== "off" && likeItemCount > 0
+              ? "No recipes match the family's likes yet."
+              : matchMode !== "off"
+              ? "No likes yet — tap the thumbs-up on pantry items first."
+              : query
+              ? "No recipes match your search."
+              : "No recipes yet. Add your first recipe."}
+          </p>
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 gap-4">
