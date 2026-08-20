@@ -8,6 +8,7 @@ import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useReactions } from "@/hooks/useReactions";
 import RecipeCard from "@/components/RecipeCard";
 import AddRecipeDialog from "@/components/AddRecipeDialog";
+import RecipeSuggestions from "@/components/RecipeSuggestions";
 
 export default function Recipes() {
   const { user } = useCurrentUser();
@@ -135,6 +136,15 @@ export default function Recipes() {
           {likeUserCount > 0 ? `${likeUserCount} ${likeUserCount === 1 ? "member" : "members"} · ${likeItemCount} liked ${likeItemCount === 1 ? "item" : "items"}` : "No likes yet"}
         </span>
       </div>
+
+      {matchMode !== "off" && (
+        <RecipeSuggestions
+          likedNames={allLikedNames}
+          matchMode={matchMode}
+          familyId={familyId}
+          onSaved={load}
+        />
+      )}
 
       {loading ? (
         <div className="space-y-3">
