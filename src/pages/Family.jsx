@@ -115,7 +115,7 @@ export default function Family() {
   }
 
   return (
-    <div className="max-w-sm w-full ml-auto mr-4 md:mr-12 space-y-4">
+    <div className="max-w-sm w-full ml-auto mr-4 md:mr-12 mt-24 md:mt-40 space-y-4">
       <div className="text-center">
         <div className="w-12 h-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center mx-auto mb-2">
           <Users className="w-6 h-6" />
@@ -125,34 +125,24 @@ export default function Family() {
       </div>
 
       <Card>
-        <CardHeader className="p-4 pb-2">
-          <CardTitle className="text-sm flex items-center gap-2"><Plus className="w-4 h-4" /> Create a family</CardTitle>
-        </CardHeader>
-        <CardContent className="p-4 pt-2 space-y-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="fam-name">Family name</Label>
+        <CardContent className="p-4 space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="fam-name" className="text-sm font-medium flex items-center gap-2"><Plus className="w-4 h-4" /> Create a family</Label>
             <Input id="fam-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="The Smith Family" />
+            <Button className="w-full" onClick={create} disabled={busy}>Create</Button>
           </div>
-          <Button className="w-full" onClick={create} disabled={busy}>Create</Button>
-        </CardContent>
-      </Card>
 
-      <div className="flex items-center gap-3">
-        <div className="h-px bg-border flex-1" />
-        <span className="text-xs text-muted-foreground uppercase">or</span>
-        <div className="h-px bg-border flex-1" />
-      </div>
+          <div className="flex items-center gap-3">
+            <div className="h-px bg-border flex-1" />
+            <span className="text-xs text-muted-foreground uppercase">or</span>
+            <div className="h-px bg-border flex-1" />
+          </div>
 
-      <Card>
-        <CardHeader className="p-4 pb-2">
-          <CardTitle className="text-sm flex items-center gap-2"><LogIn className="w-4 h-4" /> Join with a code</CardTitle>
-        </CardHeader>
-        <CardContent className="p-4 pt-2 space-y-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="fam-code">Invite code</Label>
+          <div className="space-y-2">
+            <Label htmlFor="fam-code" className="text-sm font-medium flex items-center gap-2"><LogIn className="w-4 h-4" /> Join with a code</Label>
             <Input id="fam-code" value={code} onChange={(e) => setCode(e.target.value)} placeholder="ABC123" className="font-mono text-base tracking-widest" />
+            <Button variant="secondary" className="w-full" onClick={join} disabled={busy}>Join</Button>
           </div>
-          <Button variant="secondary" className="w-full" onClick={join} disabled={busy}>Join</Button>
         </CardContent>
       </Card>
     </div>
