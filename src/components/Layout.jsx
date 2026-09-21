@@ -4,6 +4,7 @@ import { Home as HomeIcon, Carrot, ChefHat, Share2, Users, LogOut, ShoppingCart 
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { base44 } from "@/api/base44Client";
 import { cn } from "@/lib/utils";
+import NotificationsBell from "@/components/NotificationsBell";
 
 const nav = [
   { to: "/", label: "Home", icon: HomeIcon },
@@ -40,6 +41,9 @@ export default function Layout() {
           <img src="https://media.base44.com/images/public/6a85c116bb660295b89c8343/25976f754_FPLogo.png" alt="Family Pantry" className="w-12 h-12 rounded-xl object-cover mb-2" />
           <div className="font-heading font-semibold leading-tight">Family Pantry</div>
           <div className="text-xs text-muted-foreground">{user?.family_name || "No family"}</div>
+        </div>
+        <div className="px-6 pb-2 flex justify-end">
+          <NotificationsBell />
         </div>
         <nav className="flex-1 px-3 space-y-1">
           {nav.map((item) => {
@@ -80,7 +84,10 @@ export default function Layout() {
             <img src="https://media.base44.com/images/public/6a85c116bb660295b89c8343/25976f754_FPLogo.png" alt="Family Pantry" className="w-8 h-8 rounded-lg object-cover" />
             <span className="font-heading font-semibold">Family Pantry</span>
           </div>
-          <span className="text-xs text-muted-foreground">{user?.family_name || ""}</span>
+          <div className="flex items-center gap-2">
+            <NotificationsBell />
+            <span className="text-xs text-muted-foreground">{user?.family_name || ""}</span>
+          </div>
         </div>
       </header>
 
