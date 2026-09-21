@@ -2,13 +2,15 @@ import React, { useEffect, useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, ThumbsUp, Users, ShoppingCart } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useReactions } from "@/hooks/useReactions";
+import { normalizeCategory } from "@/lib/groceryCategories";
 import RecipeCard from "@/components/RecipeCard";
 import AddRecipeDialog from "@/components/AddRecipeDialog";
 import RecipeSuggestions from "@/components/RecipeSuggestions";
+import RecipeFilters from "@/components/RecipeFilters";
 
 export default function Recipes() {
   const { user } = useCurrentUser();
@@ -20,6 +22,7 @@ export default function Recipes() {
   const [query, setQuery] = useState("");
   const [addOpen, setAddOpen] = useState(false);
   const [matchMode, setMatchMode] = useState("off"); // "off" | "one" | "all"
+  const [selectedCategories, setSelectedCategories] = useState([]);
   const [items, setItems] = useState([]);
   const [itemLikes, setItemLikes] = useState([]);
 
@@ -110,15 +113,54 @@ export default function Recipes() {
     }
   };
 
+  const likeUserCount = Object.keys(likedNamesByUser).length;
+  const likeItemCount = allLikedNames.size;
+
+  // Map lowercased ingredient names -> grocery category, and collect categories present in pantry
+  const nameToCategory = useMemo(() => {
+    const map = {};
+    items.forEach((i) => {
+      if (i.name) map[i.name.toLowerCase()] = normalizeCategory(i.category) || "Other";
+    });
+    return map;
+  }, [items]);
+
+  const pantryCategories = useMemo(() => {
+    const set = new Set(Object.values(nameToCategory));
+    return [...set].sort();
+  }, [nameToCategory]);
+
+  const recipeCategories = (recipe) => {
+    const cats = new Set();
+    (recipe.ingredients || []).forEach((ing) => {
+      const key = (ing || "").toLowerCase();
+      if (nameToCategory[key]) cats.add(nameToCategory[key]);
+    });
+    return cats;
+  };
+
+  const toggleCategory = (cat) => {
+    setSelectedCategories((prev) =>
+      prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
+    );
+  };
+
+  const clearFilters = () => {
+    setSelectedCategories([]);
+    setMatchMode("off");
+  };
+
   const filtered = recipes.filter((r) => {
     const q = query.toLowerCase();
     const matchesQuery = !q || (r.title || "").toLowerCase().includes(q) || (r.ingredients || []).some((i) => i.toLowerCase().includes(q));
     const matchesLikes = matchMode === "off" || recipeMatchesLikes(r, matchMode);
-    return matchesQuery && matchesLikes;
+    const matchesCategory =
+      selectedCategories.length === 0 ||
+      selectedCategories.some((c) => recipeCategories(r).has(c));
+    return matchesQuery && matchesLikes && matchesCategory;
   });
 
-  const likeUserCount = Object.keys(likedNamesByUser).length;
-  const likeItemCount = allLikedNames.size;
+  const activeFilterCount = selectedCategories.length + (matchMode !== "off" ? 1 : 0);
 
   return (
     <div className="space-y-6">
@@ -137,67 +179,63 @@ export default function Recipes() {
         <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search recipes or ingredients…" className="pl-9" />
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-sm text-muted-foreground flex items-center gap-1.5"><ThumbsUp className="w-4 h-4" /> Match family likes:</span>
-        {[
-          { v: "off", label: "Off" },
-          { v: "one", label: "1 user" },
-          { v: "all", label: "All users" },
-        ].map((opt) => (
-          <Button
-            key={opt.v}
-            size="sm"
-            variant={matchMode === opt.v ? "default" : "outline"}
-            onClick={() => setMatchMode(opt.v)}
-          >
-            {opt.v === "all" && <Users className="w-3.5 h-3.5 mr-1" />}
-            {opt.label}
-          </Button>
-        ))}
-        <span className="text-xs text-muted-foreground">
-          {likeUserCount > 0 ? `${likeUserCount} ${likeUserCount === 1 ? "member" : "members"} · ${likeItemCount} liked ${likeItemCount === 1 ? "item" : "items"}` : "No likes yet"}
-        </span>
-      </div>
-
-      {matchMode !== "off" && (
-        <RecipeSuggestions
-          likedNames={allLikedNames}
+      <div className="lg:grid lg:grid-cols-[240px_1fr] gap-8 items-start">
+        <RecipeFilters
+          categories={pantryCategories}
+          selectedCategories={selectedCategories}
+          onToggleCategory={toggleCategory}
           matchMode={matchMode}
-          familyId={familyId}
-          onSaved={load}
+          onMatchModeChange={setMatchMode}
+          likeUserCount={likeUserCount}
+          likeItemCount={likeItemCount}
+          onClear={clearFilters}
+          activeCount={activeFilterCount}
         />
-      )}
 
-      {loading ? (
-        <div className="space-y-3">
-          {[0, 1, 2].map((i) => <div key={i} className="h-24 rounded-2xl bg-muted animate-pulse" />)}
-        </div>
-      ) : filtered.length === 0 ? (
-        <div className="text-center py-16 border border-dashed border-border rounded-2xl">
-          <p className="text-muted-foreground">
-            {matchMode !== "off" && likeItemCount > 0
-              ? "No recipes match the family's likes yet."
-              : matchMode !== "off"
-              ? "No likes yet — tap the thumbs-up on pantry items first."
-              : query
-              ? "No recipes match your search."
-              : "No recipes yet. Add your first recipe."}
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-4">
-          {filtered.map((recipe) => (
-            <RecipeCard
-              key={recipe.id}
-              recipe={recipe}
-              counts={countsFor(recipe.id)}
-              onReact={(r) => react(recipe.id, r)}
-              onDelete={() => handleDelete(recipe)}
-              onRequest={() => handleRequest(recipe)}
+        <div className="space-y-6">
+          {matchMode !== "off" && (
+            <RecipeSuggestions
+              likedNames={allLikedNames}
+              matchMode={matchMode}
+              familyId={familyId}
+              onSaved={load}
             />
-          ))}
+          )}
+
+          {loading ? (
+            <div className="space-y-3">
+              {[0, 1, 2].map((i) => <div key={i} className="h-24 rounded-2xl bg-muted animate-pulse" />)}
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="text-center py-16 border border-dashed border-border rounded-2xl">
+              <p className="text-muted-foreground">
+                {matchMode !== "off" && likeItemCount > 0
+                  ? "No recipes match the family's likes yet."
+                  : matchMode !== "off"
+                  ? "No likes yet — tap the thumbs-up on pantry items first."
+                  : selectedCategories.length > 0
+                  ? "No recipes use ingredients from the selected categories."
+                  : query
+                  ? "No recipes match your search."
+                  : "No recipes yet. Add your first recipe."}
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4">
+              {filtered.map((recipe) => (
+                <RecipeCard
+                  key={recipe.id}
+                  recipe={recipe}
+                  counts={countsFor(recipe.id)}
+                  onReact={(r) => react(recipe.id, r)}
+                  onDelete={() => handleDelete(recipe)}
+                  onRequest={() => handleRequest(recipe)}
+                />
+              ))}
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
       <AddRecipeDialog
         open={addOpen}
