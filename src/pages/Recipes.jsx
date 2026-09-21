@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, ThumbsUp, Users } from "lucide-react";
+import { Plus, Search, ThumbsUp, Users, ShoppingCart } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useReactions } from "@/hooks/useReactions";
@@ -77,6 +77,28 @@ export default function Recipes() {
   };
 
   useEffect(() => { load(); }, [familyId]);
+
+  const handleRequest = async (recipe) => {
+    const ings = (recipe.ingredients || []).filter((i) => i && i.trim());
+    if (ings.length === 0) {
+      toast({ title: "This recipe has no ingredients to add", variant: "destructive" });
+      return;
+    }
+    try {
+      await base44.entities.GroceryItem.bulkCreate(
+        ings.map((ing) => ({
+          name: ing.trim(),
+          family_id: familyId,
+          quantity: 0,
+          unit: "units",
+          category: "Other",
+        }))
+      );
+      toast({ title: `Added ${ings.length} ingredient${ings.length > 1 ? "s" : ""} from "${recipe.title}" to your shopping list` });
+    } catch (e) {
+      toast({ title: "Could not request recipe", variant: "destructive" });
+    }
+  };
 
   const handleDelete = async (recipe) => {
     try {
@@ -171,6 +193,7 @@ export default function Recipes() {
               counts={countsFor(recipe.id)}
               onReact={(r) => react(recipe.id, r)}
               onDelete={() => handleDelete(recipe)}
+              onRequest={() => handleRequest(recipe)}
             />
           ))}
         </div>
