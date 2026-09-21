@@ -36,31 +36,29 @@ export default function RecipeCard({ recipe, counts, onReact, onDelete, onReques
           </div>
           <div className="mt-3 flex items-center justify-between gap-2">
             <ReactionBar likes={counts.likes} dislikes={counts.dislikes} neutrals={counts.neutrals} myReaction={counts.myReaction} onReact={onReact} />
-            <div className="flex items-center gap-3">
-              {onRequest && (
-                <button
-                  onClick={() => { setRequested(true); onRequest(); }}
-                  disabled={requested}
-                  className={cn(
-                    "text-xs flex items-center gap-1 px-2 py-1 rounded-full border transition-colors",
-                    requested
-                      ? "bg-emerald-500/10 text-emerald-600 border-emerald-300"
-                      : "text-muted-foreground hover:text-foreground hover:border-foreground/30 border-border"
-                  )}
-                >
-                  <ShoppingCart className="w-3.5 h-3.5" />
-                  {requested ? "Requested" : "Request this week"}
-                </button>
-              )}
-              <button
-                onClick={() => setOpen((o) => !o)}
-                className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
-              >
-                {open ? "Hide" : "Details"}
-                <ChevronDown className={cn("w-4 h-4 transition-transform", open && "rotate-180")} />
-              </button>
-            </div>
+            <button
+              onClick={() => setOpen((o) => !o)}
+              className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
+            >
+              {open ? "Hide" : "Details"}
+              <ChevronDown className={cn("w-4 h-4 transition-transform", open && "rotate-180")} />
+            </button>
           </div>
+          {onRequest && (
+            <button
+              onClick={() => { setRequested(true); onRequest(); }}
+              disabled={requested}
+              className={cn(
+                "mt-3 w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border transition-colors",
+                requested
+                  ? "bg-emerald-500/10 text-emerald-600 border-emerald-300"
+                  : "bg-primary text-primary-foreground border-primary hover:bg-primary/90"
+              )}
+            >
+              <ShoppingCart className="w-4 h-4" />
+              {requested ? "Added to shopping list" : "Request for this week"}
+            </button>
+          )}
         </div>
       </div>
       {open && (
