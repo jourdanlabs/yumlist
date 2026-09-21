@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { ClipboardList, Loader2, Package, Printer, RefreshCw, ShoppingCart } from "lucide-react";
+import { ClipboardList, Loader2, Package, Printer, RefreshCw, ShoppingCart, CheckCheck } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { GROCERY_CATEGORIES, categoryStyle, normalizeCategory } from "@/lib/groceryCategories";
@@ -87,6 +87,26 @@ export default function ShoppingList() {
     }
   };
 
+  const clearChecked = async () => {
+    if (checkedIds.length === 0) {
+      toast({ title: "Check off items first to clear them", variant: "destructive" });
+      return;
+    }
+    setRestocking(true);
+    try {
+      await base44.entities.GroceryItem.bulkUpdate(
+        checkedIds.map((id) => ({ id, quantity: RESTOCK_DEFAULT }))
+      );
+      toast({ title: `Cleared ${checkedIds.length} checked item${checkedIds.length > 1 ? "s" : ""} from your list` });
+      setChecked({});
+      await load();
+    } catch (e) {
+      toast({ title: "Could not clear checked items", variant: "destructive" });
+    } finally {
+      setRestocking(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
@@ -142,9 +162,17 @@ export default function ShoppingList() {
             />
           ))}
 
-          <div className="flex items-center gap-3 pt-2 no-print">
+          <div className="flex items-center gap-3 pt-2 no-print flex-wrap">
             <Button variant="outline" size="sm" onClick={toggleAll}>
               {allChecked ? "Clear selection" : "Select all"}
+            </Button>
+            <Button
+              size="sm"
+              onClick={clearChecked}
+              disabled={restocking || checkedIds.length === 0}
+            >
+              {restocking ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <CheckCheck className="w-4 h-4 mr-2" />}
+              Clear checked ({checkedIds.length})
             </Button>
             <span className="text-sm text-muted-foreground">
               {checkedIds.length} of {shopping.length} selected
