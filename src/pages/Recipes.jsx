@@ -185,7 +185,7 @@ export default function Recipes() {
           </p>
         </div>
       ) : (
-        <div className="grid sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4">
           {filtered.map((recipe) => (
             <RecipeCard
               key={recipe.id}
