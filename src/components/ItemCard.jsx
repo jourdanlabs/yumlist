@@ -2,6 +2,7 @@ import React from "react";
 import { Image } from "@/components/ui/image";
 import { Trash2, CalendarClock, Package } from "lucide-react";
 import ReactionBar from "@/components/ReactionBar";
+import { capitalize } from "@/lib/utils";
 
 function expiryStatus(dateStr) {
   if (!dateStr) return null;
@@ -39,7 +40,7 @@ export default function ItemCard({ item, counts, onReact, onDelete }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <h3 className="font-medium truncate">{item.name}</h3>
+              <h3 className="font-medium truncate">{capitalize(item.name)}</h3>
               {item.brand && <p className="text-sm text-muted-foreground truncate">{item.brand}</p>}
               <div className="flex flex-wrap items-center gap-1.5 mt-1">
                 {item.category && (

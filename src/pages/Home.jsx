@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Carrot, ChefHat, ThumbsUp, ArrowRight, AlertTriangle } from "lucide-react";
 import { differenceInCalendarDays } from "date-fns";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { capitalize } from "@/lib/utils";
 
 const EXPIRY_WINDOW_DAYS = 3;
 
@@ -66,7 +67,7 @@ export default function Home() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
             {expiring.map((it) => (
               <div key={it.id} className="flex items-center justify-between gap-2 rounded-lg bg-card border border-amber-500/20 px-3 py-2">
-                <span className="font-medium text-sm truncate">{it.name}</span>
+                <span className="font-medium text-sm truncate">{capitalize(it.name)}</span>
                 <span className={`text-xs font-medium whitespace-nowrap ${it.daysLeft < 0 ? "text-destructive" : it.daysLeft === 0 ? "text-amber-700 dark:text-amber-400" : "text-muted-foreground"}`}>
                   {it.daysLeft < 0 ? "Expired" : it.daysLeft === 0 ? "Today" : `${it.daysLeft}d left`}
                 </span>
@@ -92,7 +93,7 @@ export default function Home() {
             ) : (
               items.map((it) => (
                 <Card key={it.id}><CardContent className="py-3 px-4 flex items-center justify-between">
-                  <span className="font-medium truncate">{it.name}</span>
+                  <span className="font-medium truncate">{capitalize(it.name)}</span>
                   <span className="text-xs text-muted-foreground truncate ml-2">{it.brand}</span>
                 </CardContent></Card>
               ))

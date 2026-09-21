@@ -7,6 +7,7 @@ import { ClipboardList, Loader2, Package, RefreshCw, ShoppingCart } from "lucide
 import { useToast } from "@/components/ui/use-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { GROCERY_CATEGORIES, categoryStyle, normalizeCategory } from "@/lib/groceryCategories";
+import { capitalize } from "@/lib/utils";
 
 const LOW_THRESHOLD = 2;
 const RESTOCK_DEFAULT = 5;
@@ -162,7 +163,7 @@ function Section({ title, items, checked, onToggle, accent }) {
                 />
                 <div className="flex-1 min-w-0">
                   <div className={`font-medium truncate ${isChecked ? "line-through text-muted-foreground" : ""}`}>
-                    {item.name}
+                    {capitalize(item.name)}
                   </div>
                   <div className="flex items-center gap-2 mt-0.5">
                     {item.brand && <span className="text-xs text-muted-foreground truncate">{item.brand}</span>}
