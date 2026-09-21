@@ -19,7 +19,8 @@
       "title": "Reaction",
       "enum": [
         "like",
-        "dislike"
+        "dislike",
+        "neutral"
       ]
     },
     "family_id": {

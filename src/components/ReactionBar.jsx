@@ -2,7 +2,7 @@ import React from "react";
 import { ThumbsUp, ThumbsDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export default function ReactionBar({ likes, dislikes, myReaction, onReact }) {
+export default function ReactionBar({ likes, dislikes, neutrals, myReaction, onReact }) {
   return (
     <div className="flex items-center gap-2">
       <button
@@ -30,6 +30,19 @@ export default function ReactionBar({ likes, dislikes, myReaction, onReact }) {
       >
         <ThumbsDown className="w-4 h-4" />
         <span>{dislikes}</span>
+      </button>
+      <button
+        type="button"
+        onClick={() => onReact("neutral")}
+        className={cn(
+          "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors border",
+          myReaction === "neutral"
+            ? "bg-slate-400 text-white border-slate-400"
+            : "bg-card text-muted-foreground border-border hover:text-slate-600 hover:border-slate-300"
+        )}
+      >
+        <span className="text-base leading-none">😐</span>
+        <span>{neutrals}</span>
       </button>
     </div>
   );

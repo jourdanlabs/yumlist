@@ -24,8 +24,9 @@ export function useReactions(familyId, targetType, userId) {
     const forTarget = reactions.filter((r) => r.target_id === targetId);
     const likes = forTarget.filter((r) => r.reaction === "like").length;
     const dislikes = forTarget.filter((r) => r.reaction === "dislike").length;
+    const neutrals = forTarget.filter((r) => r.reaction === "neutral").length;
     const mine = forTarget.find((r) => r.created_by_id === userId);
-    return { likes, dislikes, myReaction: mine ? mine.reaction : null };
+    return { likes, dislikes, neutrals, myReaction: mine ? mine.reaction : null };
   };
 
   const react = async (targetId, reaction) => {
