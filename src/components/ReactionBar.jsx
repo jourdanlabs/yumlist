@@ -20,19 +20,6 @@ export default function ReactionBar({ likes, dislikes, neutrals, myReaction, onR
       </button>
       <button
         type="button"
-        onClick={() => onReact("dislike")}
-        className={cn(
-          "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors border",
-          myReaction === "dislike"
-            ? "bg-rose-500 text-white border-rose-500"
-            : "bg-card text-muted-foreground border-border hover:text-rose-600 hover:border-rose-300"
-        )}
-      >
-        <ThumbsDown className="w-4 h-4" />
-        <span>{dislikes}</span>
-      </button>
-      <button
-        type="button"
         onClick={() => onReact("neutral")}
         className={cn(
           "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors border",
@@ -43,6 +30,19 @@ export default function ReactionBar({ likes, dislikes, neutrals, myReaction, onR
       >
         <span className="text-base leading-none">😐</span>
         <span>{neutrals}</span>
+      </button>
+      <button
+        type="button"
+        onClick={() => onReact("dislike")}
+        className={cn(
+          "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors border",
+          myReaction === "dislike"
+            ? "bg-rose-500 text-white border-rose-500"
+            : "bg-card text-muted-foreground border-border hover:text-rose-600 hover:border-rose-300"
+        )}
+      >
+        <ThumbsDown className="w-4 h-4" />
+        <span>{dislikes}</span>
       </button>
     </div>
   );
