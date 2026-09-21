@@ -34,11 +34,11 @@ export default function RecipeCard({ recipe, counts, onReact, onDelete, onReques
               </button>
             )}
           </div>
-          <div className="mt-3 flex items-center justify-between gap-2">
+          <div className="mt-3 flex flex-wrap items-center gap-2">
             <ReactionBar likes={counts.likes} dislikes={counts.dislikes} neutrals={counts.neutrals} myReaction={counts.myReaction} onReact={onReact} />
             <button
               onClick={() => setOpen((o) => !o)}
-              className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
+              className="ml-auto text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
             >
               {open ? "Hide" : "Details"}
               <ChevronDown className={cn("w-4 h-4 transition-transform", open && "rotate-180")} />
