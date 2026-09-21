@@ -41,8 +41,17 @@ export default function ShoppingList() {
     [items]
   );
 
-  const finished = useMemo(() => shopping.filter((i) => (i.quantity ?? 1) <= 0), [shopping]);
-  const low = useMemo(() => shopping.filter((i) => (i.quantity ?? 1) > 0), [shopping]);
+  const grouped = useMemo(() => {
+    const order = GROCERY_CATEGORIES.reduce((acc, c, i) => { acc[c] = i; return acc; }, {});
+    const groups = {};
+    shopping.forEach((item) => {
+      const cat = normalizeCategory(item.category) || "Other";
+      (groups[cat] = groups[cat] || []).push(item);
+    });
+    return Object.keys(groups)
+      .sort((a, b) => (order[a] ?? 99) - (order[b] ?? 99))
+      .map((cat) => ({ category: cat, items: groups[cat] }));
+  }, [shopping]);
 
   const checkedIds = Object.keys(checked).filter((id) => checked[id]);
   const allChecked = shopping.length > 0 && checkedIds.length === shopping.length;
@@ -108,20 +117,15 @@ export default function ShoppingList() {
         </div>
       ) : (
         <div className="space-y-6">
-          <Section
-            title="Finished"
-            items={finished}
-            checked={checked}
-            onToggle={toggle}
-            accent="destructive"
-          />
-          <Section
-            title="Running low"
-            items={low}
-            checked={checked}
-            onToggle={toggle}
-            accent="amber"
-          />
+          {grouped.map((group) => (
+            <CategorySection
+              key={group.category}
+              category={group.category}
+              items={group.items}
+              checked={checked}
+              onToggle={toggle}
+            />
+          ))}
 
           <div className="flex items-center gap-3 pt-2">
             <Button variant="outline" size="sm" onClick={toggleAll}>
@@ -137,16 +141,16 @@ export default function ShoppingList() {
   );
 }
 
-function Section({ title, items, checked, onToggle, accent }) {
+function CategorySection({ category, items, checked, onToggle }) {
   if (items.length === 0) return null;
-  const headerTone = accent === "destructive"
-    ? "text-destructive"
-    : "text-amber-600 dark:text-amber-400";
   return (
     <div>
-      <h2 className={`text-sm font-semibold uppercase tracking-wide mb-2 ${headerTone}`}>
-        {title} · {items.length}
-      </h2>
+      <div className="flex items-center gap-2 mb-2">
+        <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${categoryStyle(category)}`}>
+          {category}
+        </span>
+        <span className="text-sm text-muted-foreground">{items.length}</span>
+      </div>
       <Card>
         <CardContent className="p-0 divide-y divide-border">
           {items.map((item) => {
@@ -165,14 +169,7 @@ function Section({ title, items, checked, onToggle, accent }) {
                   <div className={`font-medium truncate ${isChecked ? "line-through text-muted-foreground" : ""}`}>
                     {capitalize(item.name)}
                   </div>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    {item.brand && <span className="text-xs text-muted-foreground truncate">{item.brand}</span>}
-                    {item.category && (
-                      <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full whitespace-nowrap ${categoryStyle(normalizeCategory(item.category))}`}>
-                        {normalizeCategory(item.category)}
-                      </span>
-                    )}
-                  </div>
+                  {item.brand && <span className="text-xs text-muted-foreground truncate block mt-0.5">{item.brand}</span>}
                 </div>
                 <span className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full whitespace-nowrap ${qty <= 0 ? "bg-destructive/10 text-destructive" : "bg-amber-500/15 text-amber-700 dark:text-amber-400"}`}>
                   <Package className="w-3 h-3" />
