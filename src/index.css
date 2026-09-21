@@ -90,3 +90,32 @@
     @apply bg-background text-foreground font-body;
   }
 }
+
+@media print {
+  aside,
+  header.md\:hidden,
+  nav.md\:hidden,
+  .no-print {
+    display: none !important;
+  }
+  main {
+    padding-left: 0 !important;
+  }
+  main > div {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  body {
+    background: #fff !important;
+  }
+  .print-break {
+    break-inside: avoid;
+  }
+}
+
+.print-only {
+  display: none;
+}

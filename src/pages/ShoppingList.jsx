@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { ClipboardList, Loader2, Package, RefreshCw, ShoppingCart } from "lucide-react";
+import { ClipboardList, Loader2, Package, Printer, RefreshCw, ShoppingCart } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { GROCERY_CATEGORIES, categoryStyle, normalizeCategory } from "@/lib/groceryCategories";
@@ -98,12 +98,27 @@ export default function ShoppingList() {
             Auto-built from pantry items that are running low or finished.
           </p>
         </div>
-        {shopping.length > 0 && (
-          <Button onClick={restockSelected} disabled={restocking || checkedIds.length === 0}>
-            {restocking ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-2" />}
-            Restock selected ({checkedIds.length})
-          </Button>
-        )}
+        <div className="flex items-center gap-2 no-print">
+          {shopping.length > 0 && (
+            <Button onClick={restockSelected} disabled={restocking || checkedIds.length === 0}>
+              {restocking ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-2" />}
+              Restock selected ({checkedIds.length})
+            </Button>
+          )}
+          {shopping.length > 0 && (
+            <Button variant="outline" onClick={() => window.print()}>
+              <Printer className="w-4 h-4 mr-2" /> Print
+            </Button>
+          )}
+        </div>
+      </div>
+
+      <div className="print-only mb-6">
+        <h1 className="text-2xl font-bold">Shopping List</h1>
+        <p className="text-sm text-gray-600">
+          {user?.family_name || "Family Pantry"} · {new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}
+        </p>
+        <hr className="my-3 border-black" />
       </div>
 
       {loading ? (
@@ -127,7 +142,7 @@ export default function ShoppingList() {
             />
           ))}
 
-          <div className="flex items-center gap-3 pt-2">
+          <div className="flex items-center gap-3 pt-2 no-print">
             <Button variant="outline" size="sm" onClick={toggleAll}>
               {allChecked ? "Clear selection" : "Select all"}
             </Button>
@@ -144,12 +159,15 @@ export default function ShoppingList() {
 function CategorySection({ category, items, checked, onToggle }) {
   if (items.length === 0) return null;
   return (
-    <div>
+    <div className="print-break">
       <div className="flex items-center gap-2 mb-2">
-        <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${categoryStyle(category)}`}>
+        <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full no-print ${categoryStyle(category)}`}>
           {category}
         </span>
-        <span className="text-sm text-muted-foreground">{items.length}</span>
+        <span className="text-sm text-muted-foreground no-print">{items.length}</span>
+        <h2 className="print-only text-lg font-bold uppercase tracking-wide border-b border-black pb-1 mb-2">
+          {category}
+        </h2>
       </div>
       <Card>
         <CardContent className="p-0 divide-y divide-border">
@@ -171,9 +189,12 @@ function CategorySection({ category, items, checked, onToggle }) {
                   </div>
                   {item.brand && <span className="text-xs text-muted-foreground truncate block mt-0.5">{item.brand}</span>}
                 </div>
-                <span className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full whitespace-nowrap ${qty <= 0 ? "bg-destructive/10 text-destructive" : "bg-amber-500/15 text-amber-700 dark:text-amber-400"}`}>
+                <span className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full whitespace-nowrap no-print ${qty <= 0 ? "bg-destructive/10 text-destructive" : "bg-amber-500/15 text-amber-700 dark:text-amber-400"}`}>
                   <Package className="w-3 h-3" />
                   {qty <= 0 ? "Out of stock" : `${qty} ${unit}`}
+                </span>
+                <span className="print-only text-sm text-gray-700">
+                  {qty <= 0 ? "(out of stock)" : `have ${qty} ${unit}`}
                 </span>
               </label>
             );
