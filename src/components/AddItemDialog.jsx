@@ -81,11 +81,11 @@ export default function AddItemDialog({ open, onOpenChange, familyId, onAdded })
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>Add grocery item</DialogTitle>
         </DialogHeader>
-        <Tabs defaultValue="manual">
+        <Tabs defaultValue="manual" className="overflow-y-auto pr-1 -mr-1">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="manual">Manual</TabsTrigger>
             <TabsTrigger value="scan">Scan barcode</TabsTrigger>
