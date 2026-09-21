@@ -192,6 +192,7 @@ function CategorySection({ category, items, checked, onToggle }) {
                     <span className="text-xs text-muted-foreground/80 truncate block mt-0.5 flex items-center gap-1">
                       <span className="no-print">For:</span>
                       <span className="italic">{item.recipe_title}</span>
+                      {item.requested_by_name && <span className="no-print">· requested by {item.requested_by_name}</span>}
                     </span>
                   )}
                 </div>
@@ -202,6 +203,7 @@ function CategorySection({ category, items, checked, onToggle }) {
                 <span className="print-only text-sm text-gray-700 whitespace-nowrap">
                   {qty <= 0 ? "(out of stock)" : `have ${qty} ${unit}`}
                   {item.recipe_title ? ` · ${item.recipe_title}` : ""}
+                  {item.requested_by_name ? ` · by ${item.requested_by_name}` : ""}
                 </span>
               </label>
             );

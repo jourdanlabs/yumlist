@@ -57,6 +57,10 @@
     "recipe_title": {
       "type": "string",
       "title": "Requested from recipe"
+    },
+    "requested_by_name": {
+      "type": "string",
+      "title": "Requested by"
     }
   },
   "required": [
