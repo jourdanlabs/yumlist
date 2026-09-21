@@ -28,7 +28,7 @@ export default function ReactionBar({ likes, dislikes, neutrals, myReaction, onR
             : "bg-card text-muted-foreground border-border hover:text-slate-600 hover:border-slate-300"
         )}
       >
-        <span className="text-base leading-none">😐</span>
+        <span className="text-base leading-none">🤷</span>
         <span>{neutrals}</span>
       </button>
       <button
