@@ -95,6 +95,7 @@ export default function Recipes() {
           quantity: 0,
           unit: "units",
           category: "Other",
+          recipe_title: recipe.title,
         }))
       );
       toast({ title: `Added ${ings.length} ingredient${ings.length > 1 ? "s" : ""} from "${recipe.title}" to your shopping list` });

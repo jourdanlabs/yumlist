@@ -188,13 +188,20 @@ function CategorySection({ category, items, checked, onToggle }) {
                     {capitalize(item.name)}
                   </div>
                   {item.brand && <span className="text-xs text-muted-foreground truncate block mt-0.5">{item.brand}</span>}
+                  {item.recipe_title && (
+                    <span className="text-xs text-muted-foreground/80 truncate block mt-0.5 flex items-center gap-1">
+                      <span className="no-print">For:</span>
+                      <span className="italic">{item.recipe_title}</span>
+                    </span>
+                  )}
                 </div>
                 <span className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full whitespace-nowrap no-print ${qty <= 0 ? "bg-destructive/10 text-destructive" : "bg-amber-500/15 text-amber-700 dark:text-amber-400"}`}>
                   <Package className="w-3 h-3" />
                   {qty <= 0 ? "Out of stock" : `${qty} ${unit}`}
                 </span>
-                <span className="print-only text-sm text-gray-700">
+                <span className="print-only text-sm text-gray-700 whitespace-nowrap">
                   {qty <= 0 ? "(out of stock)" : `have ${qty} ${unit}`}
+                  {item.recipe_title ? ` · ${item.recipe_title}` : ""}
                 </span>
               </label>
             );

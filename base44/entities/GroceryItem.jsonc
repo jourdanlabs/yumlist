@@ -53,6 +53,10 @@
     "family_id": {
       "type": "string",
       "title": "Family ID"
+    },
+    "recipe_title": {
+      "type": "string",
+      "title": "Requested from recipe"
     }
   },
   "required": [
