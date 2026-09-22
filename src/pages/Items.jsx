@@ -63,11 +63,13 @@ export default function Items() {
     }
   };
 
-  const filtered = items.filter((i) => {
-    const q = query.toLowerCase();
-    if (!q) return true;
-    return (i.name || "").toLowerCase().includes(q) || (i.brand || "").toLowerCase().includes(q) || (i.category || "").toLowerCase().includes(q);
-  });
+  const filtered = items
+    .filter((i) => !i.recipe_title)
+    .filter((i) => {
+      const q = query.toLowerCase();
+      if (!q) return true;
+      return (i.name || "").toLowerCase().includes(q) || (i.brand || "").toLowerCase().includes(q) || (i.category || "").toLowerCase().includes(q);
+    });
 
   return (
     <div className="space-y-6">
