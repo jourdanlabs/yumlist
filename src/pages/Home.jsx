@@ -6,6 +6,7 @@ import { Carrot, ChefHat, ThumbsUp, ArrowRight, AlertTriangle } from "lucide-rea
 import { differenceInCalendarDays } from "date-fns";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { capitalize } from "@/lib/utils";
+import ConsumptionChart from "@/components/ConsumptionChart";
 
 const EXPIRY_WINDOW_DAYS = 3;
 
@@ -76,6 +77,8 @@ export default function Home() {
           </div>
         </section>
       )}
+
+      <ConsumptionChart familyId={user?.family_id} />
 
       <div className="grid md:grid-cols-2 gap-6">
         <section>

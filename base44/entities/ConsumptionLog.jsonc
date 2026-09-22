@@ -1,0 +1,29 @@
+{
+  "name": "ConsumptionLog",
+  "type": "object",
+  "properties": {
+    "family_id": {
+      "type": "string",
+      "title": "Family ID"
+    },
+    "item_name": {
+      "type": "string",
+      "title": "Item name"
+    },
+    "quantity": {
+      "type": "number",
+      "title": "Quantity consumed",
+      "default": 1
+    },
+    "consumed_date": {
+      "type": "string",
+      "title": "Consumed date",
+      "format": "date"
+    }
+  },
+  "required": [
+    "family_id",
+    "item_name",
+    "consumed_date"
+  ]
+}

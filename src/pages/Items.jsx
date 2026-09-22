@@ -38,9 +38,15 @@ export default function Items() {
 
   const handleDelete = async (item) => {
     try {
+      await base44.entities.ConsumptionLog.create({
+        family_id: familyId,
+        item_name: item.name,
+        quantity: item.quantity || 1,
+        consumed_date: new Date().toISOString().slice(0, 10),
+      });
       await base44.entities.GroceryItem.delete(item.id);
       setItems((prev) => prev.filter((i) => i.id !== item.id));
-      toast({ title: "Item removed" });
+      toast({ title: "Item removed", description: "Logged as consumed for weekly tracking." });
     } catch (e) {
       toast({ title: "Could not delete", variant: "destructive" });
     }
