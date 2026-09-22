@@ -162,7 +162,7 @@ export default function ShoppingList() {
           </Button>
         )}
         {shopping.length > 0 && (
-          <Button variant="outline" onClick={() => setTripOpen(true)}>
+          <Button onClick={() => setTripOpen(true)}>
             <CalendarPlus className="w-4 h-4 mr-2" /> Schedule trip
           </Button>
         )}
