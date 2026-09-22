@@ -52,7 +52,7 @@ export default function Layout() {
         <div className="px-6 py-7 flex flex-col items-center text-center bg-muted/50">
           <img src="https://media.base44.com/images/public/6a85c116bb660295b89c8343/25976f754_FPLogo.png" alt="Family Pantry" className="w-24 h-24 rounded-xl object-cover mb-2" />
           <div className="font-heading font-semibold leading-tight">Family Pantry</div>
-          <div className="text-xs font-bold text-orange-500">{user?.family_name || "No family"}</div>
+          <div className="text-xs font-bold text-green-600">{user?.family_name ? `${user.family_name}'s Pantry` : "No family"}</div>
         </div>
         <div className="px-6 pb-2 flex justify-end">
           <NotificationsBell />
