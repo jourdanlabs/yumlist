@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link, Outlet, useLocation, Navigate } from "react-router-dom";
-import { Home as HomeIcon, Carrot, ChefHat, Share2, Users, LogOut, ShoppingCart } from "lucide-react";
+import { Home as HomeIcon, Carrot, ChefHat, Share2, Users, LogOut, ShoppingCart, Shield } from "lucide-react";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { base44 } from "@/api/base44Client";
 import { cn } from "@/lib/utils";
@@ -18,6 +18,18 @@ const nav = [
 export default function Layout() {
   const { user, loading } = useCurrentUser();
   const location = useLocation();
+
+  useEffect(() => {
+    if (!user?.id) return;
+    const ua = navigator.userAgent || "";
+    const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    const source = isIOS ? "App Store" : /Android/.test(ua) ? "Google Play" : "Web";
+    const updates = { last_active: new Date().toISOString() };
+    if (!user.download_source) updates.download_source = source;
+    base44.auth.updateMe(updates).catch(() => {});
+  }, [user?.id]);
+
+  const navItems = user?.role === "admin" ? [...nav, { to: "/admin", label: "Admin", icon: Shield }] : nav;
 
   if (loading) {
     return (
@@ -46,7 +58,7 @@ export default function Layout() {
           <NotificationsBell />
         </div>
         <nav className="flex-1 px-3 space-y-1">
-          {nav.map((item) => {
+          {navItems.map((item) => {
             const active = location.pathname === item.to;
             return (
               <Link
@@ -100,7 +112,7 @@ export default function Layout() {
       {/* Mobile bottom nav */}
       <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-card border-t border-border">
         <div className="grid grid-cols-6">
-          {nav.map((item) => {
+          {navItems.map((item) => {
             const active = location.pathname === item.to;
             return (
               <Link

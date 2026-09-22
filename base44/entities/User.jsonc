@@ -15,6 +15,16 @@
     "family_name": {
       "type": "string",
       "title": "Family name"
+    },
+    "download_source": {
+      "type": "string",
+      "title": "Download source",
+      "description": "Where the user installed the app from: App Store, Google Play, or Web"
+    },
+    "last_active": {
+      "type": "string",
+      "title": "Last active",
+      "format": "date-time"
     }
   },
   "required": [
