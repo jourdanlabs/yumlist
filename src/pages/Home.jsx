@@ -45,7 +45,7 @@ export default function Home() {
         <h1 className="font-heading text-3xl font-semibold tracking-tight">
           {user?.family_name ? `${user.family_name}'s Pantry` : "Family Pantry"}
         </h1>
-        <p className="text-muted-foreground mt-1">Track what your family loves — and what they don't.</p>
+        <p className="text-muted-foreground mt-1">Less Guessing. More Yum!</p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
