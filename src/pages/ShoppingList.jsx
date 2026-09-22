@@ -3,7 +3,8 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { ClipboardList, Loader2, Package, Printer, RefreshCw, ShoppingCart, CheckCheck } from "lucide-react";
+import { ClipboardList, Loader2, Package, Printer, RefreshCw, ShoppingCart, CheckCheck, CalendarPlus } from "lucide-react";
+import ScheduleTripDialog from "@/components/ScheduleTripDialog";
 import { useToast } from "@/components/ui/use-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { GROCERY_CATEGORIES, categoryStyle, normalizeCategory } from "@/lib/groceryCategories";
@@ -20,6 +21,7 @@ export default function ShoppingList() {
   const [loading, setLoading] = useState(true);
   const [checked, setChecked] = useState({});
   const [restocking, setRestocking] = useState(false);
+  const [tripOpen, setTripOpen] = useState(false);
 
   const load = async () => {
     if (!familyId) return;
@@ -126,12 +128,19 @@ export default function ShoppingList() {
             </Button>
           )}
           {shopping.length > 0 && (
+            <Button variant="outline" onClick={() => setTripOpen(true)}>
+              <CalendarPlus className="w-4 h-4 mr-2" /> Schedule trip
+            </Button>
+          )}
+          {shopping.length > 0 && (
             <Button variant="outline" onClick={() => window.print()}>
               <Printer className="w-4 h-4 mr-2" /> Print
             </Button>
           )}
         </div>
       </div>
+
+      <ScheduleTripDialog open={tripOpen} onOpenChange={setTripOpen} itemCount={shopping.length} />
 
       <div className="print-only mb-6">
         <h1 className="text-2xl font-bold">Shopping List</h1>
