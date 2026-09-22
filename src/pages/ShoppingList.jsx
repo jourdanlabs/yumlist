@@ -142,37 +142,35 @@ export default function ShoppingList() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="font-heading text-2xl font-semibold flex items-center gap-2">
-            <ShoppingCart className="w-6 h-6" /> Shopping list
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Auto-built from pantry items that are running low or finished.
-          </p>
-        </div>
-        <div className="flex items-center gap-2 no-print">
-          <Button onClick={notifyAtStore} disabled={atStore}>
-            {atStore ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Store className="w-4 h-4 mr-2" />}
-            At the Store
+      <div>
+        <h1 className="font-heading text-2xl font-semibold flex items-center gap-2">
+          <ShoppingCart className="w-6 h-6" /> Shopping list
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Auto-built from pantry items that are running low or finished.
+        </p>
+      </div>
+      <div className="flex flex-wrap items-center gap-2 no-print">
+        <Button onClick={notifyAtStore} disabled={atStore}>
+          {atStore ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Store className="w-4 h-4 mr-2" />}
+          At the Store
+        </Button>
+        {shopping.length > 0 && (
+          <Button onClick={restockSelected} disabled={restocking || checkedIds.length === 0}>
+            {restocking ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-2" />}
+            Restock selected ({checkedIds.length})
           </Button>
-          {shopping.length > 0 && (
-            <Button onClick={restockSelected} disabled={restocking || checkedIds.length === 0}>
-              {restocking ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-2" />}
-              Restock selected ({checkedIds.length})
-            </Button>
-          )}
-          {shopping.length > 0 && (
-            <Button variant="outline" onClick={() => setTripOpen(true)}>
-              <CalendarPlus className="w-4 h-4 mr-2" /> Schedule trip
-            </Button>
-          )}
-          {shopping.length > 0 && (
-            <Button variant="outline" onClick={() => window.print()}>
-              <Printer className="w-4 h-4 mr-2" /> Print
-            </Button>
-          )}
-        </div>
+        )}
+        {shopping.length > 0 && (
+          <Button variant="outline" onClick={() => setTripOpen(true)}>
+            <CalendarPlus className="w-4 h-4 mr-2" /> Schedule trip
+          </Button>
+        )}
+        {shopping.length > 0 && (
+          <Button variant="outline" onClick={() => window.print()}>
+            <Printer className="w-4 h-4 mr-2" /> Print
+          </Button>
+        )}
       </div>
 
       <ScheduleTripDialog open={tripOpen} onOpenChange={setTripOpen} itemCount={shopping.length} />
