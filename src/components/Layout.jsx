@@ -103,7 +103,7 @@ export default function Layout() {
         </div>
       </header>
 
-      <main className="md:pl-64 pb-20 md:pb-0 min-h-screen checkerboard-bg">
+      <main className="md:pl-64 pb-20 md:pb-0 min-h-screen picnic-bg">
         <div className="max-w-5xl mx-auto px-4 md:px-8 py-6 md:py-10">
           <Outlet />
         </div>
