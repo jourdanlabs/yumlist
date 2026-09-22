@@ -1,11 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-
-function base64urlEncode(str) {
-  const bytes = new TextEncoder().encode(str);
-  let bin = '';
-  for (const b of bytes) bin += String.fromCharCode(b);
-  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-}
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.49';
 
 export default async function(req) {
   try {
@@ -29,60 +22,54 @@ export default async function(req) {
       return Response.json({ sent: 0, message: 'No items expiring soon.' });
     }
 
-    const { accessToken } = await base44.asServiceRole.connectors.getConnection('gmail');
-
-    // Find the connected Gmail account's own address to send "me" the alert.
-    const profileRes = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/profile', {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
-    if (!profileRes.ok) {
-      return Response.json({ error: 'Gmail profile fetch failed', status: profileRes.status }, { status: 500 });
-    }
-    const profile = await profileRes.json();
-    const toEmail = profile.emailAddress;
-
-    // Group by family so the digest is readable.
-    const families = {};
+    // Group expiring items by family.
+    const byFamily = {};
     for (const it of expiring) {
       const fid = it.family_id || 'unknown';
-      (families[fid] = families[fid] || []).push(it);
+      (byFamily[fid] = byFamily[fid] || []).push(it);
     }
 
-    const lines = ['The following pantry items are expiring soon:', ''];
-    for (const [fid, list] of Object.entries(families)) {
-      lines.push(`Family ${fid}:`);
+    // Load family members and group by family_id.
+    const users = await base44.asServiceRole.entities.User.list('-created_date', 500);
+    const usersByFamily = {};
+    for (const u of users) {
+      const fid = u.family_id || 'unknown';
+      (usersByFamily[fid] = usersByFamily[fid] || []).push(u);
+    }
+
+    let sent = 0;
+    const failures = [];
+
+    for (const [fid, list] of Object.entries(byFamily)) {
+      const members = usersByFamily[fid] || [];
+      if (members.length === 0) continue;
+
+      const lines = [
+        'These pantry items are expiring soon — use them up or add replacements to your shopping list:',
+        '',
+      ];
       for (const it of list) {
         const d = new Date(it.expiration_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        lines.push(`  • ${it.name}${it.brand ? ` (${it.brand})` : ''} — expires ${d} (qty ${it.quantity ?? 1} ${it.unit || 'units'})`);
+        lines.push(`• ${it.name}${it.brand ? ` (${it.brand})` : ''} — expires ${d} (qty ${it.quantity ?? 1} ${it.unit || 'units'})`);
       }
-      lines.push('');
-    }
-    const text = lines.join('\n');
+      const text = lines.join('\n');
 
-    const rawMessage = [
-      `From: Family Pantry <${toEmail}>`,
-      `To: <${toEmail}>`,
-      `Subject: Pantry items expiring soon`,
-      `MIME-Version: 1.0`,
-      `Content-Type: text/plain; charset=UTF-8`,
-      ``,
-      text,
-    ].join('\r\n');
-
-    const raw = base64urlEncode(rawMessage);
-
-    const sendRes = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ raw }),
-    });
-
-    if (!sendRes.ok) {
-      const errText = await sendRes.text();
-      return Response.json({ error: 'Gmail send failed', details: errText }, { status: 500 });
+      for (const m of members) {
+        if (!m.email) continue;
+        try {
+          await base44.asServiceRole.integrations.Core.SendEmail({
+            to: m.email,
+            subject: 'Pantry items expiring soon',
+            body: text,
+          });
+          sent++;
+        } catch (e) {
+          failures.push({ email: m.email, error: e.message });
+        }
+      }
     }
 
-    return Response.json({ sent: 1, recipient: toEmail, count: expiring.length });
+    return Response.json({ sent, expiringCount: expiring.length, failures });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
