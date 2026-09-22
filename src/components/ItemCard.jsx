@@ -3,6 +3,7 @@ import { Image } from "@/components/ui/image";
 import { Trash2, CalendarClock, Package } from "lucide-react";
 import ReactionBar from "@/components/ReactionBar";
 import { capitalize } from "@/lib/utils";
+import { itemEmoji } from "@/lib/itemEmoji";
 
 function expiryStatus(dateStr) {
   if (!dateStr) return null;
@@ -34,7 +35,7 @@ export default function ItemCard({ item, counts, onReact, onDelete }) {
           {item.image_url ? (
             <Image src={item.image_url} alt={item.name} className="w-full h-full" fittingType="fill" />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-2xl">🥫</div>
+            <div className="w-full h-full flex items-center justify-center text-3xl">{itemEmoji(item)}</div>
           )}
         </div>
         <div className="flex-1 min-w-0">
