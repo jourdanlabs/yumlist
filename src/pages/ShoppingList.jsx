@@ -177,13 +177,13 @@ export default function ShoppingList() {
 
       <ScheduleTripDialog open={tripOpen} onOpenChange={setTripOpen} itemCount={shopping.length} />
 
-      <div className="relative no-print">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+      <div className="relative rounded-lg border border-border bg-white p-2 no-print">
+        <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search items while shopping…"
-          className="pl-9"
+          className="pl-9 bg-white border-0 shadow-none focus-visible:ring-0"
         />
       </div>
 
