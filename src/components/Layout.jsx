@@ -54,9 +54,6 @@ export default function Layout() {
           <div className="font-heading font-semibold leading-tight">Family Pantry</div>
           <div className="text-xs font-bold text-orange-500">{user?.family_name || "No family"}</div>
         </div>
-        <div className="px-6 pb-2 flex justify-end">
-          <NotificationsBell />
-        </div>
         <nav className="flex-1 px-3 space-y-1">
           {navItems.map((item) => {
             const active = location.pathname === item.to;
@@ -96,15 +93,15 @@ export default function Layout() {
             <img src="https://media.base44.com/images/public/6a85c116bb660295b89c8343/25976f754_FPLogo.png" alt="Family Pantry" className="w-8 h-8 rounded-lg object-cover" />
             <span className="font-heading font-semibold">Family Pantry</span>
           </div>
-          <div className="flex items-center gap-2">
-            <NotificationsBell />
-            <span className="text-xs text-muted-foreground">{user?.family_name || ""}</span>
-          </div>
+          <span className="text-xs text-muted-foreground">{user?.family_name || ""}</span>
         </div>
       </header>
 
       <main className="md:pl-64 pb-20 md:pb-0 min-h-screen picnic-bg">
         <div className="max-w-5xl mx-auto px-4 md:px-8 py-6 md:py-10">
+          <div className="flex justify-end mb-2">
+            <NotificationsBell />
+          </div>
           <Outlet />
         </div>
       </main>
