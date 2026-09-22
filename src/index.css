@@ -121,8 +121,5 @@
 }
 
 .picnic-bg {
-  background-color: #d9c4a3;
-  background-image:
-    repeating-conic-gradient(#d9c4a3 0% 25%, #d98a85 0% 50%);
-  background-size: 44px 44px;
+  background-color: #ececec;
 }
