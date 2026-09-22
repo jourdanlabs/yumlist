@@ -126,3 +126,19 @@
     repeating-conic-gradient(#d9c4a3 0% 25%, #d98a85 0% 50%);
   background-size: 44px 44px;
 }
+
+main, main * {
+  color: #ffffff !important;
+  -webkit-text-stroke: 0.5px rgba(0, 0, 0, 0.55) !important;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35) !important;
+}
+
+main input,
+main textarea,
+main select,
+main input::placeholder,
+main textarea::placeholder {
+  color: hsl(var(--foreground)) !important;
+  -webkit-text-stroke: 0 !important;
+  text-shadow: none !important;
+}
