@@ -42,8 +42,8 @@ export default function Home() {
   return (
     <div className="space-y-8">
       <div className="text-center">
-        <h1 className="font-heading text-3xl font-semibold tracking-tight">
-          {user?.family_name ? `${user.family_name}'s Pantry` : "Family Pantry"}
+        <h1 className="font-heading text-3xl font-semibold tracking-tight text-green-600">
+          {user?.family_name ? `${user.family_name} Pantry` : "Family Pantry"}
         </h1>
         <p className="text-muted-foreground mt-1">Less Guessing. More Yum!</p>
       </div>
