@@ -2,12 +2,13 @@ import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, Upload } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useReactions } from "@/hooks/useReactions";
 import ItemCard from "@/components/ItemCard";
 import AddItemDialog from "@/components/AddItemDialog";
+import ImportItemsDialog from "@/components/ImportItemsDialog";
 
 export default function Items() {
   const { user } = useCurrentUser();
@@ -18,6 +19,7 @@ export default function Items() {
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [addOpen, setAddOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
 
   const load = async () => {
     if (!familyId) return;
@@ -57,9 +59,14 @@ export default function Items() {
           <h1 className="font-heading text-2xl font-semibold">Pantry</h1>
           <p className="text-sm text-muted-foreground">Grocery items your family has added.</p>
         </div>
-        <Button onClick={() => setAddOpen(true)} className="flex-shrink-0">
-          <Plus className="w-4 h-4 mr-1" /> Add item
-        </Button>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <Button variant="outline" onClick={() => setImportOpen(true)}>
+            <Upload className="w-4 h-4 mr-1" /> Import
+          </Button>
+          <Button onClick={() => setAddOpen(true)}>
+            <Plus className="w-4 h-4 mr-1" /> Add item
+          </Button>
+        </div>
       </div>
 
       <div className="relative rounded-lg border border-border bg-white p-2">
@@ -94,6 +101,12 @@ export default function Items() {
         onOpenChange={setAddOpen}
         familyId={familyId}
         onAdded={() => { load(); reloadReactions(); }}
+      />
+      <ImportItemsDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        familyId={familyId}
+        onImported={() => { load(); reloadReactions(); }}
       />
     </div>
   );
