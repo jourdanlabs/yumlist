@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { ClipboardList, Loader2, Package, Printer, RefreshCw, ShoppingCart, CheckCheck, CalendarPlus } from "lucide-react";
+import { ClipboardList, Loader2, Package, Printer, RefreshCw, ShoppingCart, CheckCheck, CalendarPlus, Search } from "lucide-react";
 import ScheduleTripDialog from "@/components/ScheduleTripDialog";
 import { useToast } from "@/components/ui/use-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
@@ -22,6 +22,7 @@ export default function ShoppingList() {
   const [checked, setChecked] = useState({});
   const [restocking, setRestocking] = useState(false);
   const [tripOpen, setTripOpen] = useState(false);
+  const [query, setQuery] = useState("");
 
   const load = async () => {
     if (!familyId) return;
@@ -43,10 +44,22 @@ export default function ShoppingList() {
     [items]
   );
 
+  const q = query.trim().toLowerCase();
+  const filteredShopping = useMemo(
+    () => q
+      ? shopping.filter((i) =>
+          (i.name || "").toLowerCase().includes(q) ||
+          (i.brand || "").toLowerCase().includes(q) ||
+          (i.recipe_title || "").toLowerCase().includes(q)
+        )
+      : shopping,
+    [shopping, q]
+  );
+
   const grouped = useMemo(() => {
     const order = GROCERY_CATEGORIES.reduce((acc, c, i) => { acc[c] = i; return acc; }, {});
     const groups = {};
-    shopping.forEach((item) => {
+    filteredShopping.forEach((item) => {
       const cat = normalizeCategory(item.category) || "Other";
       (groups[cat] = groups[cat] || []).push(item);
     });
@@ -56,7 +69,7 @@ export default function ShoppingList() {
   }, [shopping]);
 
   const checkedIds = Object.keys(checked).filter((id) => checked[id]);
-  const allChecked = shopping.length > 0 && checkedIds.length === shopping.length;
+  const allChecked = filteredShopping.length > 0 && checkedIds.length === filteredShopping.length;
 
   const toggle = (id) => setChecked((c) => ({ ...c, [id]: !c[id] }));
   const toggleAll = () => {
@@ -64,7 +77,7 @@ export default function ShoppingList() {
       setChecked({});
     } else {
       const next = {};
-      shopping.forEach((i) => { next[i.id] = true; });
+      filteredShopping.forEach((i) => { next[i.id] = true; });
       setChecked(next);
     }
   };
@@ -142,6 +155,16 @@ export default function ShoppingList() {
 
       <ScheduleTripDialog open={tripOpen} onOpenChange={setTripOpen} itemCount={shopping.length} />
 
+      <div className="relative no-print">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <Input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search items while shopping…"
+          className="pl-9"
+        />
+      </div>
+
       <div className="print-only mb-6">
         <h1 className="text-2xl font-bold">Shopping List</h1>
         <p className="text-sm text-gray-600">
@@ -154,10 +177,12 @@ export default function ShoppingList() {
         <div className="space-y-3">
           {[0, 1, 2].map((i) => <div key={i} className="h-16 rounded-xl bg-muted animate-pulse" />)}
         </div>
-      ) : shopping.length === 0 ? (
+      ) : filteredShopping.length === 0 ? (
         <div className="text-center py-16 border border-dashed border-border rounded-2xl">
           <ClipboardList className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
-          <p className="text-muted-foreground">Everything's well stocked — no items need restocking right now.</p>
+          <p className="text-muted-foreground">
+            {q ? "No items match your search." : "Everything's well stocked — no items need restocking right now."}
+          </p>
         </div>
       ) : (
         <div className="space-y-6">
@@ -184,7 +209,7 @@ export default function ShoppingList() {
               Clear checked ({checkedIds.length})
             </Button>
             <span className="text-sm text-muted-foreground">
-              {checkedIds.length} of {shopping.length} selected
+              {checkedIds.length} of {filteredShopping.length} selected
             </span>
           </div>
         </div>
