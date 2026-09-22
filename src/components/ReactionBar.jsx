@@ -15,7 +15,7 @@ export default function ReactionBar({ likes, dislikes, neutrals, myReaction, onR
             : "bg-card text-muted-foreground border-border hover:text-emerald-600 hover:border-emerald-300"
         )}
       >
-        <ThumbsUp className="w-4 h-4" />
+        <ThumbsUp className="w-3.5 h-3.5" />
         <span>{likes}</span>
       </button>
       <button
@@ -28,7 +28,7 @@ export default function ReactionBar({ likes, dislikes, neutrals, myReaction, onR
             : "bg-card text-muted-foreground border-border hover:text-slate-600 hover:border-slate-300"
         )}
       >
-        <span className="text-base leading-none">🤷</span>
+        <span className="text-sm leading-none">🤷</span>
         <span>{neutrals}</span>
       </button>
       <button
@@ -41,7 +41,7 @@ export default function ReactionBar({ likes, dislikes, neutrals, myReaction, onR
             : "bg-card text-muted-foreground border-border hover:text-rose-600 hover:border-rose-300"
         )}
       >
-        <ThumbsDown className="w-4 h-4" />
+        <ThumbsDown className="w-3.5 h-3.5" />
         <span>{dislikes}</span>
       </button>
     </div>
