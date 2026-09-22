@@ -9,6 +9,7 @@ import { useReactions } from "@/hooks/useReactions";
 import ItemCard from "@/components/ItemCard";
 import AddItemDialog from "@/components/AddItemDialog";
 import ImportItemsDialog from "@/components/ImportItemsDialog";
+import EditItemDialog from "@/components/EditItemDialog";
 
 export default function Items() {
   const { user } = useCurrentUser();
@@ -20,6 +21,7 @@ export default function Items() {
   const [query, setQuery] = useState("");
   const [addOpen, setAddOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [editing, setEditing] = useState(null);
 
   const load = async () => {
     if (!familyId) return;
@@ -107,6 +109,7 @@ export default function Items() {
               onReact={(r) => react(item.id, r)}
               onDelete={() => handleDelete(item)}
               onUpdate={(quantity) => handleUpdateQty(item, quantity)}
+              onEdit={(it) => setEditing(it)}
             />
           ))}
         </div>
@@ -123,6 +126,12 @@ export default function Items() {
         onOpenChange={setImportOpen}
         familyId={familyId}
         onImported={() => { load(); reloadReactions(); }}
+      />
+      <EditItemDialog
+        open={!!editing}
+        onOpenChange={(o) => { if (!o) setEditing(null); }}
+        item={editing}
+        onSaved={() => { load(); reloadReactions(); }}
       />
     </div>
   );

@@ -1,6 +1,6 @@
 import React from "react";
 import { Image } from "@/components/ui/image";
-import { Trash2, CalendarClock, Package, Minus, Plus } from "lucide-react";
+import { Trash2, CalendarClock, Package, Minus, Plus, Pencil } from "lucide-react";
 import ReactionBar from "@/components/ReactionBar";
 import { capitalize } from "@/lib/utils";
 import { itemEmoji } from "@/lib/itemEmoji";
@@ -22,7 +22,7 @@ const toneClasses = {
   ok: "bg-muted text-muted-foreground",
 };
 
-export default function ItemCard({ item, counts, onReact, onDelete, onUpdate }) {
+export default function ItemCard({ item, counts, onReact, onDelete, onUpdate, onEdit }) {
   const qty = item.quantity ?? 1;
   const unit = item.unit || "units";
   const exp = expiryStatus(item.expiration_date);
@@ -79,15 +79,26 @@ export default function ItemCard({ item, counts, onReact, onDelete, onUpdate }) 
                 )}
               </div>
             </div>
-            {onDelete && (
-              <button
-                onClick={() => onDelete(item)}
-                className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition"
-                aria-label="Delete item"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            )}
+            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+              {onEdit && (
+                <button
+                  onClick={() => onEdit(item)}
+                  className="text-muted-foreground hover:text-primary transition"
+                  aria-label="Edit item"
+                >
+                  <Pencil className="w-4 h-4" />
+                </button>
+              )}
+              {onDelete && (
+                <button
+                  onClick={() => onDelete(item)}
+                  className="text-muted-foreground hover:text-destructive transition"
+                  aria-label="Delete item"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              )}
+            </div>
           </div>
           <div className="mt-3">
             <ReactionBar likes={counts.likes} dislikes={counts.dislikes} myReaction={counts.myReaction} onReact={onReact} />
