@@ -40,3 +40,30 @@ export const categoryStyle = (cat) => CATEGORY_STYLES[cat] || CATEGORY_STYLES["O
 
 export const normalizeCategory = (cat) =>
   GROCERY_CATEGORIES.includes(cat) ? cat : (cat ? "Other" : "Other");
+
+// Keyword -> category mapping for auto-detection from item names.
+const CATEGORY_KEYWORDS = [
+  ["Fruits", ["apple", "banana", "orange", "grape", "strawberry", "blueberry", "mango", "pineapple", "lemon", "lime", "peach", "pear", "watermelon", "melon", "cherry", "raspberry", "kiwi", "fruit", "avocado", "coconut"]],
+  ["Vegetables", ["tomato", "carrot", "lettuce", "spinach", "broccoli", "onion", "garlic", "potato", "celery", "cucumber", "pepper", "cabbage", "kale", "zucchini", "mushroom", "corn", "asparagus", "green bean", "salad", "vegetable", "veg"]],
+  ["Canned Goods", ["canned", "can of", "soup can", "beans can", "tuna can", "canned beans", "canned corn", "canned tomato"]],
+  ["Dairy", ["milk", "cheese", "yogurt", "butter", "cream", "kefir", "sour cream", "cottage cheese", "dairy", "eggnog"]],
+  ["Meat", ["chicken", "beef", "pork", "bacon", "sausage", "turkey", "lamb", "ham", "steak", "ground beef", "meat", "ribs", "bratwurst"]],
+  ["Fish & Seafood", ["salmon", "tuna", "shrimp", "cod", "tilapia", "crab", "lobster", "fish", "seafood", "sardine", "anchovy", "scallops", "clam", "oyster"]],
+  ["Deli", ["deli", "sliced turkey", "sliced ham", "salami", "bologna", "prosciutto", "pastrami", "hot dog", "cold cut", "lunch meat"]],
+  ["Condiments & Spices", ["ketchup", "mustard", "mayonnaise", "mayo", "relish", "hot sauce", "soy sauce", "vinegar", "oil", "salt", "pepper", "spice", "seasoning", "syrup", "jam", "jelly", "honey", "salsa", "dressing", "spread", "pesto", "tapenade"]],
+  ["Snacks", ["chips", "crackers", "popcorn", "pretzel", "cookie", "candy", "chocolate", "granola bar", "protein bar", "snack", "nuts", "trail mix", "dried fruit", "jerky"]],
+  ["Bread & Bakery", ["bread", "bagel", "muffin", "croissant", "roll", "bun", "tortilla", "pita", "bakery", "cake", "pastry", "donut", "scone"]],
+  ["Beverages", ["water", "juice", "soda", "coffee", "tea", "beer", "wine", "milkshake", "smoothie", "drink", "lemonade", "energy drink", "kombucha", "sparkling", "seltzer", "cola", "beverage"]],
+  ["Pasta, Rice & Cereal", ["pasta", "spaghetti", "noodle", "rice", "cereal", "oatmeal", "oats", "couscous", "quinoa", "macaroni", "penne", "lasagna", "ramen", "grain", "farro", "barley"]],
+  ["Baking", ["flour", "sugar", "baking", "yeast", "baking soda", "baking powder", "vanilla", "cocoa", "cornstarch", "shortening", "frost", "icing", "mix", "batter"]],
+  ["Frozen Foods", ["frozen", "ice cream", "frozen pizza", "frozen meal", "frozen vegetable", "frozen fruit", "popsicle", "freezer"]],
+];
+
+export const detectCategory = (text) => {
+  if (!text) return "";
+  const lower = text.toLowerCase();
+  for (const [cat, keywords] of CATEGORY_KEYWORDS) {
+    if (keywords.some((kw) => lower.includes(kw))) return cat;
+  }
+  return "";
+};

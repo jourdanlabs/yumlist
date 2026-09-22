@@ -8,7 +8,7 @@ import { ScanLine, Loader2, Upload } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
 import BarcodeScanner from "@/components/BarcodeScanner";
-import { GROCERY_CATEGORIES } from "@/lib/groceryCategories";
+import { GROCERY_CATEGORIES, detectCategory } from "@/lib/groceryCategories";
 
 export default function AddItemDialog({ open, onOpenChange, familyId, onAdded }) {
   const { toast } = useToast();
@@ -30,7 +30,7 @@ export default function AddItemDialog({ open, onOpenChange, familyId, onAdded })
           name: data.name || "",
           brand: data.brand || "",
           barcode: data.barcode,
-          category: data.category || "",
+          category: data.category || detectCategory(data.name) || "",
           image_url: data.image_url || "",
           quantity: 1,
           unit: "units",
@@ -126,7 +126,15 @@ function FormFields({ form, setForm, onImage, looking }) {
       )}
       <div className="space-y-2">
         <Label htmlFor="i-name">Name *</Label>
-        <Input id="i-name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Whole milk" />
+        <Input
+          id="i-name"
+          value={form.name}
+          onChange={(e) => {
+            const name = e.target.value;
+            setForm((f) => ({ ...f, name, category: f.category || detectCategory(name) }));
+          }}
+          placeholder="e.g. Whole milk"
+        />
       </div>
       <div className="space-y-2">
         <Label htmlFor="i-brand">Brand</Label>
