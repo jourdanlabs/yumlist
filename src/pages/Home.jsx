@@ -45,7 +45,7 @@ export default function Home() {
         <h1 className="font-heading text-3xl font-semibold tracking-tight text-green-600">
           Our Pantry
         </h1>
-        <p className="text-muted-foreground mt-1">Less Guessing. More Yum!</p>
+        <p className="text-orange-500 mt-1">Less Guessing. More Yum!</p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
