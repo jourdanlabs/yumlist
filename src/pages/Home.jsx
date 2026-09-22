@@ -20,9 +20,9 @@ export default function Home() {
     if (!user?.family_id) return;
     let active = true;
     Promise.all([
-      base44.entities.GroceryItem.filter({ family_id: user.family_id }, "-created_date", 5),
-      base44.entities.Recipe.filter({ family_id: user.family_id }, "-created_date", 5),
-      base44.entities.GroceryItem.filter({ family_id: user.family_id }, "expiration_date", 50),
+      base44.entities.GroceryItem.filter({ family_id: user.family_id }, "-created_date", 100),
+      base44.entities.Recipe.filter({ family_id: user.family_id }, "-created_date", 100),
+      base44.entities.GroceryItem.filter({ family_id: user.family_id }, "expiration_date", 100),
     ]).then(([i, r, all]) => {
       if (!active) return;
       setItems(i); setRecipes(r);
@@ -49,8 +49,8 @@ export default function Home() {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        <StatCard icon={Carrot} label="Grocery items" value={loading ? "—" : items.length === 5 ? "5+" : items.length} to="/items" />
-        <StatCard icon={ChefHat} label="Recipes" value={loading ? "—" : recipes.length === 5 ? "5+" : recipes.length} to="/recipes" />
+        <StatCard icon={Carrot} label="Grocery items" value={loading ? "—" : items.length} to="/items" />
+        <StatCard icon={ChefHat} label="Recipes" value={loading ? "—" : recipes.length} to="/recipes" />
         <StatCard icon={ThumbsUp} label="Share your likes" value="" to="/share" wide />
       </div>
 
@@ -91,7 +91,7 @@ export default function Home() {
             ) : items.length === 0 ? (
               <Empty text="No items yet. Add your first grocery item." />
             ) : (
-              items.map((it) => (
+              items.slice(0, 5).map((it) => (
                 <Card key={it.id}><CardContent className="py-3 px-4 flex items-center justify-between">
                   <span className="font-medium truncate">{capitalize(it.name)}</span>
                   <span className="text-xs text-muted-foreground truncate ml-2">{it.brand}</span>
@@ -114,7 +114,7 @@ export default function Home() {
             ) : recipes.length === 0 ? (
               <Empty text="No recipes yet. Add your first recipe." />
             ) : (
-              recipes.map((r) => (
+              recipes.slice(0, 5).map((r) => (
                 <Card key={r.id}><CardContent className="py-3 px-4">
                   <span className="font-medium truncate block">{r.title}</span>
                   <span className="text-xs text-muted-foreground">{(r.ingredients || []).length} ingredients</span>
