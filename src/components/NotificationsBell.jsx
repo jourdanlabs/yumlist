@@ -39,12 +39,13 @@ export default function NotificationsBell({ className }) {
     setLoading(true);
     (async () => {
       try {
-        const [members, reactions, requestedItems, recipes, items] = await Promise.all([
+        const [members, reactions, requestedItems, recipes, items, storeNotices] = await Promise.all([
           base44.entities.User.filter({ family_id: familyId }),
           base44.entities.Reaction.filter({ family_id: familyId }, "-created_date", 30),
           base44.entities.GroceryItem.filter({ family_id: familyId }, "-created_date", 50),
           base44.entities.Recipe.filter({ family_id: familyId }),
           base44.entities.GroceryItem.filter({ family_id: familyId }),
+          base44.entities.StoreNotice.filter({ family_id: familyId }, "-created_date", 20),
         ]);
 
         const memberName = (id) => {
@@ -79,7 +80,19 @@ export default function NotificationsBell({ className }) {
             date: i.created_date,
           }));
 
-        const all = [...reactionNotifs, ...requestNotifs]
+        const storeNotifs = storeNotices
+          .filter((s) => s.created_by_id !== user?.id)
+          .map((s) => ({
+            id: `store-${s.id}`,
+            type: "store",
+            who: memberName(s.created_by_id),
+            verb: "is at the store",
+            target: s.note || "shopping now",
+            targetLabel: "shopping",
+            date: s.created_date,
+          }));
+
+        const all = [...reactionNotifs, ...requestNotifs, ...storeNotifs]
           .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
           .slice(0, 20);
         if (active) setNotifications(all);

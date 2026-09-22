@@ -1,0 +1,17 @@
+{
+  "name": "StoreNotice",
+  "type": "object",
+  "properties": {
+    "family_id": {
+      "type": "string",
+      "title": "Family ID"
+    },
+    "note": {
+      "type": "string",
+      "title": "Note"
+    }
+  },
+  "required": [
+    "family_id"
+  ]
+}

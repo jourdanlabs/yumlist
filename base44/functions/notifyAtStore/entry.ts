@@ -20,6 +20,16 @@ export default async function(req) {
     let text = `${shopper} is at the store shopping right now — reply with anything you need added to the cart.`;
     if (note) text += `\n\nNote from ${shopper}: ${note}`;
 
+    // Persist an in-app notice so it surfaces in the notifications bell.
+    try {
+      await base44.asServiceRole.entities.StoreNotice.create({
+        family_id: user.family_id,
+        note,
+      });
+    } catch (e) {
+      // non-critical; email still goes out
+    }
+
     let sent = 0;
     const failures = [];
     for (const m of members) {
