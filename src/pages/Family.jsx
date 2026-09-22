@@ -93,7 +93,7 @@ export default function Family() {
             <Users className="w-7 h-7" />
           </div>
           <h1 className="font-heading text-2xl font-semibold text-orange-500">{user.family_name}</h1>
-          <p className="text-muted-foreground text-sm">Your family pantry is set up.</p>
+          <p className="text-green-600 text-sm">Your family pantry is set up.</p>
         </div>
         <Card>
           <CardHeader>
