@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, ListChecks, X, ShoppingCart } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useReactions } from "@/hooks/useReactions";
@@ -25,6 +25,9 @@ export default function Recipes() {
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [items, setItems] = useState([]);
   const [itemLikes, setItemLikes] = useState([]);
+  const [planMode, setPlanMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [planning, setPlanning] = useState(false);
 
   useEffect(() => {
     if (!familyId) return;
@@ -105,6 +108,55 @@ export default function Recipes() {
     }
   };
 
+  const toggleSelect = (id) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const exitPlanMode = () => {
+    setPlanMode(false);
+    setSelectedIds(new Set());
+  };
+
+  const planWeek = async () => {
+    const selected = recipes.filter((r) => selectedIds.has(r.id));
+    if (selected.length === 0) return;
+    // Merge ingredients across selected recipes, deduping by normalized name.
+    const merged = {};
+    selected.forEach((recipe) => {
+      (recipe.ingredients || []).forEach((ing) => {
+        const trimmed = (ing || "").trim();
+        if (!trimmed) return;
+        const key = trimmed.toLowerCase();
+        if (!merged[key]) merged[key] = { name: trimmed, recipes: new Set() };
+        merged[key].recipes.add(recipe.title);
+      });
+    });
+    const records = Object.values(merged).map((m) => ({
+      name: m.name,
+      family_id: familyId,
+      quantity: 0,
+      unit: "units",
+      category: "Other",
+      recipe_title: [...m.recipes].join(", "),
+      requested_by_name: user?.full_name || user?.email || "",
+    }));
+    setPlanning(true);
+    try {
+      await base44.entities.GroceryItem.bulkCreate(records);
+      toast({ title: `Added ${records.length} ingredient${records.length > 1 ? "s" : ""} from ${selected.length} recipe${selected.length > 1 ? "s" : ""} to your shopping list` });
+      exitPlanMode();
+    } catch (e) {
+      toast({ title: "Could not add ingredients", variant: "destructive" });
+    } finally {
+      setPlanning(false);
+    }
+  };
+
   const handleDelete = async (recipe) => {
     try {
       await base44.entities.Recipe.delete(recipe.id);
@@ -171,9 +223,17 @@ export default function Recipes() {
           <h1 className="font-heading text-2xl font-semibold">Recipes</h1>
           <p className="text-sm text-muted-foreground">Recipes your family has collected.</p>
         </div>
-        <Button onClick={() => setAddOpen(true)} className="flex-shrink-0">
-          <Plus className="w-4 h-4 mr-1" /> Add recipe
-        </Button>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <Button
+            variant={planMode ? "default" : "outline"}
+            onClick={() => planMode ? exitPlanMode() : setPlanMode(true)}
+          >
+            <ListChecks className="w-4 h-4 mr-1" /> {planMode ? "Done" : "Plan week"}
+          </Button>
+          <Button onClick={() => setAddOpen(true)}>
+            <Plus className="w-4 h-4 mr-1" /> Add recipe
+          </Button>
+        </div>
       </div>
 
       <div className="relative">
@@ -232,8 +292,30 @@ export default function Recipes() {
                   onReact={(r) => react(recipe.id, r)}
                   onDelete={() => handleDelete(recipe)}
                   onRequest={() => handleRequest(recipe)}
+                  selectable={planMode}
+                  selected={selectedIds.has(recipe.id)}
+                  onToggleSelect={toggleSelect}
                 />
               ))}
+            </div>
+          )}
+
+          {planMode && selectedIds.size > 0 && (
+            <div className="sticky bottom-4 z-20 flex items-center justify-between gap-3 rounded-2xl border border-border bg-card shadow-lg px-4 py-3">
+              <div className="text-sm">
+                <span className="font-medium">{selectedIds.size} recipe{selectedIds.size > 1 ? "s" : ""} selected</span>
+                <span className="text-muted-foreground ml-2">
+                  · {recipes.filter((r) => selectedIds.has(r.id)).reduce((n, r) => n + (r.ingredients || []).filter((i) => i && i.trim()).length, 0)} ingredients (merged)
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="sm" onClick={() => setSelectedIds(new Set())}>
+                  <X className="w-4 h-4 mr-1" /> Clear
+                </Button>
+                <Button size="sm" onClick={planWeek} disabled={planning}>
+                  <ShoppingCart className="w-4 h-4 mr-1" /> Add to shopping list
+                </Button>
+              </div>
             </div>
           )}
         </div>

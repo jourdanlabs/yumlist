@@ -1,20 +1,35 @@
 import React, { useState } from "react";
 import { Image } from "@/components/ui/image";
-import { Trash2, ChevronDown, ShoppingCart } from "lucide-react";
+import { Trash2, ChevronDown, ShoppingCart, Check } from "lucide-react";
 import ReactionBar from "@/components/ReactionBar";
 import { cn } from "@/lib/utils";
 
-export default function RecipeCard({ recipe, counts, onReact, onDelete, onRequest }) {
+export default function RecipeCard({ recipe, counts, onReact, onDelete, onRequest, selectable, selected, onToggleSelect }) {
   const [open, setOpen] = useState(false);
   const [requested, setRequested] = useState(false);
   return (
-    <div className="group rounded-2xl border border-border bg-card overflow-hidden transition-shadow hover:shadow-md">
+    <div className={cn(
+      "group rounded-2xl border bg-card overflow-hidden transition-shadow hover:shadow-md",
+      selected ? "border-primary ring-1 ring-primary" : "border-border"
+    )}>
       <div className="flex gap-4 p-4">
-        <div className="w-20 h-20 rounded-xl overflow-hidden bg-muted flex-shrink-0">
+        <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-muted flex-shrink-0">
           {recipe.image_url ? (
             <Image src={recipe.image_url} alt={recipe.title} className="w-full h-full" fittingType="fill" />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-2xl">🍽️</div>
+          )}
+          {selectable && (
+            <button
+              onClick={() => onToggleSelect(recipe.id)}
+              className={cn(
+                "absolute top-1 left-1 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors",
+                selected ? "bg-primary border-primary text-primary-foreground" : "bg-white/80 border-border"
+              )}
+              aria-label={selected ? "Deselect recipe" : "Select recipe"}
+            >
+              {selected && <Check className="w-3.5 h-3.5" />}
+            </button>
           )}
         </div>
         <div className="flex-1 min-w-0">
@@ -24,7 +39,7 @@ export default function RecipeCard({ recipe, counts, onReact, onDelete, onReques
               {recipe.source && <p className="text-sm text-muted-foreground truncate">From {recipe.source}</p>}
               <p className="text-xs text-muted-foreground mt-0.5">{(recipe.ingredients || []).length} ingredients</p>
             </div>
-            {onDelete && (
+            {onDelete && !selectable && (
               <button
                 onClick={() => onDelete(recipe)}
                 className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition"
@@ -44,7 +59,7 @@ export default function RecipeCard({ recipe, counts, onReact, onDelete, onReques
               <ChevronDown className={cn("w-4 h-4 transition-transform", open && "rotate-180")} />
             </button>
           </div>
-          {onRequest && (
+          {onRequest && !selectable && (
             <button
               onClick={() => { setRequested(true); onRequest(); }}
               disabled={requested}
