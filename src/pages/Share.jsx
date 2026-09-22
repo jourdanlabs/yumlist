@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Share2, Mail, MessageSquare, Copy, Check, ThumbsUp } from "lucide-react";
+import { Share2, Mail, MessageSquare, Copy, Check, ThumbsUp, ThumbsDown } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 
@@ -32,22 +32,25 @@ export default function Share() {
     return () => { active = false; };
   }, [user?.family_id]);
 
-  const myLikes = useMemo(() => {
-    const likedItemIds = new Set(
-      reactions.filter((r) => r.reaction === "like" && r.created_by_id === user?.id && r.target_type === "item").map((r) => r.target_id)
+  const collectReactions = (type) => {
+    const itemIds = new Set(
+      reactions.filter((r) => r.reaction === type && r.created_by_id === user?.id && r.target_type === "item").map((r) => r.target_id)
     );
-    const likedRecipeIds = new Set(
-      reactions.filter((r) => r.reaction === "like" && r.created_by_id === user?.id && r.target_type === "recipe").map((r) => r.target_id)
+    const recipeIds = new Set(
+      reactions.filter((r) => r.reaction === type && r.created_by_id === user?.id && r.target_type === "recipe").map((r) => r.target_id)
     );
     return {
-      items: items.filter((i) => likedItemIds.has(i.id)),
-      recipes: recipes.filter((r) => likedRecipeIds.has(r.id)),
+      items: items.filter((i) => itemIds.has(i.id)),
+      recipes: recipes.filter((r) => recipeIds.has(r.id)),
     };
-  }, [items, recipes, reactions, user?.id]);
+  };
+
+  const myLikes = useMemo(() => collectReactions("like"), [items, recipes, reactions, user?.id]);
+  const myDislikes = useMemo(() => collectReactions("dislike"), [items, recipes, reactions, user?.id]);
 
   const summary = useMemo(() => {
     const name = user?.full_name || user?.email || "A family member";
-    const lines = [`${name}'s likes from ${user?.family_name || "Family Pantry"}`, ""];
+    const lines = [`${name}'s tastes from ${user?.family_name || "Family Pantry"}`, ""];
     if (myLikes.items.length) {
       lines.push("Grocery items I love:");
       myLikes.items.forEach((i) => lines.push(`  • ${i.name}${i.brand ? ` (${i.brand})` : ""}`));
@@ -56,12 +59,22 @@ export default function Share() {
     if (myLikes.recipes.length) {
       lines.push("Recipes I love:");
       myLikes.recipes.forEach((r) => lines.push(`  • ${r.title}`));
+      lines.push("");
     }
-    if (!myLikes.items.length && !myLikes.recipes.length) {
-      lines.push("No likes yet — start tapping the thumbs-up on items and recipes!");
+    if (myDislikes.items.length) {
+      lines.push("Grocery items I don't like:");
+      myDislikes.items.forEach((i) => lines.push(`  • ${i.name}${i.brand ? ` (${i.brand})` : ""}`));
+      lines.push("");
+    }
+    if (myDislikes.recipes.length) {
+      lines.push("Recipes I don't like:");
+      myDislikes.recipes.forEach((r) => lines.push(`  • ${r.title}`));
+    }
+    if (!myLikes.items.length && !myLikes.recipes.length && !myDislikes.items.length && !myDislikes.recipes.length) {
+      lines.push("No reactions yet — start tapping the thumbs-up or thumbs-down on items and recipes!");
     }
     return lines.join("\n");
-  }, [myLikes, user]);
+  }, [myLikes, myDislikes, user]);
 
   const copy = () => {
     navigator.clipboard.writeText(summary);
@@ -72,7 +85,7 @@ export default function Share() {
 
   const sendEmail = () => {
     if (!recipient.trim()) { toast({ title: "Enter an email address", variant: "destructive" }); return; }
-    const subject = `${user?.full_name || user?.email || "Family member"}'s likes`;
+    const subject = `${user?.full_name || user?.email || "Family member"}'s likes & dislikes`;
     window.location.href = `mailto:${encodeURIComponent(recipient)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(summary)}`;
     toast({ title: "Opened in your email app" });
   };
@@ -86,8 +99,8 @@ export default function Share() {
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
       <div>
-        <h1 className="font-heading text-2xl font-semibold">Share your likes</h1>
-        <p className="text-sm text-muted-foreground">Send what you love to anyone — on the app, by email, or by text.</p>
+        <h1 className="font-heading text-2xl font-semibold">Share your likes & dislikes</h1>
+        <p className="text-sm text-muted-foreground">Send what you love (and don't) to anyone — on the app, by email, or by text.</p>
       </div>
 
       <Card>
@@ -111,6 +124,34 @@ export default function Share() {
                 <div className="font-medium mb-1">Recipes ({myLikes.recipes.length})</div>
                 <ul className="text-muted-foreground space-y-0.5">
                   {myLikes.recipes.map((r) => <li key={r.id}>• {r.title}</li>)}
+                </ul>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2"><ThumbsDown className="w-4 h-4" /> Your dislikes</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {loading ? (
+            <div className="h-24 rounded-xl bg-muted animate-pulse" />
+          ) : myDislikes.items.length === 0 && myDislikes.recipes.length === 0 ? (
+            <p className="text-sm text-muted-foreground">You haven't disliked anything yet. Tap the thumbs-down on items and recipes to build your shareable list.</p>
+          ) : (
+            <div className="grid sm:grid-cols-2 gap-3 text-sm">
+              <div>
+                <div className="font-medium mb-1">Items ({myDislikes.items.length})</div>
+                <ul className="text-muted-foreground space-y-0.5">
+                  {myDislikes.items.map((i) => <li key={i.id}>• {i.name}</li>)}
+                </ul>
+              </div>
+              <div>
+                <div className="font-medium mb-1">Recipes ({myDislikes.recipes.length})</div>
+                <ul className="text-muted-foreground space-y-0.5">
+                  {myDislikes.recipes.map((r) => <li key={r.id}>• {r.title}</li>)}
                 </ul>
               </div>
             </div>
