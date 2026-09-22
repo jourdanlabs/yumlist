@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { ClipboardList, Loader2, Package, Printer, RefreshCw, ShoppingCart, CheckCheck, CalendarPlus, Search } from "lucide-react";
+import { ClipboardList, Loader2, Package, Printer, RefreshCw, ShoppingCart, CheckCheck, CalendarPlus, Search, Store } from "lucide-react";
 import ScheduleTripDialog from "@/components/ScheduleTripDialog";
 import { useToast } from "@/components/ui/use-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
@@ -23,6 +23,7 @@ export default function ShoppingList() {
   const [restocking, setRestocking] = useState(false);
   const [tripOpen, setTripOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [atStore, setAtStore] = useState(false);
 
   const load = async () => {
     if (!familyId) return;
@@ -102,6 +103,23 @@ export default function ShoppingList() {
     }
   };
 
+  const notifyAtStore = async () => {
+    setAtStore(true);
+    try {
+      const res = await base44.functions.invoke("notifyAtStore", {});
+      const sent = res?.data?.sent ?? 0;
+      if (sent > 0) {
+        toast({ title: `Notified ${sent} family member${sent > 1 ? "s" : ""} you're at the store` });
+      } else {
+        toast({ title: "No other family members to notify", variant: "destructive" });
+      }
+    } catch (e) {
+      toast({ title: "Could not notify family", variant: "destructive" });
+    } finally {
+      setAtStore(false);
+    }
+  };
+
   const clearChecked = async () => {
     if (checkedIds.length === 0) {
       toast({ title: "Check off items first to clear them", variant: "destructive" });
@@ -134,6 +152,10 @@ export default function ShoppingList() {
           </p>
         </div>
         <div className="flex items-center gap-2 no-print">
+          <Button onClick={notifyAtStore} disabled={atStore}>
+            {atStore ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Store className="w-4 h-4 mr-2" />}
+            At the Store
+          </Button>
           {shopping.length > 0 && (
             <Button onClick={restockSelected} disabled={restocking || checkedIds.length === 0}>
               {restocking ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-2" />}
