@@ -19,6 +19,7 @@ import Recipes from '@/pages/Recipes';
 import Share from '@/pages/Share';
 import Family from '@/pages/Family';
 import Admin from '@/pages/Admin';
+import SharedFamily from '@/pages/SharedFamily';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -60,6 +61,7 @@ const AuthenticatedApp = () => {
           <Route path="/share" element={<Share />} />
           <Route path="/family" element={<Family />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/shared/:familyId" element={<SharedFamily />} />
         </Route>
       </Route>
       <Route path="*" element={<PageNotFound />} />

@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Plus, LogIn, Copy, Check } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import FamilySharing from "@/components/FamilySharing";
 
 function makeCode() {
   return Math.random().toString(36).slice(2, 8).toUpperCase();
@@ -131,6 +132,7 @@ export default function Family() {
             ))}
           </CardContent>
         </Card>
+        <FamilySharing />
         <Button variant="outline" className="w-full text-destructive" onClick={leave} disabled={busy}>
           Leave family
         </Button>

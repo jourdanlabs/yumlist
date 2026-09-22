@@ -1,0 +1,33 @@
+{
+  "name": "FamilyShare",
+  "type": "object",
+  "properties": {
+    "requester_family_id": {
+      "type": "string",
+      "title": "Requester family ID"
+    },
+    "target_family_id": {
+      "type": "string",
+      "title": "Target family ID"
+    },
+    "status": {
+      "type": "string",
+      "title": "Status",
+      "enum": [
+        "pending",
+        "accepted",
+        "disconnected"
+      ],
+      "default": "pending"
+    },
+    "requested_by_name": {
+      "type": "string",
+      "title": "Requested by"
+    }
+  },
+  "required": [
+    "requester_family_id",
+    "target_family_id",
+    "status"
+  ]
+}
