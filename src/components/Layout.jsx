@@ -49,7 +49,7 @@ export default function Layout() {
     <div className="min-h-screen bg-muted/30">
       {/* Desktop sidebar */}
       <aside className="hidden md:flex fixed inset-y-0 left-0 w-64 flex-col border-r border-border bg-card">
-        <div className="px-6 py-7 flex flex-col items-center text-center bg-muted/50">
+        <div className="px-6 py-7 flex flex-col items-center text-center bg-muted/50 border-2 border-black rounded-lg">
           <img src="https://media.base44.com/images/public/6a85c116bb660295b89c8343/25976f754_FPLogo.png" alt="Family Pantry" className="w-24 h-24 rounded-xl object-cover mb-2" />
           <div className="font-heading font-semibold leading-tight">Family Pantry</div>
           <div className="text-xs font-bold text-orange-500">{user?.family_name || "No family"}</div>
