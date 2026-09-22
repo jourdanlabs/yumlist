@@ -36,6 +36,15 @@ export default function Items() {
 
   useEffect(() => { load(); }, [familyId]);
 
+  const handleUpdateQty = async (item, quantity) => {
+    try {
+      await base44.entities.GroceryItem.update(item.id, { quantity });
+      setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, quantity } : i));
+    } catch (e) {
+      toast({ title: "Could not update count", variant: "destructive" });
+    }
+  };
+
   const handleDelete = async (item) => {
     try {
       await base44.entities.ConsumptionLog.create({
@@ -97,6 +106,7 @@ export default function Items() {
               counts={countsFor(item.id)}
               onReact={(r) => react(item.id, r)}
               onDelete={() => handleDelete(item)}
+              onUpdate={(quantity) => handleUpdateQty(item, quantity)}
             />
           ))}
         </div>

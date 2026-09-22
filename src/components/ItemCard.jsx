@@ -1,6 +1,6 @@
 import React from "react";
 import { Image } from "@/components/ui/image";
-import { Trash2, CalendarClock, Package } from "lucide-react";
+import { Trash2, CalendarClock, Package, Minus, Plus } from "lucide-react";
 import ReactionBar from "@/components/ReactionBar";
 import { capitalize } from "@/lib/utils";
 import { itemEmoji } from "@/lib/itemEmoji";
@@ -22,7 +22,7 @@ const toneClasses = {
   ok: "bg-muted text-muted-foreground",
 };
 
-export default function ItemCard({ item, counts, onReact, onDelete }) {
+export default function ItemCard({ item, counts, onReact, onDelete, onUpdate }) {
   const qty = item.quantity ?? 1;
   const unit = item.unit || "units";
   const exp = expiryStatus(item.expiration_date);
@@ -53,6 +53,24 @@ export default function ItemCard({ item, counts, onReact, onDelete }) {
                   <Package className="w-3 h-3" />
                   {outOfStock ? "Out of stock" : `${qty} ${unit}`}
                 </span>
+                {onUpdate && (
+                  <span className="inline-flex items-center gap-0.5 ml-0.5">
+                    <button
+                      onClick={() => onUpdate(Math.max(0, qty - 1))}
+                      className="w-5 h-5 rounded-full border border-border bg-card flex items-center justify-center hover:bg-accent text-muted-foreground hover:text-foreground transition"
+                      aria-label="Decrease quantity"
+                    >
+                      <Minus className="w-3 h-3" />
+                    </button>
+                    <button
+                      onClick={() => onUpdate(qty + 1)}
+                      className="w-5 h-5 rounded-full border border-border bg-card flex items-center justify-center hover:bg-accent text-muted-foreground hover:text-foreground transition"
+                      aria-label="Increase quantity"
+                    >
+                      <Plus className="w-3 h-3" />
+                    </button>
+                  </span>
+                )}
                 {exp && (
                   <span className={`inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full ${toneClasses[exp.tone]}`}>
                     <CalendarClock className="w-3 h-3" />
