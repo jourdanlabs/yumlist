@@ -42,21 +42,8 @@ export default function AddRecipeDialog({ open, onOpenChange, familyId, onAdded 
     }
     setExtracting(true);
     try {
-      const res = await base44.integrations.Core.InvokeLLM({
-        prompt:
-          "Extract the recipe from this image. Return the recipe title, a list of ingredients (each as a short string with quantity), and the step-by-step instructions as plain text. If the source (book, website, author) is visible, include it.",
-        file_urls: [scanImage],
-        response_json_schema: {
-          type: "object",
-          properties: {
-            title: { type: "string" },
-            ingredients: { type: "array", items: { type: "string" } },
-            instructions: { type: "string" },
-            source: { type: "string" },
-          },
-        },
-      });
-      const data = res.data || res;
+      const res = await base44.functions.invoke('extractRecipeFromImage', { image_url: scanImage });
+      const data = res.data;
       setForm((f) => ({
         ...f,
         title: data.title || f.title,

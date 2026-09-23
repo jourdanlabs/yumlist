@@ -26,26 +26,8 @@ export default function RecipeSuggestions({ likedNames, matchMode, familyId, onS
           ? "Each recipe MUST use ALL of these liked ingredients"
           : "Each recipe should use AT LEAST ONE of these liked ingredients";
       const prompt = `${modeText}: ${names.join(", ")}. Suggest 6 practical, family-friendly recipes. For each, return a title, a list of ingredients (with quantities), and brief step-by-step instructions. Keep instructions concise.`;
-      const res = await base44.integrations.Core.InvokeLLM({
-        prompt,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            recipes: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  title: { type: "string" },
-                  ingredients: { type: "array", items: { type: "string" } },
-                  instructions: { type: "string" },
-                },
-              },
-            },
-          },
-        },
-      });
-      setResults(res.recipes || []);
+      const res = await base44.functions.invoke('suggestRecipes', { liked_names: names, match_mode: matchMode });
+      setResults(res.data.recipes || []);
     } catch (e) {
       toast({ title: "Could not fetch suggestions", variant: "destructive" });
     } finally {

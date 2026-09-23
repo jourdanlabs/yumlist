@@ -40,32 +40,9 @@ export default function ImportItemsDialog({ open, onOpenChange, familyId, onImpo
     try {
       const { file_url } = await base44.integrations.Core.UploadPublicFile({ file });
       setStage("extracting");
-      const res = await base44.integrations.Core.ExtractDataFromUploadedFile({
-        file_url,
-        json_schema: {
-          type: "object",
-          properties: {
-            items: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  name: { type: "string" },
-                  brand: { type: "string" },
-                  barcode: { type: "string" },
-                  category: { type: "string" },
-                  quantity: { type: "number" },
-                  unit: { type: "string" },
-                  expiration_date: { type: "string" },
-                },
-                required: ["name"],
-              },
-            },
-          },
-          required: ["items"],
-        },
-      });
-      const rows = Array.isArray(res.output?.items) ? res.output.items : (Array.isArray(res.output) ? res.output : []);
+      const res = await base44.functions.invoke('extractPantryFile', { file_url });
+      const data = res.data;
+      const rows = Array.isArray(data.output?.items) ? data.output.items : (Array.isArray(data.output) ? data.output : []);
       const valid = [];
       const invalid = [];
       rows.forEach((r, idx) => {
