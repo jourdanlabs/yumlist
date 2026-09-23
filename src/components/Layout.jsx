@@ -99,8 +99,14 @@ export default function Layout() {
 
       <main className="md:pl-64 pb-20 md:pb-0 min-h-screen picnic-bg">
         <div className="max-w-5xl mx-auto px-4 md:px-8 py-6 md:py-10">
-          <div className="flex justify-end mb-2">
+          <div className="flex justify-end mb-2 gap-2">
             <NotificationsBell />
+            <button
+              onClick={() => base44.auth.logout()}
+              className="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium hover:bg-accent transition-colors"
+            >
+              <LogOut className="w-4 h-4" /> Sign out
+            </button>
           </div>
           <Outlet />
         </div>
