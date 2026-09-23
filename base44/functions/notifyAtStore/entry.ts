@@ -10,8 +10,8 @@ export default async function(req) {
     const body = await req.json().catch(() => ({}));
     const note = (body.note || '').toString().slice(0, 280);
 
-    const users = await base44.asServiceRole.entities.User.list('-created_date', 500);
-    const members = users.filter((u) => u.family_id === user.family_id && u.id !== user.id && u.email);
+    const users = await base44.asServiceRole.entities.User.filter({ family_id: user.family_id });
+    const members = users.filter((u) => u.id !== user.id && u.email);
     if (members.length === 0) {
       return Response.json({ sent: 0, message: 'No other family members to notify.' });
     }
@@ -31,7 +31,7 @@ export default async function(req) {
     }
 
     let sent = 0;
-    const failures = [];
+    let failureCount = 0;
     for (const m of members) {
       try {
         await base44.asServiceRole.integrations.Core.SendEmail({
@@ -41,11 +41,12 @@ export default async function(req) {
         });
         sent++;
       } catch (e) {
-        failures.push({ email: m.email, error: e.message });
+        // Do not return email addresses — only count failures.
+        failureCount++;
       }
     }
 
-    return Response.json({ sent, failures });
+    return Response.json({ sent, failureCount });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
