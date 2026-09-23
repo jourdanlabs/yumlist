@@ -39,7 +39,7 @@ export default function Login() {
   return (
     <AuthLayout
       icon={LogIn}
-      title="Welcome back"
+      title="Welcome to Family Pantry"
       subtitle="Log in to your account"
       footer={
         <>
