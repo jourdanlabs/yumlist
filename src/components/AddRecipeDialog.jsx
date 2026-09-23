@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScanLine, Loader2, Upload } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
+import VoiceButton from "@/components/VoiceButton";
 
 export default function AddRecipeDialog({ open, onOpenChange, familyId, onAdded }) {
   const { toast } = useToast();
@@ -159,19 +160,31 @@ function RecipeForm({ form, setForm, onImage }) {
     <>
       <div className="space-y-2">
         <Label htmlFor="r-title">Title *</Label>
-        <Input id="r-title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="e.g. Grandma's lasagna" />
+        <div className="flex items-center gap-2">
+          <Input id="r-title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="e.g. Grandma's lasagna" className="flex-1" />
+          <VoiceButton onTranscript={(text) => setForm({ ...form, title: (form.title ? form.title + " " : "") + text })} />
+        </div>
       </div>
       <div className="space-y-2">
         <Label htmlFor="r-ing">Ingredients (one per line)</Label>
-        <Textarea id="r-ing" rows={5} value={form.ingredients} onChange={(e) => setForm({ ...form, ingredients: e.target.value })} placeholder={"1 cup flour\n2 eggs\nPinch of salt"} />
+        <div className="flex items-start gap-2">
+          <Textarea id="r-ing" rows={5} value={form.ingredients} onChange={(e) => setForm({ ...form, ingredients: e.target.value })} placeholder={"1 cup flour\n2 eggs\nPinch of salt"} className="flex-1" />
+          <VoiceButton className="mt-1" onTranscript={(text) => setForm({ ...form, ingredients: (form.ingredients ? form.ingredients + "\n" : "") + text })} />
+        </div>
       </div>
       <div className="space-y-2">
         <Label htmlFor="r-inst">Instructions</Label>
-        <Textarea id="r-inst" rows={4} value={form.instructions} onChange={(e) => setForm({ ...form, instructions: e.target.value })} placeholder="Mix and bake…" />
+        <div className="flex items-start gap-2">
+          <Textarea id="r-inst" rows={4} value={form.instructions} onChange={(e) => setForm({ ...form, instructions: e.target.value })} placeholder="Mix and bake…" className="flex-1" />
+          <VoiceButton className="mt-1" onTranscript={(text) => setForm({ ...form, instructions: (form.instructions ? form.instructions + " " : "") + text })} />
+        </div>
       </div>
       <div className="space-y-2">
         <Label htmlFor="r-src">Source</Label>
-        <Input id="r-src" value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} placeholder="Family cookbook, website…" />
+        <div className="flex items-center gap-2">
+          <Input id="r-src" value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} placeholder="Family cookbook, website…" className="flex-1" />
+          <VoiceButton onTranscript={(text) => setForm({ ...form, source: (form.source ? form.source + " " : "") + text })} />
+        </div>
       </div>
       <div className="space-y-2">
         <Label>Photo</Label>

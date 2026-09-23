@@ -9,6 +9,7 @@ import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
 import BarcodeScanner from "@/components/BarcodeScanner";
 import { GROCERY_CATEGORIES, detectCategory } from "@/lib/groceryCategories";
+import VoiceButton from "@/components/VoiceButton";
 
 export default function AddItemDialog({ open, onOpenChange, familyId, onAdded }) {
   const { toast } = useToast();
@@ -126,19 +127,29 @@ function FormFields({ form, setForm, onImage, looking }) {
       )}
       <div className="space-y-2">
         <Label htmlFor="i-name">Name *</Label>
-        <Input
-          id="i-name"
-          value={form.name}
-          onChange={(e) => {
-            const name = e.target.value;
+        <div className="flex items-center gap-2">
+          <Input
+            id="i-name"
+            value={form.name}
+            onChange={(e) => {
+              const name = e.target.value;
+              setForm((f) => ({ ...f, name, category: f.category || detectCategory(name) }));
+            }}
+            placeholder="e.g. Whole milk"
+            className="flex-1"
+          />
+          <VoiceButton onTranscript={(text) => {
+            const name = (form.name ? form.name + " " : "") + text;
             setForm((f) => ({ ...f, name, category: f.category || detectCategory(name) }));
-          }}
-          placeholder="e.g. Whole milk"
-        />
+          }} />
+        </div>
       </div>
       <div className="space-y-2">
         <Label htmlFor="i-brand">Brand</Label>
-        <Input id="i-brand" value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} placeholder="e.g. Organic Valley" />
+        <div className="flex items-center gap-2">
+          <Input id="i-brand" value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} placeholder="e.g. Organic Valley" className="flex-1" />
+          <VoiceButton onTranscript={(text) => setForm({ ...form, brand: (form.brand ? form.brand + " " : "") + text })} />
+        </div>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">

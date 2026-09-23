@@ -7,6 +7,7 @@ import { Loader2, Upload } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
 import { GROCERY_CATEGORIES } from "@/lib/groceryCategories";
+import VoiceButton from "@/components/VoiceButton";
 
 const UNITS = ["units", "packs", "boxes", "bottles", "cans", "bags", "kg", "g", "L", "mL"];
 
@@ -70,11 +71,17 @@ export default function EditItemDialog({ open, onOpenChange, item, onSaved }) {
         <div className="overflow-y-auto pr-1 -mr-1 space-y-4">
           <div className="space-y-2">
             <Label htmlFor="e-name">Name *</Label>
-            <Input id="e-name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+            <div className="flex items-center gap-2">
+              <Input id="e-name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="flex-1" />
+              <VoiceButton onTranscript={(text) => setForm({ ...form, name: (form.name ? form.name + " " : "") + text })} />
+            </div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="e-brand">Brand</Label>
-            <Input id="e-brand" value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} />
+            <div className="flex items-center gap-2">
+              <Input id="e-brand" value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} className="flex-1" />
+              <VoiceButton onTranscript={(text) => setForm({ ...form, brand: (form.brand ? form.brand + " " : "") + text })} />
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
