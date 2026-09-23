@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { Link, Outlet, useLocation, Navigate } from "react-router-dom";
-import { Home as HomeIcon, Carrot, ChefHat, Share2, Users, LogOut, ShoppingCart, Shield } from "lucide-react";
+import { Home as HomeIcon, Carrot, ChefHat, Share2, Users, LogOut, ShoppingCart, Shield, Settings as SettingsIcon } from "lucide-react";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { base44 } from "@/api/base44Client";
 import { cn } from "@/lib/utils";
@@ -13,6 +13,7 @@ const nav = [
   { to: "/recipes", label: "Recipes", icon: ChefHat },
   { to: "/share", label: "Share", icon: Share2 },
   { to: "/family", label: "Family", icon: Users },
+  { to: "/settings", label: "Settings", icon: SettingsIcon },
 ];
 
 export default function Layout() {
@@ -114,7 +115,7 @@ export default function Layout() {
 
       {/* Mobile bottom nav */}
       <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-card border-t border-border">
-        <div className="grid grid-cols-6">
+        <div className="grid" style={{ gridTemplateColumns: `repeat(${navItems.length}, minmax(0, 1fr))` }}>
           {navItems.map((item) => {
             const active = location.pathname === item.to;
             return (

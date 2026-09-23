@@ -20,6 +20,7 @@ import Share from '@/pages/Share';
 import Family from '@/pages/Family';
 import Admin from '@/pages/Admin';
 import SharedFamily from '@/pages/SharedFamily';
+import Settings from '@/pages/Settings';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -62,6 +63,7 @@ const AuthenticatedApp = () => {
           <Route path="/family" element={<Family />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/shared/:familyId" element={<SharedFamily />} />
+          <Route path="/settings" element={<Settings />} />
         </Route>
       </Route>
       <Route path="*" element={<PageNotFound />} />

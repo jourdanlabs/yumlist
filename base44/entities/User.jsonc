@@ -16,6 +16,10 @@
       "type": "string",
       "title": "Family name"
     },
+    "phone_number": {
+      "type": "string",
+      "title": "Phone number"
+    },
     "download_source": {
       "type": "string",
       "title": "Download source",
