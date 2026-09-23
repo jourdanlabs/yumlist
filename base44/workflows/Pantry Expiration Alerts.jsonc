@@ -15,7 +15,8 @@
           "with": {
             "function_name": "notifyExpiringItems",
             "args": {
-              "days_ahead": 3
+              "days_ahead": 3,
+              "secret": "fp_pantry_exp_alert_2026_s3cr3t"
             }
           },
           "then": "end",

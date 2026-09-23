@@ -1,10 +1,29 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.49';
 
+// Shared secret used by the scheduled workflow to prove it is the platform
+// scheduler. Lives only in server-side files (never bundled to the client).
+const SCHEDULER_SECRET = 'fp_pantry_exp_alert_2026_s3cr3t';
+
 export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json().catch(() => ({}));
-    const daysAhead = Number(body.days_ahead ?? 3);
+
+    // Verify the caller: either the platform scheduler (shared secret) or an
+    // authenticated admin. Reject everyone else before any data access.
+    let authorized = false;
+    if (typeof body.secret === 'string' && body.secret === SCHEDULER_SECRET) {
+      authorized = true;
+    } else {
+      const user = await base44.auth.me().catch(() => null);
+      if (user && user.role === 'admin') authorized = true;
+    }
+    if (!authorized) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Bound days_ahead to a safe range so it can't be inflated to match everything.
+    const daysAhead = Math.min(Math.max(Number(body.days_ahead ?? 3) || 3, 1), 30);
 
     // Service role: scheduled run has no user context.
     const items = await base44.asServiceRole.entities.GroceryItem.list('-created_date', 500);
@@ -38,7 +57,7 @@ export default async function(req) {
     }
 
     let sent = 0;
-    const failures = [];
+    let failureCount = 0;
 
     for (const [fid, list] of Object.entries(byFamily)) {
       const members = usersByFamily[fid] || [];
@@ -64,12 +83,13 @@ export default async function(req) {
           });
           sent++;
         } catch (e) {
-          failures.push({ email: m.email, error: e.message });
+          // Do not return email addresses — only count failures.
+          failureCount++;
         }
       }
     }
 
-    return Response.json({ sent, expiringCount: expiring.length, failures });
+    return Response.json({ sent, expiringCount: expiring.length, failureCount });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
