@@ -1,8 +1,10 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.49';
 
 // Shared secret used by the scheduled workflow to prove it is the platform
-// scheduler. Lives only in server-side files (never bundled to the client).
-const SCHEDULER_SECRET = 'fp_pantry_exp_alert_2026_s3cr3t';
+// scheduler. Stored as an environment secret (set via the dashboard Secrets
+// page) so it never lives in source code. The workflow sends the same value
+// in its "secret" arg.
+const SCHEDULER_SECRET = process.env.PANTRY_SCHEDULER_SECRET;
 
 export default async function(req) {
   try {
