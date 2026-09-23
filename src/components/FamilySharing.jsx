@@ -33,10 +33,8 @@ export default function FamilySharing() {
     const ids = new Set(
       all.map((s) => (s.requester_family_id === myFam ? s.target_family_id : s.requester_family_id))
     );
-    const fams = await Promise.all([...ids].map((id) => base44.entities.Family.get(id).catch(() => null)));
-    const map = {};
-    fams.forEach((f) => { if (f) map[f.id] = f.name; });
-    setFamilies(map);
+    const res = await base44.functions.invoke('getFamilyNames', { ids: [...ids] });
+    setFamilies(res.data?.names || {});
   }, [myFam]);
 
   useEffect(() => {

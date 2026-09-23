@@ -12,7 +12,7 @@ export default async function(req) {
     if (query.length < 1) {
       return Response.json({ families: [] });
     }
-    const all = await base44.entities.Family.list('-created_date', 500);
+    const all = await base44.asServiceRole.entities.Family.list('-created_date', 500);
     const matches = all
       .filter((f) => f.id !== user.family_id && String(f.name || '').toLowerCase().includes(query))
       .slice(0, 20)

@@ -28,21 +28,14 @@ export default function SharedFamily() {
     (async () => {
       if (!myFam || !familyId) return;
       try {
-        const [a, b] = await Promise.all([
-          base44.entities.FamilyShare.filter({ requester_family_id: myFam, target_family_id: familyId, status: "accepted" }),
-          base44.entities.FamilyShare.filter({ requester_family_id: familyId, target_family_id: myFam, status: "accepted" }),
-        ]);
-        if (!a.length && !b.length) { setAllowed(false); setLoading(false); return; }
+        const res = await base44.functions.invoke('getSharedFamily', { family_id: familyId });
+        const data = res.data;
+        if (!data?.allowed) { setAllowed(false); return; }
         setAllowed(true);
-        const [fam, its, recs] = await Promise.all([
-          base44.entities.Family.get(familyId).catch(() => null),
-          base44.entities.GroceryItem.filter({ family_id: familyId }, "-created_date", 100),
-          base44.entities.Recipe.filter({ family_id: familyId }, "-created_date", 100),
-        ]);
         if (!active) return;
-        setFamily(fam);
-        setItems(its);
-        setRecipes(recs);
+        setFamily(data.family);
+        setItems(data.items);
+        setRecipes(data.recipes);
       } catch {}
       finally {
         if (active) setLoading(false);

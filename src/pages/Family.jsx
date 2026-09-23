@@ -52,9 +52,9 @@ export default function Family() {
     if (!code.trim()) { toast({ title: "Enter an invite code", variant: "destructive" }); return; }
     setBusy(true);
     try {
-      const fams = await base44.entities.Family.filter({ invite_code: code.trim().toUpperCase() });
-      if (!fams.length) { toast({ title: "No family found with that code", variant: "destructive" }); setBusy(false); return; }
-      const fam = fams[0];
+      const res = await base44.functions.invoke('joinFamilyByCode', { invite_code: code.trim() });
+      const fam = res.data;
+      if (!fam?.found) { toast({ title: "No family found with that code", variant: "destructive" }); setBusy(false); return; }
       await base44.auth.updateMe({ family_id: fam.id, family_name: fam.name });
       await refresh();
       toast({ title: `Joined ${fam.name}` });
