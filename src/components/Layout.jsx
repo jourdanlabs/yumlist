@@ -54,7 +54,7 @@ export default function Layout() {
           <div className="font-heading font-semibold leading-tight">Family Pantry</div>
           <div className="text-xs font-bold text-orange-500">{user?.family_name || "No family"}</div>
         </div>
-        <nav className="flex-1 px-3 space-y-1">
+        <nav className="flex-1 px-3 space-y-1 pt-6">
           {navItems.map((item) => {
             const active = location.pathname === item.to;
             return (
