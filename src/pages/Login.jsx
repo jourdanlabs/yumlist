@@ -39,7 +39,7 @@ export default function Login() {
   return (
     <AuthLayout
       icon={LogIn}
-      title="Welcome to Family Pantry"
+      title={<span> <span className="text-green-600">Welcome</span> <span className="text-orange-500">to</span> <span className="text-green-600">Family</span> <span className="text-orange-500">Pantry</span> </span>}
       subtitle="Log in to your account"
       footer={
         <>
