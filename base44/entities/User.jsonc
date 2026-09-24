@@ -10,11 +10,17 @@
     },
     "family_id": {
       "type": "string",
-      "title": "Family ID"
+      "title": "Family ID",
+      "rls": {
+        "write": false
+      }
     },
     "family_name": {
       "type": "string",
-      "title": "Family name"
+      "title": "Family name",
+      "rls": {
+        "write": false
+      }
     },
     "phone_number": {
       "type": "string",

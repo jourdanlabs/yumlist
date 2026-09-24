@@ -1,5 +1,18 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.49';
 
+// Cryptographically secure invite code: 8 chars from a 32-symbol alphabet
+// (~40 bits of entropy) drawn from crypto.getRandomValues, not Math.random.
+const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+function makeInviteCode() {
+  const bytes = new Uint8Array(8);
+  crypto.getRandomValues(bytes);
+  let code = '';
+  for (let i = 0; i < 8; i++) {
+    code += CODE_ALPHABET[bytes[i] % CODE_ALPHABET.length];
+  }
+  return code;
+}
+
 export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
@@ -11,8 +24,7 @@ export default async function(req) {
     const name = String(body.name || '').trim();
     if (!name) return Response.json({ error: 'Family name is required' }, { status: 400 });
 
-    const code = Math.random().toString(36).slice(2, 8).toUpperCase();
-    const fam = await base44.asServiceRole.entities.Family.create({ name, invite_code: code });
+    const fam = await base44.asServiceRole.entities.Family.create({ name, invite_code: makeInviteCode() });
     await base44.asServiceRole.entities.User.update(user.id, {
       family_id: fam.id,
       family_name: fam.name
