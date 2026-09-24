@@ -100,6 +100,7 @@ export default function Recipes() {
           category: "Other",
           recipe_title: recipe.title,
           requested_by_name: user?.full_name || user?.email || "",
+          on_shopping_list: true,
         }))
       );
       toast({ title: `Added ${ings.length} ingredient${ings.length > 1 ? "s" : ""} from "${recipe.title}" to your shopping list` });
@@ -144,6 +145,7 @@ export default function Recipes() {
       category: "Other",
       recipe_title: [...m.recipes].join(", "),
       requested_by_name: user?.full_name || user?.email || "",
+      on_shopping_list: true,
     }));
     setPlanning(true);
     try {

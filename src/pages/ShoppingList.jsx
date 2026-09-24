@@ -3,14 +3,14 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { ClipboardList, Loader2, Package, Printer, RefreshCw, ShoppingCart, CheckCheck, CalendarPlus, Search, Store } from "lucide-react";
+import { ClipboardList, Loader2, Package, Printer, RefreshCw, ShoppingCart, CheckCheck, CalendarPlus, Search, Store, X } from "lucide-react";
 import ScheduleTripDialog from "@/components/ScheduleTripDialog";
+import PantryPicker from "@/components/PantryPicker";
 import { useToast } from "@/components/ui/use-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { GROCERY_CATEGORIES, categoryStyle, normalizeCategory } from "@/lib/groceryCategories";
 import { capitalize } from "@/lib/utils";
 
-const LOW_THRESHOLD = 2;
 const RESTOCK_DEFAULT = 5;
 
 export default function ShoppingList() {
@@ -40,8 +40,15 @@ export default function ShoppingList() {
 
   useEffect(() => { load(); }, [familyId]);
 
+  // Shopping list = items explicitly marked to buy (recipe ingredients auto-set this on creation)
   const shopping = useMemo(
-    () => items.filter((i) => (i.quantity ?? 1) <= LOW_THRESHOLD),
+    () => items.filter((i) => i.on_shopping_list),
+    [items]
+  );
+
+  // Pantry items available to manually add (not already on the list)
+  const pantryAvailable = useMemo(
+    () => items.filter((i) => !i.on_shopping_list),
     [items]
   );
 
@@ -67,7 +74,7 @@ export default function ShoppingList() {
     return Object.keys(groups)
       .sort((a, b) => (order[a] ?? 99) - (order[b] ?? 99))
       .map((cat) => ({ category: cat, items: groups[cat] }));
-  }, [shopping]);
+  }, [filteredShopping]);
 
   const checkedIds = Object.keys(checked).filter((id) => checked[id]);
   const allChecked = filteredShopping.length > 0 && checkedIds.length === filteredShopping.length;
@@ -83,6 +90,25 @@ export default function ShoppingList() {
     }
   };
 
+  const addToShopping = async (id) => {
+    try {
+      await base44.entities.GroceryItem.update(id, { on_shopping_list: true });
+      setItems((prev) => prev.map((i) => i.id === id ? { ...i, on_shopping_list: true } : i));
+    } catch (e) {
+      toast({ title: "Could not add to shopping list", variant: "destructive" });
+    }
+  };
+
+  const removeFromShopping = async (id) => {
+    try {
+      await base44.entities.GroceryItem.update(id, { on_shopping_list: false });
+      setItems((prev) => prev.map((i) => i.id === id ? { ...i, on_shopping_list: false } : i));
+      setChecked((c) => { const n = { ...c }; delete n[id]; return n; });
+    } catch (e) {
+      toast({ title: "Could not remove from shopping list", variant: "destructive" });
+    }
+  };
+
   const restockSelected = async () => {
     if (checkedIds.length === 0) {
       toast({ title: "Select items to restock", variant: "destructive" });
@@ -91,7 +117,7 @@ export default function ShoppingList() {
     setRestocking(true);
     try {
       await base44.entities.GroceryItem.bulkUpdate(
-        checkedIds.map((id) => ({ id, quantity: RESTOCK_DEFAULT }))
+        checkedIds.map((id) => ({ id, quantity: RESTOCK_DEFAULT, on_shopping_list: false }))
       );
       toast({ title: `Restocked ${checkedIds.length} item${checkedIds.length > 1 ? "s" : ""}` });
       setChecked({});
@@ -128,7 +154,7 @@ export default function ShoppingList() {
     setRestocking(true);
     try {
       await base44.entities.GroceryItem.bulkUpdate(
-        checkedIds.map((id) => ({ id, quantity: RESTOCK_DEFAULT }))
+        checkedIds.map((id) => ({ id, quantity: RESTOCK_DEFAULT, on_shopping_list: false }))
       );
       toast({ title: `Cleared ${checkedIds.length} checked item${checkedIds.length > 1 ? "s" : ""} from your list` });
       setChecked({});
@@ -147,7 +173,7 @@ export default function ShoppingList() {
           <ShoppingCart className="w-6 h-6" /> Shopping list
         </h1>
         <p className="text-sm text-muted-foreground">
-          Auto-built from pantry items that are running low or finished.
+          Recipe ingredients are added here automatically. Pick pantry items to restock from the list below.
         </p>
       </div>
       <div className="flex flex-wrap items-center gap-2 no-print">
@@ -197,48 +223,55 @@ export default function ShoppingList() {
         <div className="space-y-3">
           {[0, 1, 2].map((i) => <div key={i} className="h-16 rounded-xl bg-muted animate-pulse" />)}
         </div>
-      ) : filteredShopping.length === 0 ? (
-        <div className="text-center py-16 border border-dashed border-border rounded-2xl">
-          <ClipboardList className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
-          <p className="text-muted-foreground">
-            {q ? "No items match your search." : "Everything's well stocked — no items need restocking right now."}
-          </p>
-        </div>
       ) : (
-        <div className="space-y-6">
-          {grouped.map((group) => (
-            <CategorySection
-              key={group.category}
-              category={group.category}
-              items={group.items}
-              checked={checked}
-              onToggle={toggle}
-            />
-          ))}
+        <>
+          {filteredShopping.length === 0 ? (
+            <div className="text-center py-16 border border-dashed border-border rounded-2xl">
+              <ClipboardList className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
+              <p className="text-muted-foreground">
+                {q ? "No items match your search." : "Your shopping list is empty. Request recipe ingredients or add pantry items below."}
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {grouped.map((group) => (
+                <CategorySection
+                  key={group.category}
+                  category={group.category}
+                  items={group.items}
+                  checked={checked}
+                  onToggle={toggle}
+                  onRemove={removeFromShopping}
+                />
+              ))}
 
-          <div className="flex items-center gap-3 pt-2 no-print flex-wrap">
-            <Button variant="outline" size="sm" onClick={toggleAll}>
-              {allChecked ? "Clear selection" : "Select all"}
-            </Button>
-            <Button
-              size="sm"
-              onClick={clearChecked}
-              disabled={restocking || checkedIds.length === 0}
-            >
-              {restocking ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <CheckCheck className="w-4 h-4 mr-2" />}
-              Clear checked ({checkedIds.length})
-            </Button>
-            <span className="text-sm text-muted-foreground">
-              {checkedIds.length} of {filteredShopping.length} selected
-            </span>
-          </div>
-        </div>
+              <div className="flex items-center gap-3 pt-2 no-print flex-wrap">
+                <Button variant="outline" size="sm" onClick={toggleAll}>
+                  {allChecked ? "Clear selection" : "Select all"}
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={clearChecked}
+                  disabled={restocking || checkedIds.length === 0}
+                >
+                  {restocking ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <CheckCheck className="w-4 h-4 mr-2" />}
+                  Clear checked ({checkedIds.length})
+                </Button>
+                <span className="text-sm text-muted-foreground">
+                  {checkedIds.length} of {filteredShopping.length} selected
+                </span>
+              </div>
+            </div>
+          )}
+
+          <PantryPicker items={pantryAvailable} onAdd={addToShopping} />
+        </>
       )}
     </div>
   );
 }
 
-function CategorySection({ category, items, checked, onToggle }) {
+function CategorySection({ category, items, checked, onToggle, onRemove }) {
   if (items.length === 0) return null;
   return (
     <div className="print-break">
@@ -282,6 +315,14 @@ function CategorySection({ category, items, checked, onToggle }) {
                   <Package className="w-3 h-3" />
                   {qty <= 0 ? "Out of stock" : `${qty} ${unit}`}
                 </span>
+                <button
+                  type="button"
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); onRemove(item.id); }}
+                  className="no-print text-muted-foreground hover:text-destructive transition-colors p-1"
+                  aria-label="Remove from list"
+                >
+                  <X className="w-4 h-4" />
+                </button>
                 <span className="print-only text-sm text-gray-700 whitespace-nowrap">
                   {qty <= 0 ? "(out of stock)" : `have ${qty} ${unit}`}
                   {item.recipe_title ? ` · ${item.recipe_title}` : ""}

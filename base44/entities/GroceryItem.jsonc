@@ -61,6 +61,11 @@
     "requested_by_name": {
       "type": "string",
       "title": "Requested by"
+    },
+    "on_shopping_list": {
+      "type": "boolean",
+      "title": "On shopping list",
+      "default": false
     }
   },
   "required": [
