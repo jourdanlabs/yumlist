@@ -5,6 +5,16 @@ export default async function(req) {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!user.family_id) return Response.json({ error: 'You must be in a family first' }, { status: 400 });
+
+    // Only the family owner (creator) or an admin can search for users to add.
+    if (user.role !== 'admin') {
+      const family = await base44.asServiceRole.entities.Family.get(user.family_id).catch(() => null);
+      if (!family || family.created_by_id !== user.id) {
+        return Response.json({ error: 'Only the family owner can add members' }, { status: 403 });
+      }
+    }
+
     let body = {};
     try { body = await req.json(); } catch (e) {}
     const email = (body.email || '').toString().trim().toLowerCase();
@@ -15,7 +25,6 @@ export default async function(req) {
     return Response.json({
       found: true,
       user: {
-        id: found.id,
         full_name: found.full_name,
         email: found.email,
         has_family: !!found.family_id

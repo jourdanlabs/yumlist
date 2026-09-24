@@ -37,7 +37,7 @@ export default async function(req) {
         await base44.asServiceRole.integrations.Core.SendEmail({
           to: m.email,
           subject: `${shopper} is at the store`,
-          body: text,
+          text: text,
         });
         sent++;
       } catch (e) {

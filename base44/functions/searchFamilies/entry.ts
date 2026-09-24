@@ -9,7 +9,7 @@ export default async function(req) {
     }
     const body = await req.json().catch(() => ({}));
     const query = String(body?.query || '').trim().toLowerCase();
-    if (query.length < 1) {
+    if (query.length < 3) {
       return Response.json({ families: [] });
     }
     const all = await base44.asServiceRole.entities.Family.list('-created_date', 500);

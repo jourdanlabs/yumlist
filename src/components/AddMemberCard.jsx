@@ -80,7 +80,7 @@ export default function AddMemberCard({ onAdded }) {
               <p className="text-sm font-medium truncate">{result.user.full_name || "Unnamed member"}</p>
               <p className="text-xs text-muted-foreground truncate">{result.user.email}</p>
               {result.user.has_family && (
-                <p className="text-xs text-amber-600 mt-0.5">Already in a family — adding will move them here.</p>
+                <p className="text-xs text-amber-600 mt-0.5">Already in a family — they must leave before you can add them.</p>
               )}
             </div>
             <Button size="sm" onClick={add} disabled={adding}>
