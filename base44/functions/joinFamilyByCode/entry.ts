@@ -14,6 +14,11 @@ export default async function(req) {
     if (!families.length) return Response.json({ found: false });
 
     const fam = families[0];
+    // Write membership server-side so the invite code is actually enforced.
+    await base44.asServiceRole.entities.User.update(user.id, {
+      family_id: fam.id,
+      family_name: fam.name
+    });
     return Response.json({ found: true, id: fam.id, name: fam.name });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

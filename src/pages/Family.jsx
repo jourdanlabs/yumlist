@@ -37,8 +37,7 @@ export default function Family() {
     if (!name.trim()) { toast({ title: "Enter a family name", variant: "destructive" }); return; }
     setBusy(true);
     try {
-      const fam = await base44.entities.Family.create({ name: name.trim(), invite_code: makeCode() });
-      await base44.auth.updateMe({ family_id: fam.id, family_name: fam.name });
+      await base44.functions.invoke('createFamily', { name: name.trim() });
       await refresh();
       toast({ title: "Family created" });
       navigate("/");
@@ -56,7 +55,6 @@ export default function Family() {
       const res = await base44.functions.invoke('joinFamilyByCode', { invite_code: code.trim() });
       const fam = res.data;
       if (!fam?.found) { toast({ title: "No family found with that code", variant: "destructive" }); setBusy(false); return; }
-      await base44.auth.updateMe({ family_id: fam.id, family_name: fam.name });
       await refresh();
       toast({ title: `Joined ${fam.name}` });
       navigate("/");
@@ -70,7 +68,7 @@ export default function Family() {
   const leave = async () => {
     setBusy(true);
     try {
-      await base44.auth.updateMe({ family_id: "", family_name: "" });
+      await base44.functions.invoke('leaveFamily', {});
       await refresh();
       toast({ title: "Left family" });
     } catch (e) {

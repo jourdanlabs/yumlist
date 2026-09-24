@@ -12,11 +12,13 @@ export default async function(req) {
     if (query.length < 3) {
       return Response.json({ families: [] });
     }
+    // Return only family names — not raw IDs — so discovered families cannot be
+    // used to forge membership via client-side writes.
     const all = await base44.asServiceRole.entities.Family.list('-created_date', 500);
     const matches = all
       .filter((f) => f.id !== user.family_id && String(f.name || '').toLowerCase().includes(query))
       .slice(0, 20)
-      .map((f) => ({ id: f.id, name: f.name }));
+      .map((f) => ({ name: f.name }));
     return Response.json({ families: matches });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

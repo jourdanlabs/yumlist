@@ -62,19 +62,14 @@ export default function FamilySharing() {
   const otherId = (s) => (s.requester_family_id === myFam ? s.target_family_id : s.requester_family_id);
   const findShare = (famId) => shares.find((s) => otherId(s) === famId && s.status !== "disconnected");
 
-  const sendRequest = async (famId, famName) => {
-    setBusyId(famId);
+  const sendRequest = async (famName) => {
+    setBusyId(famName);
     try {
-      await base44.entities.FamilyShare.create({
-        requester_family_id: myFam,
-        target_family_id: famId,
-        status: "pending",
-        requested_by_name: user?.full_name || user?.email || "",
-      });
-      toast({ title: `Request sent to ${famName}` });
+      const res = await base44.functions.invoke('sendShareRequest', { target_family_name: famName });
+      toast({ title: `Request sent to ${res.data?.target_name || famName}` });
       await loadShares();
-    } catch {
-      toast({ title: "Could not send request", variant: "destructive" });
+    } catch (e) {
+      toast({ title: "Could not send request", description: e.message, variant: "destructive" });
     } finally {
       setBusyId(null);
     }
@@ -135,30 +130,15 @@ export default function FamilySharing() {
 
         {results.length > 0 && (
           <div className="space-y-2">
-            {results.map((f) => {
-              const sh = findShare(f.id);
-              return (
-                <div key={f.id} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-muted/40">
-                  <span className="text-sm font-medium truncate">{f.name}</span>
-                  {sh?.status === "accepted" ? (
-                    <Button size="sm" variant="secondary" onClick={() => navigate(`/shared/${f.id}`)}>
-                      <Eye className="w-4 h-4 mr-1" /> View
-                    </Button>
-                  ) : sh?.status === "pending" && sh.requester_family_id === myFam ? (
-                    <span className="text-xs text-muted-foreground">Requested</span>
-                  ) : sh?.status === "pending" ? (
-                    <Button size="sm" variant="secondary" onClick={() => acceptRequest(sh)}>
-                      <Check className="w-4 h-4 mr-1" /> Accept
-                    </Button>
-                  ) : (
-                    <Button size="sm" onClick={() => sendRequest(f.id, f.name)} disabled={busyId === f.id}>
-                      {busyId === f.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4 mr-1" />}
-                      Request
-                    </Button>
-                  )}
-                </div>
-              );
-            })}
+            {results.map((f, i) => (
+              <div key={i} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-muted/40">
+                <span className="text-sm font-medium truncate">{f.name}</span>
+                <Button size="sm" onClick={() => sendRequest(f.name)} disabled={busyId === f.name}>
+                  {busyId === f.name ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4 mr-1" />}
+                  Request
+                </Button>
+              </div>
+            ))}
           </div>
         )}
 
