@@ -9,6 +9,7 @@ import { Users, Plus, LogIn, Copy, Check } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import FamilySharing from "@/components/FamilySharing";
+import AddMemberCard from "@/components/AddMemberCard";
 
 function makeCode() {
   return Math.random().toString(36).slice(2, 8).toUpperCase();
@@ -132,6 +133,9 @@ export default function Family() {
             ))}
           </CardContent>
         </Card>
+        <AddMemberCard onAdded={() => {
+          base44.entities.User.filter({ family_id: user.family_id }).then(setMembers).catch(() => {});
+        }} />
         <FamilySharing />
         <Button variant="outline" className="w-full text-destructive" onClick={leave} disabled={busy}>
           Leave family
