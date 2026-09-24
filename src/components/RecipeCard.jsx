@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { Image } from "@/components/ui/image";
-import { Trash2, ChevronDown, ShoppingCart, Check } from "lucide-react";
+import { Trash2, ChevronDown, ShoppingCart, Check, Megaphone } from "lucide-react";
 import ReactionBar from "@/components/ReactionBar";
 import { cn } from "@/lib/utils";
 
-export default function RecipeCard({ recipe, counts, onReact, onDelete, onRequest, selectable, selected, onToggleSelect }) {
+export default function RecipeCard({ recipe, counts, onReact, onDelete, onRequest, onSuggest, alreadySuggested, selectable, selected, onToggleSelect }) {
   const [open, setOpen] = useState(false);
   const [requested, setRequested] = useState(false);
   return (
@@ -59,20 +59,39 @@ export default function RecipeCard({ recipe, counts, onReact, onDelete, onReques
               <ChevronDown className={cn("w-4 h-4 transition-transform", open && "rotate-180")} />
             </button>
           </div>
-          {onRequest && !selectable && (
-            <button
-              onClick={() => { setRequested(true); onRequest(); }}
-              disabled={requested}
-              className={cn(
-                "mt-3 w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border transition-colors",
-                requested
-                  ? "bg-emerald-500/10 text-emerald-600 border-emerald-300"
-                  : "bg-primary text-primary-foreground border-primary hover:bg-primary/90"
+          {(onRequest || onSuggest) && !selectable && (
+            <div className="mt-3 flex gap-2">
+              {onSuggest && (
+                <button
+                  onClick={onSuggest}
+                  disabled={alreadySuggested}
+                  className={cn(
+                    "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border transition-colors",
+                    alreadySuggested
+                      ? "bg-amber-500/10 text-amber-600 border-amber-300"
+                      : "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100"
+                  )}
+                >
+                  <Megaphone className="w-4 h-4" />
+                  {alreadySuggested ? "Suggested" : "Suggest"}
+                </button>
               )}
-            >
-              <ShoppingCart className="w-4 h-4" />
-              {requested ? "Added to shopping list" : "Request for this week"}
-            </button>
+              {onRequest && (
+                <button
+                  onClick={() => { setRequested(true); onRequest(); }}
+                  disabled={requested}
+                  className={cn(
+                    "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border transition-colors",
+                    requested
+                      ? "bg-emerald-500/10 text-emerald-600 border-emerald-300"
+                      : "bg-primary text-primary-foreground border-primary hover:bg-primary/90"
+                  )}
+                >
+                  <ShoppingCart className="w-4 h-4" />
+                  {requested ? "Added" : "Request"}
+                </button>
+              )}
+            </div>
           )}
         </div>
       </div>

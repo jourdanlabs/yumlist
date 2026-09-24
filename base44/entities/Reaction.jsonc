@@ -7,7 +7,8 @@
       "title": "Target type",
       "enum": [
         "item",
-        "recipe"
+        "recipe",
+        "suggestion"
       ]
     },
     "target_id": {

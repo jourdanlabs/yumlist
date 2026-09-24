@@ -39,13 +39,14 @@ export default function NotificationsBell({ className }) {
     setLoading(true);
     (async () => {
       try {
-        const [members, reactions, requestedItems, recipes, items, storeNotices] = await Promise.all([
+        const [members, reactions, requestedItems, recipes, items, storeNotices, suggestions] = await Promise.all([
           base44.entities.User.filter({ family_id: familyId }),
           base44.entities.Reaction.filter({ family_id: familyId }, "-created_date", 30),
           base44.entities.GroceryItem.filter({ family_id: familyId }, "-created_date", 50),
           base44.entities.Recipe.filter({ family_id: familyId }),
           base44.entities.GroceryItem.filter({ family_id: familyId }),
           base44.entities.StoreNotice.filter({ family_id: familyId }, "-created_date", 20),
+          base44.entities.RecipeSuggestion.filter({ family_id: familyId, status: "active" }, "-created_date", 20),
         ]);
 
         const memberName = (id) => {
@@ -57,7 +58,7 @@ export default function NotificationsBell({ className }) {
         const itemName = (id) => items.find((i) => i.id === id)?.name || "an item";
 
         const reactionNotifs = reactions
-          .filter((r) => r.created_by_id !== user?.id)
+          .filter((r) => r.created_by_id !== user?.id && r.target_type !== "suggestion")
           .map((r) => ({
             id: r.id,
             type: "reaction",
@@ -80,6 +81,18 @@ export default function NotificationsBell({ className }) {
             date: i.created_date,
           }));
 
+        const suggestionNotifs = suggestions
+          .filter((s) => s.created_by_id !== user?.id)
+          .map((s) => ({
+            id: `sug-${s.id}`,
+            type: "suggestion",
+            who: s.suggested_by_name || memberName(s.created_by_id),
+            verb: "suggested cooking",
+            target: s.recipe_title,
+            targetLabel: "recipe",
+            date: s.created_date,
+          }));
+
         const storeNotifs = storeNotices
           .filter((s) => s.created_by_id !== user?.id)
           .map((s) => ({
@@ -92,7 +105,7 @@ export default function NotificationsBell({ className }) {
             date: s.created_date,
           }));
 
-        const all = [...reactionNotifs, ...requestNotifs, ...storeNotifs]
+        const all = [...reactionNotifs, ...suggestionNotifs, ...requestNotifs, ...storeNotifs]
           .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
           .slice(0, 20);
         if (active) setNotifications(all);

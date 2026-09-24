@@ -11,6 +11,7 @@ import RecipeCard from "@/components/RecipeCard";
 import AddRecipeDialog from "@/components/AddRecipeDialog";
 import RecipeSuggestions from "@/components/RecipeSuggestions";
 import RecipeFilters from "@/components/RecipeFilters";
+import SuggestionBoard from "@/components/SuggestionBoard";
 
 export default function Recipes() {
   const { user } = useCurrentUser();
@@ -28,6 +29,7 @@ export default function Recipes() {
   const [planMode, setPlanMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState(() => new Set());
   const [planning, setPlanning] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
 
   useEffect(() => {
     if (!familyId) return;
@@ -82,7 +84,15 @@ export default function Recipes() {
     }
   };
 
-  useEffect(() => { load(); }, [familyId]);
+  const loadSuggestions = async () => {
+    if (!familyId) return;
+    try {
+      const data = await base44.entities.RecipeSuggestion.filter({ family_id: familyId, status: "active" }, "-created_date");
+      setSuggestions(data);
+    } catch (e) {}
+  };
+
+  useEffect(() => { load(); loadSuggestions(); }, [familyId]);
 
   const handleRequest = async (recipe) => {
     const ings = (recipe.ingredients || []).filter((i) => i && i.trim());
@@ -107,6 +117,30 @@ export default function Recipes() {
     } catch (e) {
       toast({ title: "Could not request recipe", variant: "destructive" });
     }
+  };
+
+  const handleSuggest = async (recipe) => {
+    try {
+      await base44.entities.RecipeSuggestion.create({
+        family_id: familyId,
+        recipe_id: recipe.id,
+        recipe_title: recipe.title,
+        suggested_by_name: user?.full_name || user?.email || "",
+        status: "active",
+      });
+      toast({ title: `Suggested "${recipe.title}" to your family` });
+      loadSuggestions();
+    } catch (e) {
+      toast({ title: "Could not suggest recipe", variant: "destructive" });
+    }
+  };
+
+  const handleShopSuggestion = async (recipe, suggestionId) => {
+    await handleRequest(recipe);
+    try {
+      await base44.entities.RecipeSuggestion.update(suggestionId, { status: "shopped" });
+      loadSuggestions();
+    } catch (e) {}
   };
 
   const toggleSelect = (id) => {
@@ -266,6 +300,14 @@ export default function Recipes() {
             />
           )}
 
+          <SuggestionBoard
+            suggestions={suggestions}
+            familyId={familyId}
+            userId={user?.id}
+            recipes={recipes}
+            onShop={handleShopSuggestion}
+          />
+
           {loading ? (
             <div className="space-y-3">
               {[0, 1, 2].map((i) => <div key={i} className="h-24 rounded-2xl bg-muted animate-pulse" />)}
@@ -294,6 +336,8 @@ export default function Recipes() {
                   onReact={(r) => react(recipe.id, r)}
                   onDelete={() => handleDelete(recipe)}
                   onRequest={() => handleRequest(recipe)}
+                  onSuggest={() => handleSuggest(recipe)}
+                  alreadySuggested={suggestions.some((s) => s.recipe_id === recipe.id)}
                   selectable={planMode}
                   selected={selectedIds.has(recipe.id)}
                   onToggleSelect={toggleSelect}
