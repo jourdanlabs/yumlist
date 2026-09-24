@@ -37,9 +37,6 @@
           "data.requester_family_id": "{{user.data.family_id}}"
         },
         {
-          "data.target_family_id": "{{user.data.family_id}}"
-        },
-        {
           "user_condition": {
             "role": "admin"
           }
@@ -63,9 +60,6 @@
     },
     "update": {
       "$or": [
-        {
-          "data.requester_family_id": "{{user.data.family_id}}"
-        },
         {
           "data.target_family_id": "{{user.data.family_id}}"
         },
