@@ -10,6 +10,7 @@ import { useToast } from "@/components/ui/use-toast";
 import BarcodeScanner from "@/components/BarcodeScanner";
 import { GROCERY_CATEGORIES, detectCategory } from "@/lib/groceryCategories";
 import VoiceButton from "@/components/VoiceButton";
+import MobileSelect from "@/components/MobileSelect";
 
 export default function AddItemDialog({ open, onOpenChange, familyId, onAdded }) {
   const { toast } = useToast();
@@ -154,17 +155,14 @@ function FormFields({ form, setForm, onImage, looking }) {
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
           <Label htmlFor="i-cat">Category</Label>
-          <select
+          <MobileSelect
             id="i-cat"
             value={form.category}
-            onChange={(e) => setForm({ ...form, category: e.target.value })}
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          >
-            <option value="">Select…</option>
-            {GROCERY_CATEGORIES.map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
+            onChange={(val) => setForm({ ...form, category: val })}
+            placeholder="Select…"
+            label="Category"
+            options={[{ value: "", label: "None" }, ...GROCERY_CATEGORIES.map((c) => ({ value: c, label: c }))]}
+          />
         </div>
         <div className="space-y-2">
           <Label htmlFor="i-barcode">Barcode</Label>
@@ -178,16 +176,14 @@ function FormFields({ form, setForm, onImage, looking }) {
         </div>
         <div className="space-y-2">
           <Label htmlFor="i-unit">Unit</Label>
-          <select
+          <MobileSelect
             id="i-unit"
             value={form.unit}
-            onChange={(e) => setForm({ ...form, unit: e.target.value })}
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          >
-            {["units", "packs", "boxes", "bottles", "cans", "bags", "kg", "g", "L", "mL"].map((u) => (
-              <option key={u} value={u}>{u}</option>
-            ))}
-          </select>
+            onChange={(val) => setForm({ ...form, unit: val })}
+            placeholder="Select…"
+            label="Unit"
+            options={["units", "packs", "boxes", "bottles", "cans", "bags", "kg", "g", "L", "mL"].map((u) => ({ value: u, label: u }))}
+          />
         </div>
       </div>
       <div className="space-y-2">

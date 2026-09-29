@@ -31,22 +31,33 @@ export function useReactions(familyId, targetType, userId) {
 
   const react = async (targetId, reaction) => {
     const existing = reactions.find((r) => r.target_id === targetId && r.created_by_id === userId);
-    if (existing) {
-      if (existing.reaction === reaction) {
-        await base44.entities.Reaction.delete(existing.id);
-        setReactions((prev) => prev.filter((r) => r.id !== existing.id));
+    const snapshot = reactions;
+    try {
+      if (existing) {
+        if (existing.reaction === reaction) {
+          setReactions((prev) => prev.filter((r) => r.id !== existing.id));
+          await base44.entities.Reaction.delete(existing.id);
+        } else {
+          const optimistic = { ...existing, reaction };
+          setReactions((prev) => prev.map((r) => (r.id === existing.id ? optimistic : r)));
+          const updated = await base44.entities.Reaction.update(existing.id, { reaction });
+          setReactions((prev) => prev.map((r) => (r.id === existing.id ? updated : r)));
+        }
       } else {
-        const updated = await base44.entities.Reaction.update(existing.id, { reaction });
-        setReactions((prev) => prev.map((r) => (r.id === existing.id ? updated : r)));
+        const tempId = `temp_${Date.now()}`;
+        const optimistic = { id: tempId, target_type: targetType, target_id: targetId, reaction, family_id: familyId, created_by_id: userId };
+        setReactions((prev) => [...prev, optimistic]);
+        const created = await base44.entities.Reaction.create({
+          target_type: targetType,
+          target_id: targetId,
+          reaction,
+          family_id: familyId,
+        });
+        setReactions((prev) => prev.map((r) => (r.id === tempId ? created : r)));
       }
-    } else {
-      const created = await base44.entities.Reaction.create({
-        target_type: targetType,
-        target_id: targetId,
-        reaction,
-        family_id: familyId,
-      });
-      setReactions((prev) => [...prev, created]);
+    } catch (e) {
+      setReactions(snapshot);
+      throw e;
     }
   };
 

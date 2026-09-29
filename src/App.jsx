@@ -8,20 +8,20 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Layout from '@/components/Layout';
-import Login from '@/pages/Login';
-import Register from '@/pages/Register';
-import ForgotPassword from '@/pages/ForgotPassword';
-import ResetPassword from '@/pages/ResetPassword';
-import Home from '@/pages/Home';
-import Items from '@/pages/Items';
-import ShoppingList from '@/pages/ShoppingList';
-import Recipes from '@/pages/Recipes';
-import Share from '@/pages/Share';
-import Family from '@/pages/Family';
-import Admin from '@/pages/Admin';
-import SharedFamily from '@/pages/SharedFamily';
-import Settings from '@/pages/Settings';
-// Add page imports here
+import { lazy, Suspense } from 'react';
+const Login = lazy(() => import('@/pages/Login'));
+const Register = lazy(() => import('@/pages/Register'));
+const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
+const Home = lazy(() => import('@/pages/Home'));
+const Items = lazy(() => import('@/pages/Items'));
+const ShoppingList = lazy(() => import('@/pages/ShoppingList'));
+const Recipes = lazy(() => import('@/pages/Recipes'));
+const Share = lazy(() => import('@/pages/Share'));
+const Family = lazy(() => import('@/pages/Family'));
+const Admin = lazy(() => import('@/pages/Admin'));
+const SharedFamily = lazy(() => import('@/pages/SharedFamily'));
+const Settings = lazy(() => import('@/pages/Settings'));
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -48,6 +48,7 @@ const AuthenticatedApp = () => {
 
   // Render the main app
   return (
+    <Suspense fallback={<div className="fixed inset-0 flex items-center justify-center"><div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin" /></div>}>
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
@@ -68,6 +69,7 @@ const AuthenticatedApp = () => {
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
+    </Suspense>
   );
 };
 

@@ -91,20 +91,24 @@ export default function ShoppingList() {
   };
 
   const addToShopping = async (id) => {
+    const prevItems = items;
+    setItems((prev) => prev.map((i) => i.id === id ? { ...i, on_shopping_list: true } : i));
     try {
       await base44.entities.GroceryItem.update(id, { on_shopping_list: true });
-      setItems((prev) => prev.map((i) => i.id === id ? { ...i, on_shopping_list: true } : i));
     } catch (e) {
+      setItems(prevItems);
       toast({ title: "Could not add to shopping list", variant: "destructive" });
     }
   };
 
   const removeFromShopping = async (id) => {
+    const prevItems = items;
+    setItems((prev) => prev.map((i) => i.id === id ? { ...i, on_shopping_list: false } : i));
+    setChecked((c) => { const n = { ...c }; delete n[id]; return n; });
     try {
       await base44.entities.GroceryItem.update(id, { on_shopping_list: false });
-      setItems((prev) => prev.map((i) => i.id === id ? { ...i, on_shopping_list: false } : i));
-      setChecked((c) => { const n = { ...c }; delete n[id]; return n; });
     } catch (e) {
+      setItems(prevItems);
       toast({ title: "Could not remove from shopping list", variant: "destructive" });
     }
   };
@@ -193,7 +197,7 @@ export default function ShoppingList() {
           </Button>
         )}
         {shopping.length > 0 && (
-          <Button className="bg-white text-foreground border border-input hover:bg-accent" onClick={() => window.print()}>
+          <Button className="bg-card text-foreground border border-input hover:bg-accent" onClick={() => window.print()}>
             <Printer className="w-4 h-4 mr-2" /> Print
           </Button>
         )}
@@ -201,19 +205,19 @@ export default function ShoppingList() {
 
       <ScheduleTripDialog open={tripOpen} onOpenChange={setTripOpen} itemCount={shopping.length} />
 
-      <div className="relative rounded-lg border border-border bg-white p-2 no-print">
+      <div className="relative rounded-lg border border-border bg-card p-2 no-print">
         <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search items while shopping…"
-          className="pl-9 bg-white border-0 shadow-none focus-visible:ring-0"
+          className="pl-9 bg-card border-0 shadow-none focus-visible:ring-0"
         />
       </div>
 
       <div className="print-only mb-6">
         <h1 className="text-2xl font-bold">Shopping List</h1>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-muted-foreground">
           {user?.family_name || "Family Pantry"} · {new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}
         </p>
         <hr className="my-3 border-black" />
@@ -323,7 +327,7 @@ function CategorySection({ category, items, checked, onToggle, onRemove }) {
                 >
                   <X className="w-4 h-4" />
                 </button>
-                <span className="print-only text-sm text-gray-700 whitespace-nowrap">
+                <span className="print-only text-sm text-muted-foreground whitespace-nowrap">
                   {qty <= 0 ? "(out of stock)" : `have ${qty} ${unit}`}
                   {item.recipe_title ? ` · ${item.recipe_title}` : ""}
                   {item.requested_by_name ? ` · by ${item.requested_by_name}` : ""}

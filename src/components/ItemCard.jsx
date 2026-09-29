@@ -57,14 +57,14 @@ export default function ItemCard({ item, counts, onReact, onDelete, onUpdate, on
                   <span className="inline-flex items-center gap-0.5 ml-0.5">
                     <button
                       onClick={() => onUpdate(Math.max(0, qty - 1))}
-                      className="w-5 h-5 rounded-full border border-border bg-card flex items-center justify-center hover:bg-accent text-muted-foreground hover:text-foreground transition"
+                      className="w-11 h-11 rounded-full border border-border bg-card flex items-center justify-center hover:bg-accent text-muted-foreground hover:text-foreground transition"
                       aria-label="Decrease quantity"
                     >
                       <Minus className="w-3 h-3" />
                     </button>
                     <button
                       onClick={() => onUpdate(qty + 1)}
-                      className="w-5 h-5 rounded-full border border-border bg-card flex items-center justify-center hover:bg-accent text-muted-foreground hover:text-foreground transition"
+                      className="w-11 h-11 rounded-full border border-border bg-card flex items-center justify-center hover:bg-accent text-muted-foreground hover:text-foreground transition"
                       aria-label="Increase quantity"
                     >
                       <Plus className="w-3 h-3" />

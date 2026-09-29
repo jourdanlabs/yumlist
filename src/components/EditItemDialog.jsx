@@ -8,6 +8,7 @@ import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
 import { GROCERY_CATEGORIES } from "@/lib/groceryCategories";
 import VoiceButton from "@/components/VoiceButton";
+import MobileSelect from "@/components/MobileSelect";
 
 const UNITS = ["units", "packs", "boxes", "bottles", "cans", "bags", "kg", "g", "L", "mL"];
 
@@ -86,15 +87,14 @@ export default function EditItemDialog({ open, onOpenChange, item, onSaved }) {
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label htmlFor="e-cat">Category</Label>
-              <select
+              <MobileSelect
                 id="e-cat"
                 value={form.category}
-                onChange={(e) => setForm({ ...form, category: e.target.value })}
-                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-              >
-                <option value="">Select…</option>
-                {GROCERY_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
-              </select>
+                onChange={(val) => setForm({ ...form, category: val })}
+                placeholder="Select…"
+                label="Category"
+                options={[{ value: "", label: "None" }, ...GROCERY_CATEGORIES.map((c) => ({ value: c, label: c }))]}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="e-barcode">Barcode</Label>
@@ -108,14 +108,14 @@ export default function EditItemDialog({ open, onOpenChange, item, onSaved }) {
             </div>
             <div className="space-y-2">
               <Label htmlFor="e-unit">Unit</Label>
-              <select
+              <MobileSelect
                 id="e-unit"
                 value={form.unit}
-                onChange={(e) => setForm({ ...form, unit: e.target.value })}
-                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-              >
-                {UNITS.map((u) => <option key={u} value={u}>{u}</option>)}
-              </select>
+                onChange={(val) => setForm({ ...form, unit: val })}
+                placeholder="Select…"
+                label="Unit"
+                options={UNITS.map((u) => ({ value: u, label: u }))}
+              />
             </div>
           </div>
           <div className="space-y-2">

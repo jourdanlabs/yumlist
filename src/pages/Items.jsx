@@ -39,10 +39,12 @@ export default function Items() {
   useEffect(() => { load(); }, [familyId]);
 
   const handleUpdateQty = async (item, quantity) => {
+    const prevItems = items;
+    setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, quantity } : i));
     try {
       await base44.entities.GroceryItem.update(item.id, { quantity });
-      setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, quantity } : i));
     } catch (e) {
+      setItems(prevItems);
       toast({ title: "Could not update count", variant: "destructive" });
     }
   };
@@ -88,9 +90,9 @@ export default function Items() {
         </div>
       </div>
 
-      <div className="relative rounded-lg border border-border bg-white p-2">
+      <div className="relative rounded-lg border border-border bg-card p-2">
         <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search items…" className="pl-9 bg-white border-0 shadow-none focus-visible:ring-0" />
+        <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search items…" className="pl-9 bg-card border-0 shadow-none focus-visible:ring-0" />
       </div>
 
       {loading ? (
