@@ -83,7 +83,7 @@ export default function ItemCard({ item, counts, onReact, onDelete, onUpdate, on
               {onEdit && (
                 <button
                   onClick={() => onEdit(item)}
-                  className="text-muted-foreground hover:text-primary transition"
+                  className="text-muted-foreground hover:text-primary transition min-w-[44px] min-h-[44px]"
                   aria-label="Edit item"
                 >
                   <Pencil className="w-4 h-4" />
@@ -92,7 +92,7 @@ export default function ItemCard({ item, counts, onReact, onDelete, onUpdate, on
               {onDelete && (
                 <button
                   onClick={() => onDelete(item)}
-                  className="text-muted-foreground hover:text-destructive transition"
+                  className="text-muted-foreground hover:text-destructive transition min-w-[44px] min-h-[44px]"
                   aria-label="Delete item"
                 >
                   <Trash2 className="w-4 h-4" />

@@ -9,7 +9,7 @@ export default function ReactionBar({ likes, dislikes, neutrals, myReaction, onR
         type="button"
         onClick={() => onReact("like")}
         className={cn(
-          "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors border",
+          "flex items-center gap-1.5 rounded-full px-3 py-2.5 min-h-[44px] text-sm font-medium transition-colors border",
           myReaction === "like"
             ? "bg-emerald-500 text-white border-emerald-500"
             : "bg-card text-muted-foreground border-border hover:text-emerald-600 hover:border-emerald-300"
@@ -22,7 +22,7 @@ export default function ReactionBar({ likes, dislikes, neutrals, myReaction, onR
         type="button"
         onClick={() => onReact("neutral")}
         className={cn(
-          "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors border",
+          "flex items-center gap-1.5 rounded-full px-3 py-2.5 min-h-[44px] text-sm font-medium transition-colors border",
           myReaction === "neutral"
             ? "bg-slate-400 text-white border-slate-400"
             : "bg-card text-muted-foreground border-border hover:text-slate-600 hover:border-slate-300"
@@ -35,7 +35,7 @@ export default function ReactionBar({ likes, dislikes, neutrals, myReaction, onR
         type="button"
         onClick={() => onReact("dislike")}
         className={cn(
-          "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors border",
+          "flex items-center gap-1.5 rounded-full px-3 py-2.5 min-h-[44px] text-sm font-medium transition-colors border",
           myReaction === "dislike"
             ? "bg-rose-500 text-white border-rose-500"
             : "bg-card text-muted-foreground border-border hover:text-rose-600 hover:border-rose-300"

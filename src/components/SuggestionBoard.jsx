@@ -21,7 +21,7 @@ export default function SuggestionBoard({ suggestions, familyId, userId, recipes
       {suggestions.map((s) => {
         const counts = countsFor(s.id);
         return (
-          <div key={s.id} className="rounded-2xl border border-amber-200 bg-amber-50/50 p-4">
+          <div key={s.id} className="rounded-2xl border border-amber-200 bg-amber-50/50 dark:bg-amber-950/30 p-4">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <h3 className="font-medium truncate">{s.recipe_title}</h3>
@@ -35,7 +35,7 @@ export default function SuggestionBoard({ suggestions, familyId, userId, recipes
                   "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors",
                   counts.myReaction === "like"
                     ? "bg-green-500 text-white border-green-500"
-                    : "bg-white text-green-600 border-green-200 hover:bg-green-50"
+                    : "bg-card text-green-600 border-green-200 hover:bg-green-50 dark:bg-green-950/30 dark:text-green-400 dark:border-green-800"
                 )}
               >
                 <ThumbsUp className="w-4 h-4" /> {counts.likes}
@@ -46,7 +46,7 @@ export default function SuggestionBoard({ suggestions, familyId, userId, recipes
                   "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors",
                   counts.myReaction === "dislike"
                     ? "bg-red-500 text-white border-red-500"
-                    : "bg-white text-red-600 border-red-200 hover:bg-red-50"
+                    : "bg-card text-red-600 border-red-200 hover:bg-red-50 dark:bg-red-950/30 dark:text-red-400 dark:border-red-800"
                 )}
               >
                 <ThumbsDown className="w-4 h-4" /> {counts.dislikes}

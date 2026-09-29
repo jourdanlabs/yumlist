@@ -23,7 +23,7 @@ export default function RecipeCard({ recipe, counts, onReact, onDelete, onReques
             <button
               onClick={() => onToggleSelect(recipe.id)}
               className={cn(
-                "absolute top-1 left-1 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors",
+                "absolute top-1 left-1 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors min-w-[44px] min-h-[44px]",
                 selected ? "bg-primary border-primary text-primary-foreground" : "bg-white/80 border-border"
               )}
               aria-label={selected ? "Deselect recipe" : "Select recipe"}
@@ -42,7 +42,7 @@ export default function RecipeCard({ recipe, counts, onReact, onDelete, onReques
             {onDelete && !selectable && (
               <button
                 onClick={() => onDelete(recipe)}
-                className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition"
+                className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition min-w-[44px] min-h-[44px]"
                 aria-label="Delete recipe"
               >
                 <Trash2 className="w-4 h-4" />
@@ -69,7 +69,7 @@ export default function RecipeCard({ recipe, counts, onReact, onDelete, onReques
                     "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border transition-colors",
                     alreadySuggested
                       ? "bg-amber-500/10 text-amber-600 border-amber-300"
-                      : "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100"
+                      : "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800"
                   )}
                 >
                   <Megaphone className="w-4 h-4" />
@@ -84,7 +84,7 @@ export default function RecipeCard({ recipe, counts, onReact, onDelete, onReques
                     "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border transition-colors",
                     requested
                       ? "bg-emerald-500/10 text-emerald-600 border-emerald-300"
-                      : "bg-primary text-primary-foreground border-primary hover:bg-primary/90"
+                      : "bg-primary text-primary-foreground border-primary hover:bg-primary/90 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800"
                   )}
                 >
                   <ShoppingCart className="w-4 h-4" />
