@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Upload, Receipt } from "lucide-react";
+import { Plus, Search, Upload, Receipt, ScanLine } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useReactions } from "@/hooks/useReactions";
@@ -21,9 +21,20 @@ export default function Items() {
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [addOpen, setAddOpen] = useState(false);
+  const [addTab, setAddTab] = useState("manual");
   const [importOpen, setImportOpen] = useState(false);
   const [receiptOpen, setReceiptOpen] = useState(false);
   const [editing, setEditing] = useState(null);
+
+  const openBarcodeScan = () => {
+    setAddTab("scan");
+    setAddOpen(true);
+  };
+
+  const handleAddOpenChange = (o) => {
+    setAddOpen(o);
+    if (!o) setAddTab("manual");
+  };
 
   const load = async () => {
     if (!familyId) return;
@@ -83,6 +94,9 @@ export default function Items() {
           <p className="text-sm text-muted-foreground">Grocery items your family has added.</p>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
+          <Button variant="outline" onClick={openBarcodeScan}>
+            <ScanLine className="w-4 h-4 mr-1" /> Scan barcode
+          </Button>
           <Button variant="outline" onClick={() => setReceiptOpen(true)}>
             <Receipt className="w-4 h-4 mr-1" /> Scan receipt
           </Button>
@@ -126,8 +140,9 @@ export default function Items() {
 
       <AddItemDialog
         open={addOpen}
-        onOpenChange={setAddOpen}
+        onOpenChange={handleAddOpenChange}
         familyId={familyId}
+        initialTab={addTab}
         onAdded={() => { load(); reloadReactions(); }}
       />
       <ImportItemsDialog

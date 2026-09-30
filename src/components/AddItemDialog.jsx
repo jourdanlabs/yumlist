@@ -12,12 +12,18 @@ import { GROCERY_CATEGORIES, detectCategory } from "@/lib/groceryCategories";
 import VoiceButton from "@/components/VoiceButton";
 import MobileSelect from "@/components/MobileSelect";
 
-export default function AddItemDialog({ open, onOpenChange, familyId, onAdded }) {
+export default function AddItemDialog({ open, onOpenChange, familyId, onAdded, initialTab = "manual", onTabChange }) {
   const { toast } = useToast();
   const [scanning, setScanning] = useState(false);
   const [looking, setLooking] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [form, setForm] = useState({ name: "", brand: "", barcode: "", category: "", image_url: "", quantity: 1, unit: "units", expiration_date: "" });
+
+  const handleTabChange = (val) => {
+    setActiveTab(val);
+    onTabChange?.(val);
+  };
 
   const reset = () => setForm({ name: "", brand: "", barcode: "", category: "", image_url: "", quantity: 1, unit: "units", expiration_date: "" });
 
@@ -87,7 +93,7 @@ export default function AddItemDialog({ open, onOpenChange, familyId, onAdded })
         <DialogHeader>
           <DialogTitle>Add grocery item</DialogTitle>
         </DialogHeader>
-        <Tabs defaultValue="manual" className="overflow-y-auto pr-1 -mr-1">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="overflow-y-auto pr-1 -mr-1">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="manual">Manual</TabsTrigger>
             <TabsTrigger value="scan">Scan barcode</TabsTrigger>
