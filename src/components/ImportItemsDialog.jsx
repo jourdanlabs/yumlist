@@ -38,9 +38,10 @@ export default function ImportItemsDialog({ open, onOpenChange, familyId, onImpo
     setFileName(file.name);
     setStage("uploading");
     try {
-      const { file_url } = await base44.integrations.Core.UploadPublicFile({ file });
+      const { file_uri } = await base44.integrations.Core.UploadPrivateFile({ file });
+      const { signed_url } = await base44.integrations.Core.CreateFileSignedUrl({ file_uri });
       setStage("extracting");
-      const res = await base44.functions.invoke('extractPantryFile', { file_url });
+      const res = await base44.functions.invoke('extractPantryFile', { file_url: signed_url });
       const data = res.data;
       const rows = Array.isArray(data.output?.items) ? data.output.items : (Array.isArray(data.output) ? data.output : []);
       const valid = [];

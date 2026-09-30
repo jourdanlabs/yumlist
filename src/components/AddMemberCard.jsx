@@ -31,15 +31,19 @@ export default function AddMemberCard({ onAdded }) {
     setAdding(true);
     try {
       const res = await base44.functions.invoke("addFamilyMember", { email: email.trim() });
-      toast({
-        title: "Member added",
-        description: `${res.data.user.full_name || res.data.user.email} has joined your family.`,
-      });
+      if (res.data.already_member) {
+        toast({ title: "Already a member", description: `${res.data.user.full_name || res.data.user.email} is already in your family.` });
+      } else {
+        toast({
+          title: "Invitation sent",
+          description: `${res.data.user.full_name || res.data.user.email} will receive an email with your invite code.`,
+        });
+      }
       setEmail("");
       setResult(null);
       onAdded?.();
     } catch (e) {
-      toast({ title: "Could not add member", description: e.message, variant: "destructive" });
+      toast({ title: "Could not send invitation", description: e.message, variant: "destructive" });
     } finally {
       setAdding(false);
     }
@@ -49,12 +53,12 @@ export default function AddMemberCard({ onAdded }) {
     <Card>
       <CardHeader>
         <CardTitle className="text-base flex items-center gap-2">
-          <UserPlus className="w-4 h-4" /> Add a member
+          <UserPlus className="w-4 h-4" /> Invite a member
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         <p className="text-sm text-muted-foreground">
-          Search for an existing user by their email to add them to your family.
+          Search for an existing user by their email. We'll send them an email with your invite code so they can join your family.
         </p>
         <div className="flex gap-2">
           <Input
@@ -83,9 +87,9 @@ export default function AddMemberCard({ onAdded }) {
                 <p className="text-xs text-amber-600 mt-0.5">Already in a family — they must leave before you can add them.</p>
               )}
             </div>
-            <Button size="sm" onClick={add} disabled={adding}>
+            <Button size="sm" onClick={add} disabled={adding || result.user.has_family}>
               {adding ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Check className="w-4 h-4 mr-1" />}
-              Add
+              Invite
             </Button>
           </div>
         )}
