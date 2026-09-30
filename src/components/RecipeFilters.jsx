@@ -29,7 +29,7 @@ export default function RecipeFilters({
 
       {/* Family likes */}
       <div className="space-y-2">
-        <div className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+        <div className="text-sm font-medium text-muted-foreground flex items-center gap-1.5">
           <ThumbsUp className="w-3.5 h-3.5" /> Family likes
         </div>
         <div className="space-y-1">
@@ -52,7 +52,7 @@ export default function RecipeFilters({
             </button>
           ))}
         </div>
-        <p className="text-xs text-muted-foreground px-1">
+        <p className="text-sm text-muted-foreground px-1">
           {likeUserCount > 0
             ? `${likeUserCount} ${likeUserCount === 1 ? "member" : "members"} · ${likeItemCount} liked ${likeItemCount === 1 ? "item" : "items"}`
             : "No likes yet"}
@@ -61,9 +61,9 @@ export default function RecipeFilters({
 
       {/* Category */}
       <div className="space-y-2">
-        <div className="text-xs font-medium text-muted-foreground">Category</div>
+        <div className="text-sm font-medium text-muted-foreground">Category</div>
         {categories.length === 0 ? (
-          <p className="text-xs text-muted-foreground px-1">No categories from your pantry items yet.</p>
+          <p className="text-sm text-muted-foreground px-1">No categories from your pantry items yet.</p>
         ) : (
           <div className="space-y-1 max-h-72 overflow-y-auto pr-1">
             {categories.map((cat) => {
@@ -72,7 +72,7 @@ export default function RecipeFilters({
                 <button
                   key={cat}
                   onClick={() => onToggleCategory(cat)}
-                  className="w-full flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-left transition-colors hover:bg-accent"
+                  className="w-full flex items-center gap-2 rounded-lg px-2 py-2 text-sm text-left transition-colors hover:bg-accent min-h-[44px]"
                 >
                   <span
                     className={`w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 ${
@@ -81,7 +81,7 @@ export default function RecipeFilters({
                   >
                     {active && <span className="w-2 h-2 rounded-sm bg-primary-foreground" />}
                   </span>
-                  <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${categoryStyle(cat)}`}>
+                  <span className={`text-sm font-medium px-2 py-0.5 rounded-full ${categoryStyle(cat)}`}>
                     {cat}
                   </span>
                 </button>

@@ -167,7 +167,7 @@ export default function NotificationsBell({ className }) {
                       <span className="text-muted-foreground">{n.verb}</span>{" "}
                       <span className="font-medium truncate">{n.target}</span>
                     </div>
-                    <div className="text-[11px] text-muted-foreground mt-0.5">{timeAgo(n.date)}</div>
+                    <div className="text-sm text-muted-foreground mt-0.5">{timeAgo(n.date)}</div>
                   </div>
                   {isNew && <span className="mt-1 w-2 h-2 rounded-full bg-primary shrink-0" />}
                 </div>

@@ -45,11 +45,11 @@ export default function ItemCard({ item, counts, onReact, onDelete, onUpdate, on
               {item.brand && <p className="text-sm text-muted-foreground truncate">{item.brand}</p>}
               <div className="flex flex-wrap items-center gap-1.5 mt-1">
                 {item.category && (
-                  <span className="inline-block text-[11px] uppercase tracking-wide text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                  <span className="inline-block text-sm uppercase tracking-wide text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
                     {item.category}
                   </span>
                 )}
-                <span className={`inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full ${outOfStock ? "bg-destructive/10 text-destructive" : "bg-primary/10 text-primary"}`}>
+                <span className={`inline-flex items-center gap-1 text-sm px-2 py-0.5 rounded-full ${outOfStock ? "bg-destructive/10 text-destructive" : "bg-primary/10 text-primary"}`}>
                   <Package className="w-3 h-3" />
                   {outOfStock ? "Out of stock" : `${qty} ${unit}`}
                 </span>
@@ -72,14 +72,14 @@ export default function ItemCard({ item, counts, onReact, onDelete, onUpdate, on
                   </span>
                 )}
                 {exp && (
-                  <span className={`inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full ${toneClasses[exp.tone]}`}>
+                  <span className={`inline-flex items-center gap-1 text-sm px-2 py-0.5 rounded-full ${toneClasses[exp.tone]}`}>
                     <CalendarClock className="w-3 h-3" />
                     {exp.label}
                   </span>
                 )}
               </div>
             </div>
-            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+            <div className="flex items-center gap-1 md:opacity-0 md:group-hover:opacity-100 transition">
               {onEdit && (
                 <button
                   onClick={() => onEdit(item)}

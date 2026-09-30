@@ -93,7 +93,7 @@ export default function Items() {
           <h1 className="font-heading text-2xl font-semibold">Pantry</h1>
           <p className="text-sm text-muted-foreground">Grocery items your family has added.</p>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
           <Button variant="outline" onClick={openBarcodeScan}>
             <ScanLine className="w-4 h-4 mr-1" /> Scan barcode
           </Button>

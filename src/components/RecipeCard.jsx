@@ -37,12 +37,12 @@ export default function RecipeCard({ recipe, counts, onReact, onDelete, onReques
             <div className="min-w-0">
               <h3 className="font-medium truncate">{recipe.title}</h3>
               {recipe.source && <p className="text-sm text-muted-foreground truncate">From {recipe.source}</p>}
-              <p className="text-xs text-muted-foreground mt-0.5">{(recipe.ingredients || []).length} ingredients</p>
+              <p className="text-sm text-muted-foreground mt-0.5">{(recipe.ingredients || []).length} ingredients</p>
             </div>
             {onDelete && !selectable && (
               <button
                 onClick={() => onDelete(recipe)}
-                className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition min-w-[44px] min-h-[44px]"
+                className="md:opacity-0 md:group-hover:opacity-100 text-muted-foreground hover:text-destructive transition min-w-[44px] min-h-[44px]"
                 aria-label="Delete recipe"
               >
                 <Trash2 className="w-4 h-4" />
