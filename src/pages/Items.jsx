@@ -2,13 +2,14 @@ import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Upload } from "lucide-react";
+import { Plus, Search, Upload, Receipt } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useReactions } from "@/hooks/useReactions";
 import ItemCard from "@/components/ItemCard";
 import AddItemDialog from "@/components/AddItemDialog";
 import ImportItemsDialog from "@/components/ImportItemsDialog";
+import ScanReceiptDialog from "@/components/ScanReceiptDialog";
 import EditItemDialog from "@/components/EditItemDialog";
 
 export default function Items() {
@@ -21,6 +22,7 @@ export default function Items() {
   const [query, setQuery] = useState("");
   const [addOpen, setAddOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [receiptOpen, setReceiptOpen] = useState(false);
   const [editing, setEditing] = useState(null);
 
   const load = async () => {
@@ -81,6 +83,9 @@ export default function Items() {
           <p className="text-sm text-muted-foreground">Grocery items your family has added.</p>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
+          <Button variant="outline" onClick={() => setReceiptOpen(true)}>
+            <Receipt className="w-4 h-4 mr-1" /> Scan receipt
+          </Button>
           <Button variant="outline" onClick={() => setImportOpen(true)}>
             <Upload className="w-4 h-4 mr-1" /> Import
           </Button>
@@ -128,6 +133,12 @@ export default function Items() {
       <ImportItemsDialog
         open={importOpen}
         onOpenChange={setImportOpen}
+        familyId={familyId}
+        onImported={() => { load(); reloadReactions(); }}
+      />
+      <ScanReceiptDialog
+        open={receiptOpen}
+        onOpenChange={setReceiptOpen}
         familyId={familyId}
         onImported={() => { load(); reloadReactions(); }}
       />
