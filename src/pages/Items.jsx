@@ -105,6 +105,18 @@ export default function Items() {
       return (i.name || "").toLowerCase().includes(q) || (i.brand || "").toLowerCase().includes(q) || (i.category || "").toLowerCase().includes(q);
     });
 
+  const grouped = filtered.reduce((acc, item) => {
+    const cat = item.category || "Uncategorized";
+    if (!acc[cat]) acc[cat] = [];
+    acc[cat].push(item);
+    return acc;
+  }, {});
+  const categories = Object.keys(grouped).sort((a, b) => {
+    if (a === "Uncategorized") return 1;
+    if (b === "Uncategorized") return -1;
+    return a.localeCompare(b);
+  });
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
@@ -142,19 +154,29 @@ export default function Items() {
           <p className="text-muted-foreground">{query ? "No items match your search." : "Your pantry is empty. Add your first item."}</p>
         </div>
       ) : (
-        <div className="grid sm:grid-cols-2 gap-4">
-          {filtered.map((item) => (
-            <ItemCard
-              key={item.id}
-              item={item}
-              counts={countsFor(item.id)}
-              onReact={(r) => react(item.id, r)}
-              onDelete={() => handleDelete(item)}
-              onUpdate={(quantity) => handleUpdateQty(item, quantity)}
-              onEdit={(it) => setEditing(it)}
-              allergyFlag={flagsByName[(item.name || "").toLowerCase()]}
-              onFlag={(it) => setFlagging(it)}
-            />
+        <div className="space-y-8">
+          {categories.map((cat) => (
+            <div key={cat}>
+              <h2 className="font-heading text-lg font-semibold mb-3 flex items-center gap-2">
+                {cat}
+                <span className="text-sm font-normal text-muted-foreground">({grouped[cat].length})</span>
+              </h2>
+              <div className="grid sm:grid-cols-2 gap-4">
+                {grouped[cat].map((item) => (
+                  <ItemCard
+                    key={item.id}
+                    item={item}
+                    counts={countsFor(item.id)}
+                    onReact={(r) => react(item.id, r)}
+                    onDelete={() => handleDelete(item)}
+                    onUpdate={(quantity) => handleUpdateQty(item, quantity)}
+                    onEdit={(it) => setEditing(it)}
+                    allergyFlag={flagsByName[(item.name || "").toLowerCase()]}
+                    onFlag={(it) => setFlagging(it)}
+                  />
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       )}
