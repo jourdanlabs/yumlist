@@ -1,6 +1,6 @@
 import React from "react";
 import { Image } from "@/components/ui/image";
-import { Trash2, CalendarClock, Package, Minus, Plus, Pencil } from "lucide-react";
+import { Trash2, CalendarClock, Package, Minus, Plus, Pencil, AlertTriangle } from "lucide-react";
 import ReactionBar from "@/components/ReactionBar";
 import { capitalize } from "@/lib/utils";
 import { itemEmoji } from "@/lib/itemEmoji";
@@ -22,7 +22,7 @@ const toneClasses = {
   ok: "bg-muted text-muted-foreground",
 };
 
-export default function ItemCard({ item, counts, onReact, onDelete, onUpdate, onEdit }) {
+export default function ItemCard({ item, counts, onReact, onDelete, onUpdate, onEdit, allergyFlag, onFlag }) {
   const qty = item.quantity ?? 1;
   const unit = item.unit || "units";
   const exp = expiryStatus(item.expiration_date);
@@ -77,9 +77,24 @@ export default function ItemCard({ item, counts, onReact, onDelete, onUpdate, on
                     {exp.label}
                   </span>
                 )}
+                {allergyFlag && (
+                  <span className={`inline-flex items-center gap-1 text-sm px-2 py-0.5 rounded-full ${allergyFlag.flag_type === "allergy" ? "bg-destructive/15 text-destructive" : "bg-amber-500/15 text-amber-700 dark:text-amber-400"}`}>
+                    <AlertTriangle className="w-3 h-3" />
+                    {allergyFlag.flag_type === "allergy" ? "Allergy" : "Sensitivity"}
+                  </span>
+                )}
               </div>
             </div>
             <div className="flex items-center gap-1 md:opacity-0 md:group-hover:opacity-100 transition">
+              {onFlag && (
+                <button
+                  onClick={() => onFlag(item)}
+                  className={`transition min-w-[44px] min-h-[44px] ${allergyFlag ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground hover:text-amber-600"}`}
+                  aria-label="Flag allergy or sensitivity"
+                >
+                  <AlertTriangle className="w-4 h-4" />
+                </button>
+              )}
               {onEdit && (
                 <button
                   onClick={() => onEdit(item)}

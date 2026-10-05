@@ -1,0 +1,95 @@
+{
+  "name": "AllergyFlag",
+  "type": "object",
+  "properties": {
+    "family_id": {
+      "type": "string",
+      "title": "Family ID"
+    },
+    "item_name": {
+      "type": "string",
+      "title": "Item name"
+    },
+    "flag_type": {
+      "type": "string",
+      "title": "Flag type",
+      "enum": [
+        "allergy",
+        "sensitivity"
+      ]
+    },
+    "severity": {
+      "type": "string",
+      "title": "Severity",
+      "enum": [
+        "mild",
+        "moderate",
+        "severe"
+      ],
+      "default": "moderate"
+    },
+    "member_name": {
+      "type": "string",
+      "title": "Member name"
+    },
+    "notes": {
+      "type": "string",
+      "title": "Notes"
+    }
+  },
+  "required": [
+    "family_id",
+    "item_name",
+    "flag_type"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.family_id": "{{user.data.family_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.family_id": "{{user.data.family_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.family_id": "{{user.data.family_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.family_id": "{{user.data.family_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

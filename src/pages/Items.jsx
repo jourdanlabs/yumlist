@@ -11,6 +11,7 @@ import AddItemDialog from "@/components/AddItemDialog";
 import ImportItemsDialog from "@/components/ImportItemsDialog";
 import ScanReceiptDialog from "@/components/ScanReceiptDialog";
 import EditItemDialog from "@/components/EditItemDialog";
+import FlagAllergyDialog from "@/components/FlagAllergyDialog";
 
 export default function Items() {
   const { user } = useCurrentUser();
@@ -25,6 +26,8 @@ export default function Items() {
   const [importOpen, setImportOpen] = useState(false);
   const [receiptOpen, setReceiptOpen] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [flagging, setFlagging] = useState(null);
+  const [allergyFlags, setAllergyFlags] = useState([]);
 
   const openBarcodeScan = () => {
     setAddTab("scan");
@@ -49,7 +52,17 @@ export default function Items() {
     }
   };
 
-  useEffect(() => { load(); }, [familyId]);
+  const loadFlags = async () => {
+    if (!familyId) return;
+    try {
+      const data = await base44.entities.AllergyFlag.filter({ family_id: familyId }, "-created_date");
+      setAllergyFlags(Array.isArray(data) ? data : data.items || []);
+    } catch (e) {
+      // silent
+    }
+  };
+
+  useEffect(() => { load(); loadFlags(); }, [familyId]);
 
   const handleUpdateQty = async (item, quantity) => {
     const prevItems = items;
@@ -77,6 +90,12 @@ export default function Items() {
       toast({ title: "Could not delete", variant: "destructive" });
     }
   };
+
+  const flagsByName = allergyFlags.reduce((acc, f) => {
+    const key = (f.item_name || "").toLowerCase();
+    if (!acc[key]) acc[key] = f;
+    return acc;
+  }, {});
 
   const filtered = items
     .filter((i) => !i.recipe_title)
@@ -133,6 +152,8 @@ export default function Items() {
               onDelete={() => handleDelete(item)}
               onUpdate={(quantity) => handleUpdateQty(item, quantity)}
               onEdit={(it) => setEditing(it)}
+              allergyFlag={flagsByName[(item.name || "").toLowerCase()]}
+              onFlag={(it) => setFlagging(it)}
             />
           ))}
         </div>
@@ -162,6 +183,13 @@ export default function Items() {
         onOpenChange={(o) => { if (!o) setEditing(null); }}
         item={editing}
         onSaved={() => { load(); reloadReactions(); }}
+      />
+      <FlagAllergyDialog
+        open={!!flagging}
+        onOpenChange={(o) => { if (!o) setFlagging(null); }}
+        itemName={flagging?.name}
+        familyId={familyId}
+        onFlagged={() => loadFlags()}
       />
     </div>
   );
