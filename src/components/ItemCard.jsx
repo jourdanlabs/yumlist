@@ -85,7 +85,7 @@ export default function ItemCard({ item, counts, onReact, onDelete, onUpdate, on
                 )}
               </div>
             </div>
-            <div className="flex items-center gap-1 md:opacity-0 md:group-hover:opacity-100 transition">
+            <div className="flex items-center gap-1">
               {onFlag && (
                 <button
                   onClick={() => onFlag(item)}
