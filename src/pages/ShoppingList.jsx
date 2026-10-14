@@ -3,9 +3,10 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { ClipboardList, Loader2, Package, Printer, RefreshCw, ShoppingCart, CheckCheck, CalendarPlus, Search, Store, X } from "lucide-react";
+import { ClipboardList, Loader2, Package, Printer, RefreshCw, ShoppingCart, CheckCheck, CalendarPlus, Search, Store, X, MapPin } from "lucide-react";
 import ScheduleTripDialog from "@/components/ScheduleTripDialog";
 import PantryPicker from "@/components/PantryPicker";
+import BestPricesDialog from "@/components/BestPricesDialog";
 import { useToast } from "@/components/ui/use-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { GROCERY_CATEGORIES, categoryStyle, normalizeCategory } from "@/lib/groceryCategories";
@@ -25,6 +26,7 @@ export default function ShoppingList() {
   const [query, setQuery] = useState("");
   const [atStore, setAtStore] = useState(false);
   const [visibleCount, setVisibleCount] = useState(30);
+  const [pricesOpen, setPricesOpen] = useState(false);
 
   const load = async () => {
     if (!familyId) return;
@@ -206,6 +208,11 @@ export default function ShoppingList() {
           </Button>
         )}
         {shopping.length > 0 && (
+          <Button onClick={() => setPricesOpen(true)} className="bg-card text-foreground border border-input hover:bg-accent">
+            <MapPin className="w-4 h-4 mr-2" /> Find best prices
+          </Button>
+        )}
+        {shopping.length > 0 && (
           <Button className="bg-card text-foreground border border-input hover:bg-accent" onClick={() => window.print()}>
             <Printer className="w-4 h-4 mr-2" /> Print
           </Button>
@@ -213,6 +220,7 @@ export default function ShoppingList() {
       </div>
 
       <ScheduleTripDialog open={tripOpen} onOpenChange={setTripOpen} itemCount={shopping.length} />
+      <BestPricesDialog open={pricesOpen} onOpenChange={setPricesOpen} items={shopping} />
 
       <div className="relative rounded-lg border border-border bg-card p-2 no-print">
         <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
