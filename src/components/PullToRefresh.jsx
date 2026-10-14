@@ -69,7 +69,7 @@ export default function PullToRefresh({ onRefresh, children }) {
       onTouchEnd={handleTouchEnd}
     >
       <div
-        className="flex items-center justify-center overflow-hidden transition-all duration-200"
+        className="relative z-20 flex items-center justify-center overflow-hidden transition-all duration-200"
         style={{ height: pullDistance }}
       >
         <RefreshCw

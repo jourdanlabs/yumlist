@@ -74,7 +74,7 @@ export default function SharedFamily() {
   };
 
   if (loading) {
-    return <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin" /></div>;
+    return <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-muted border-t-primary rounded-full animate-spin" /></div>;
   }
 
   if (!allowed) {
