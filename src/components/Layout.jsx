@@ -100,8 +100,8 @@ export default function Layout() {
       {/* Desktop sidebar */}
       <aside className="hidden md:flex fixed inset-y-0 left-0 w-64 flex-col border-r border-border bg-card">
         <div className="px-6 py-7 flex flex-col items-center text-center picnic-bg border-2 border-black rounded-lg">
-          <img src="https://media.base44.com/images/public/6a85c116bb660295b89c8343/1144503d3_HappyPantryLOGO.png" alt="Happy Pantry" className="w-24 h-24 rounded-xl object-cover mb-2" />
-          <div className="font-heading font-semibold leading-tight">Happy Pantry</div>
+          <img src="https://media.base44.com/images/public/6a85c116bb660295b89c8343/1144503d3_HappyPantryLOGO.png" alt="YumList" className="w-24 h-24 rounded-xl object-cover mb-2" />
+          <div className="font-heading font-semibold leading-tight">YumList</div>
           <div className="text-xs font-bold text-orange-700">{user?.family_name || "No family"}</div>
         </div>
         <nav className="flex-1 px-3 space-y-1 pt-6">
@@ -151,8 +151,8 @@ export default function Layout() {
               </button>
             ) : (
               <div className="flex items-center gap-2">
-                <img src="https://media.base44.com/images/public/6a85c116bb660295b89c8343/1144503d3_HappyPantryLOGO.png" alt="Happy Pantry" className="w-8 h-8 rounded-lg object-cover" />
-                <span className="font-heading font-semibold">Happy Pantry</span>
+                <img src="https://media.base44.com/images/public/6a85c116bb660295b89c8343/1144503d3_HappyPantryLOGO.png" alt="YumList" className="w-8 h-8 rounded-lg object-cover" />
+                <span className="font-heading font-semibold">YumList</span>
               </div>
             )}
           </div>
