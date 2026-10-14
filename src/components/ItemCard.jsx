@@ -81,6 +81,7 @@ export default function ItemCard({ item, counts, onReact, onDelete, onUpdate, on
                   <span className={`inline-flex items-center gap-1 text-sm px-2 py-0.5 rounded-full ${allergyFlag.flag_type === "allergy" ? "bg-destructive/15 text-destructive" : "bg-amber-500/15 text-amber-700 dark:text-amber-400"}`}>
                     <AlertTriangle className="w-3 h-3" />
                     {allergyFlag.flag_type === "allergy" ? "Allergy" : "Sensitivity"}
+                    {allergyFlag.member_name && <span className="opacity-80">· {allergyFlag.member_name}</span>}
                   </span>
                 )}
               </div>
