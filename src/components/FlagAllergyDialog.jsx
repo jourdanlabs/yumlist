@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -21,15 +22,21 @@ export default function FlagAllergyDialog({ open, onOpenChange, itemName, family
   const [memberName, setMemberName] = useState("");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
+  const [members, setMembers] = useState([]);
+  const [customMember, setCustomMember] = useState(false);
 
   useEffect(() => {
-    if (open) {
+    if (open && familyId) {
+      base44.entities.User.filter({ family_id: familyId })
+        .then((res) => setMembers(Array.isArray(res) ? res : res.items || []))
+        .catch(() => setMembers([]));
       setFlagType("allergy");
       setSeverity("moderate");
       setMemberName("");
       setNotes("");
+      setCustomMember(false);
     }
-  }, [open]);
+  }, [open, familyId]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -103,13 +110,35 @@ export default function FlagAllergyDialog({ open, onOpenChange, itemName, family
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="member-name">Who has it (optional)</Label>
-            <Input
-              id="member-name"
-              value={memberName}
-              onChange={(e) => setMemberName(e.target.value)}
-              placeholder="e.g. Emma"
-            />
+            <Label>Who has it (optional)</Label>
+            <Select
+              value={customMember ? "__custom" : memberName || "none"}
+              onValueChange={(val) => {
+                if (val === "none") { setMemberName(""); setCustomMember(false); }
+                else if (val === "__custom") { setMemberName(""); setCustomMember(true); }
+                else { setMemberName(val); setCustomMember(false); }
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select a family member" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No one / skip</SelectItem>
+                {members.map((m) => (
+                  <SelectItem key={m.id} value={m.full_name || m.email}>
+                    {m.full_name || m.email}
+                  </SelectItem>
+                ))}
+                <SelectItem value="__custom">Someone not listed…</SelectItem>
+              </SelectContent>
+            </Select>
+            {customMember && (
+              <Input
+                value={memberName}
+                onChange={(e) => setMemberName(e.target.value)}
+                placeholder="Type a name"
+              />
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="notes">Notes (optional)</Label>
