@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import MobileSelect from "@/components/MobileSelect";
 import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -111,27 +111,21 @@ export default function FlagAllergyDialog({ open, onOpenChange, itemName, family
           </div>
           <div className="space-y-2">
             <Label>Who has it (optional)</Label>
-            <Select
+            <MobileSelect
               value={customMember ? "__custom" : memberName || "none"}
-              onValueChange={(val) => {
+              onChange={(val) => {
                 if (val === "none") { setMemberName(""); setCustomMember(false); }
                 else if (val === "__custom") { setMemberName(""); setCustomMember(true); }
                 else { setMemberName(val); setCustomMember(false); }
               }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a family member" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">No one / skip</SelectItem>
-                {members.map((m) => (
-                  <SelectItem key={m.id} value={m.full_name || m.email}>
-                    {m.full_name || m.email}
-                  </SelectItem>
-                ))}
-                <SelectItem value="__custom">Someone not listed…</SelectItem>
-              </SelectContent>
-            </Select>
+              placeholder="Select a family member"
+              label="Who has it"
+              options={[
+                { value: "none", label: "No one / skip" },
+                ...members.map((m) => ({ value: m.full_name || m.email, label: m.full_name || m.email })),
+                { value: "__custom", label: "Someone not listed…" },
+              ]}
+            />
             {customMember && (
               <Input
                 value={memberName}

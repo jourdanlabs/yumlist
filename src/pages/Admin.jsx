@@ -102,6 +102,7 @@ export default function Admin() {
       <Card>
         <CardHeader><CardTitle className="text-base">Download source</CardTitle></CardHeader>
         <CardContent className="p-0">
+          <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="text-muted-foreground text-xs">
               <tr>
@@ -122,6 +123,7 @@ export default function Admin() {
               ))}
             </tbody>
           </table>
+          </div>
         </CardContent>
       </Card>
 
@@ -144,6 +146,7 @@ export default function Admin() {
       <Card>
         <CardHeader><CardTitle className="text-base">Cohort retention</CardTitle></CardHeader>
         <CardContent className="p-0">
+          <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="text-muted-foreground text-xs">
               <tr>
@@ -164,6 +167,7 @@ export default function Admin() {
               ))}
             </tbody>
           </table>
+          </div>
         </CardContent>
       </Card>
     </div>

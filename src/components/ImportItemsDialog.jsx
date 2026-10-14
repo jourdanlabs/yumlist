@@ -146,7 +146,7 @@ export default function ImportItemsDialog({ open, onOpenChange, familyId, onImpo
                   {errors.length > 10 && <div>…and {errors.length - 10} more</div>}
                 </div>
               )}
-              <div className="max-h-64 overflow-y-auto rounded-md border border-border">
+              <div className="max-h-64 overflow-y-auto overflow-x-auto rounded-md border border-border">
                 <table className="w-full text-xs">
                   <thead className="bg-muted sticky top-0">
                     <tr>

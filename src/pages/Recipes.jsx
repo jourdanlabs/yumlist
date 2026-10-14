@@ -109,6 +109,7 @@ export default function Recipes() {
       toast({ title: "This recipe has no ingredients to add", variant: "destructive" });
       return;
     }
+    toast({ title: `Adding ${ings.length} ingredient${ings.length > 1 ? "s" : ""} from "${recipe.title}"…` });
     try {
       await base44.entities.GroceryItem.bulkCreate(
         ings.map((ing) => ({
@@ -124,7 +125,7 @@ export default function Recipes() {
       );
       toast({ title: `Added ${ings.length} ingredient${ings.length > 1 ? "s" : ""} from "${recipe.title}" to your shopping list` });
     } catch (e) {
-      toast({ title: "Could not request recipe", variant: "destructive" });
+      toast({ title: "Could not request recipe — ingredients not added", variant: "destructive" });
     }
   };
 

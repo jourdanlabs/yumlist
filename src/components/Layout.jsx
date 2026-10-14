@@ -197,6 +197,7 @@ export default function Layout() {
                 key={item.to}
                 to={item.to}
                 onClick={(e) => handleTabClick(e, item)}
+                aria-current={active ? "page" : undefined}
                 className={cn(
                   "flex flex-col items-center gap-1 py-2.5 text-xs font-medium transition-colors min-h-[44px] justify-center",
                   active ? "text-primary" : "text-muted-foreground"
