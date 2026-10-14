@@ -12,7 +12,7 @@ import { queryClientInstance } from "@/lib/query-client";
 const nav = [
   { to: "/", label: "Home", icon: HomeIcon },
   { to: "/items", label: "Pantry", icon: Carrot },
-  { to: "/shopping-list", label: "Shopping", icon: ShoppingCart },
+  { to: "/shopping-list", label: "Shop", icon: ShoppingCart },
   { to: "/recipes", label: "Recipes", icon: ChefHat },
   { to: "/share", label: "Share", icon: Share2 },
   { to: "/family", label: "Family", icon: Users },

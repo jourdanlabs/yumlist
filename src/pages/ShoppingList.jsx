@@ -185,7 +185,7 @@ export default function ShoppingList() {
     <div className="space-y-6">
       <div>
         <h1 className="font-heading text-2xl font-semibold flex items-center gap-2">
-          <ShoppingCart className="w-6 h-6" /> Shopping list
+          <ShoppingCart className="w-6 h-6" /> Shop list
         </h1>
         <p className="text-sm text-muted-foreground">
           Recipe ingredients are added here automatically. Pick pantry items to restock from the list below.
@@ -233,7 +233,7 @@ export default function ShoppingList() {
       </div>
 
       <div className="print-only mb-6">
-        <h1 className="text-2xl font-bold">Shopping List</h1>
+        <h1 className="text-2xl font-bold">Shop List</h1>
         <p className="text-sm text-muted-foreground">
           {user?.family_name || "YumList"} · {new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}
         </p>
