@@ -35,9 +35,9 @@ export default function RecipeCard({ recipe, counts, onReact, onDelete, onReques
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <h3 className="font-medium truncate">{recipe.title}</h3>
-              {recipe.source && <p className="text-sm text-muted-foreground truncate">From {recipe.source}</p>}
-              <p className="text-sm text-muted-foreground mt-0.5">{(recipe.ingredients || []).length} ingredients</p>
+              <h3 className="text-sm md:text-base font-medium truncate">{recipe.title}</h3>
+              {recipe.source && <p className="text-xs md:text-sm text-muted-foreground truncate">From {recipe.source}</p>}
+              <p className="text-xs md:text-sm text-muted-foreground mt-0.5">{(recipe.ingredients || []).length} ingredients</p>
             </div>
             {onDelete && !selectable && (
               <button
@@ -66,7 +66,7 @@ export default function RecipeCard({ recipe, counts, onReact, onDelete, onReques
                   onClick={onSuggest}
                   disabled={alreadySuggested}
                   className={cn(
-                    "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border transition-colors",
+                    "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs md:text-sm font-medium border transition-colors",
                     alreadySuggested
                       ? "bg-amber-500/10 text-amber-600 border-amber-300"
                       : "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800"
@@ -81,7 +81,7 @@ export default function RecipeCard({ recipe, counts, onReact, onDelete, onReques
                   onClick={() => { setRequested(true); onRequest(); }}
                   disabled={requested}
                   className={cn(
-                    "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border transition-colors",
+                    "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs md:text-sm font-medium border transition-colors",
                     requested
                       ? "bg-emerald-500/10 text-emerald-600 border-emerald-300"
                       : "bg-primary text-primary-foreground border-primary hover:bg-primary/90 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800"
@@ -96,7 +96,7 @@ export default function RecipeCard({ recipe, counts, onReact, onDelete, onReques
         </div>
       </div>
       {open && (
-        <div className="px-4 pb-4 space-y-3 text-sm border-t border-border pt-4">
+        <div className="px-4 pb-4 space-y-3 text-xs md:text-sm border-t border-border pt-4">
           <div>
             <div className="font-medium mb-1">Ingredients</div>
             <ul className="list-disc list-inside text-muted-foreground space-y-0.5">

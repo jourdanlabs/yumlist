@@ -266,8 +266,8 @@ export default function Recipes() {
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="font-heading text-2xl font-semibold">Recipes</h1>
-          <p className="text-sm text-muted-foreground">Recipes your family has collected.</p>
+          <h1 className="font-heading text-lg md:text-2xl font-semibold">Recipes</h1>
+          <p className="text-xs md:text-sm text-muted-foreground">Recipes your family has collected.</p>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           <Button
