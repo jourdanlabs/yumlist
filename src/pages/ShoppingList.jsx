@@ -218,7 +218,7 @@ export default function ShoppingList() {
       <div className="print-only mb-6">
         <h1 className="text-2xl font-bold">Shopping List</h1>
         <p className="text-sm text-muted-foreground">
-          {user?.family_name || "Happy Pantry"} · {new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}
+          {user?.family_name || "Family Pantry"} · {new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}
         </p>
         <hr className="my-3 border-black" />
       </div>

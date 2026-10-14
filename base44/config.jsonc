@@ -1,5 +1,5 @@
 {
-  "name": "Happy Pantry",
+  "name": "Family Pantry",
   "site": {
     "installCommand": "npm install",
     "buildCommand": "npm run build",

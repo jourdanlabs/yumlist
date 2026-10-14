@@ -20,7 +20,7 @@ export default function PrivacyPolicy() {
 
         <div className="space-y-10">
           <p className="text-muted-foreground leading-relaxed">
-            Happy Pantry ("we," "us," or "our") operates the Happy Pantry mobile application
+            Family Pantry ("we," "us," or "our") operates the Family Pantry mobile application
             and web service (the "App"). This Privacy Policy describes how we collect, use,
             disclose, and safeguard your information when you use the App. By using the App, you
             agree to the practices described in this policy.
@@ -107,7 +107,7 @@ export default function PrivacyPolicy() {
         </div>
 
         <footer className="mt-12 border-t border-border pt-6 text-sm text-muted-foreground">
-          <p>Happy Pantry — Less Guessing. More Yum!</p>
+          <p>Family Pantry — Less Guessing. More Yum!</p>
         </footer>
       </div>
     </div>

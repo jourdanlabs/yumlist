@@ -50,7 +50,7 @@ export default function Share() {
 
   const summary = useMemo(() => {
     const name = user?.full_name || user?.email || "A family member";
-    const lines = [`${name}'s tastes from ${user?.family_name || "Happy Pantry"}`, ""];
+    const lines = [`${name}'s tastes from ${user?.family_name || "Family Pantry"}`, ""];
     if (myLikes.items.length) {
       lines.push("Grocery items I love:");
       myLikes.items.forEach((i) => lines.push(`  • ${i.name}${i.brand ? ` (${i.brand})` : ""}`));
