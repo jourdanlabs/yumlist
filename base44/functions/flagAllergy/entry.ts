@@ -5,7 +5,7 @@ export default async function(req) {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    if (!user.data || !user.data.family_id) return Response.json({ error: 'No family set on user' }, { status: 400 });
+    if (!user.family_id) return Response.json({ error: 'No family set on user' }, { status: 400 });
 
     const body = await req.json();
     const itemName = (body && body.item_name || '').toString().trim();
@@ -13,7 +13,7 @@ export default async function(req) {
     if (!itemName) return Response.json({ error: 'Item name is required' }, { status: 400 });
     if (!['allergy', 'sensitivity'].includes(flagType)) return Response.json({ error: 'Invalid flag type' }, { status: 400 });
 
-    const familyId = user.data.family_id;
+    const familyId = user.family_id;
     const action = (body && body.action || 'save').toString().trim();
 
     if (action === 'remove') {
