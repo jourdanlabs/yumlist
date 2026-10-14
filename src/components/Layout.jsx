@@ -96,7 +96,7 @@ export default function Layout() {
       {/* Desktop sidebar */}
       <aside className="hidden md:flex fixed inset-y-0 left-0 w-64 flex-col border-r border-border bg-card">
         <div className="px-6 py-7 flex flex-col items-center text-center picnic-bg border-2 border-black rounded-lg">
-          <img src="https://media.base44.com/images/public/6a85c116bb660295b89c8343/25976f754_FPLogo.png" alt="Happy Pantry" className="w-24 h-24 rounded-xl object-cover mb-2" />
+          <img src="https://media.base44.com/images/public/6a85c116bb660295b89c8343/1144503d3_HappyPantryLOGO.png" alt="Happy Pantry" className="w-24 h-24 rounded-xl object-cover mb-2" />
           <div className="font-heading font-semibold leading-tight">Happy Pantry</div>
           <div className="text-xs font-bold text-orange-500">{user?.family_name || "No family"}</div>
         </div>
@@ -147,7 +147,7 @@ export default function Layout() {
               </button>
             ) : (
               <div className="flex items-center gap-2">
-                <img src="https://media.base44.com/images/public/6a85c116bb660295b89c8343/25976f754_FPLogo.png" alt="Happy Pantry" className="w-8 h-8 rounded-lg object-cover" />
+                <img src="https://media.base44.com/images/public/6a85c116bb660295b89c8343/1144503d3_HappyPantryLOGO.png" alt="Happy Pantry" className="w-8 h-8 rounded-lg object-cover" />
                 <span className="font-heading font-semibold">Happy Pantry</span>
               </div>
             )}

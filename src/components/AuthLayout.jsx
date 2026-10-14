@@ -5,7 +5,7 @@ export default function AuthLayout({ icon: Icon, title, subtitle, footer, childr
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-10">
-          <img src="https://media.base44.com/images/public/6a85c116bb660295b89c8343/25976f754_FPLogo.png" alt="Happy Pantry" className="w-20 h-20 rounded-2xl object-cover mb-4 mx-auto" />
+          <img src="https://media.base44.com/images/public/6a85c116bb660295b89c8343/1144503d3_HappyPantryLOGO.png" alt="Happy Pantry" className="w-20 h-20 rounded-2xl object-cover mb-4 mx-auto" />
           <h1 className="text-3xl font-bold tracking-tight text-foreground">{title}</h1>
           {subtitle && <p className="text-muted-foreground mt-2">{subtitle}</p>}
         </div>
