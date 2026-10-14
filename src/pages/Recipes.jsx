@@ -30,6 +30,7 @@ export default function Recipes() {
   const [selectedIds, setSelectedIds] = useState(() => new Set());
   const [planning, setPlanning] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
+  const [visibleCount, setVisibleCount] = useState(30);
 
   useEffect(() => {
     if (!familyId) return;
@@ -93,6 +94,14 @@ export default function Recipes() {
   };
 
   useEffect(() => { load(); loadSuggestions(); }, [familyId]);
+
+  useEffect(() => {
+    const handler = () => { load(); loadSuggestions(); };
+    window.addEventListener("app:refresh", handler);
+    return () => window.removeEventListener("app:refresh", handler);
+  }, [familyId]);
+
+  useEffect(() => { setVisibleCount(30); }, [query, matchMode, selectedCategories]);
 
   const handleRequest = async (recipe) => {
     const ings = (recipe.ingredients || []).filter((i) => i && i.trim());
@@ -327,23 +336,33 @@ export default function Recipes() {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-4">
-              {filtered.map((recipe) => (
-                <RecipeCard
-                  key={recipe.id}
-                  recipe={recipe}
-                  counts={countsFor(recipe.id)}
-                  onReact={(r) => react(recipe.id, r)}
-                  onDelete={() => handleDelete(recipe)}
-                  onRequest={() => handleRequest(recipe)}
-                  onSuggest={() => handleSuggest(recipe)}
-                  alreadySuggested={suggestions.some((s) => s.recipe_id === recipe.id)}
-                  selectable={planMode}
-                  selected={selectedIds.has(recipe.id)}
-                  onToggleSelect={toggleSelect}
-                />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-1 gap-4">
+                {filtered.slice(0, visibleCount).map((recipe) => (
+                  <RecipeCard
+                    key={recipe.id}
+                    recipe={recipe}
+                    counts={countsFor(recipe.id)}
+                    onReact={(r) => react(recipe.id, r)}
+                    onDelete={() => handleDelete(recipe)}
+                    onRequest={() => handleRequest(recipe)}
+                    onSuggest={() => handleSuggest(recipe)}
+                    alreadySuggested={suggestions.some((s) => s.recipe_id === recipe.id)}
+                    selectable={planMode}
+                    selected={selectedIds.has(recipe.id)}
+                    onToggleSelect={toggleSelect}
+                  />
+                ))}
+              </div>
+
+              {filtered.length > visibleCount && (
+                <div className="flex justify-center pt-2">
+                  <Button variant="outline" onClick={() => setVisibleCount((c) => c + 30)}>
+                    Load more ({filtered.length - visibleCount} remaining)
+                  </Button>
+                </div>
+              )}
+            </>
           )}
 
           {planMode && selectedIds.size > 0 && (

@@ -17,9 +17,10 @@ export default function Home() {
   const [expiring, setExpiring] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const load = () => {
     if (!user?.family_id) return;
     let active = true;
+    setLoading(true);
     Promise.all([
       base44.entities.GroceryItem.filter({ family_id: user.family_id }, "-created_date", 100),
       base44.entities.Recipe.filter({ family_id: user.family_id }, "-created_date", 100),
@@ -38,6 +39,14 @@ export default function Home() {
       setLoading(false);
     }).catch(() => { if (active) setLoading(false); });
     return () => { active = false; };
+  };
+
+  useEffect(() => { load(); }, [user?.family_id]);
+
+  useEffect(() => {
+    const handler = () => load();
+    window.addEventListener("app:refresh", handler);
+    return () => window.removeEventListener("app:refresh", handler);
   }, [user?.family_id]);
 
   return (
@@ -46,7 +55,7 @@ export default function Home() {
         <h1 className="font-heading text-3xl font-semibold tracking-tight text-green-600">
           Our Pantry
         </h1>
-        <p className="text-orange-500 mt-1 font-bold uppercase tracking-wide">Less Guessing. More Yum!</p>
+        <p className="text-orange-700 mt-1 font-bold uppercase tracking-wide">Less Guessing. More Yum!</p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">

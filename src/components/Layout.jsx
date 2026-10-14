@@ -7,6 +7,7 @@ import { base44 } from "@/api/base44Client";
 import { cn } from "@/lib/utils";
 import NotificationsBell from "@/components/NotificationsBell";
 import PullToRefresh from "@/components/PullToRefresh";
+import { queryClientInstance } from "@/lib/query-client";
 
 const nav = [
   { to: "/", label: "Home", icon: HomeIcon },
@@ -89,7 +90,10 @@ export default function Layout() {
   const showBack = !isRootRoute;
   const handleBack = () => navigate(-1);
 
-  const handleRefresh = () => window.location.reload();
+  const handleRefresh = async () => {
+    await queryClientInstance.invalidateQueries();
+    window.dispatchEvent(new CustomEvent("app:refresh"));
+  };
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -98,7 +102,7 @@ export default function Layout() {
         <div className="px-6 py-7 flex flex-col items-center text-center picnic-bg border-2 border-black rounded-lg">
           <img src="https://media.base44.com/images/public/6a85c116bb660295b89c8343/1144503d3_HappyPantryLOGO.png" alt="Happy Pantry" className="w-24 h-24 rounded-xl object-cover mb-2" />
           <div className="font-heading font-semibold leading-tight">Happy Pantry</div>
-          <div className="text-xs font-bold text-orange-500">{user?.family_name || "No family"}</div>
+          <div className="text-xs font-bold text-orange-700">{user?.family_name || "No family"}</div>
         </div>
         <nav className="flex-1 px-3 space-y-1 pt-6">
           {navItems.map((item) => {

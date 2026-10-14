@@ -28,6 +28,7 @@ export default function Items() {
   const [editing, setEditing] = useState(null);
   const [flagging, setFlagging] = useState(null);
   const [allergyFlags, setAllergyFlags] = useState([]);
+  const [visibleCount, setVisibleCount] = useState(30);
 
   const openBarcodeScan = () => {
     setAddTab("scan");
@@ -63,6 +64,14 @@ export default function Items() {
   };
 
   useEffect(() => { load(); loadFlags(); }, [familyId]);
+
+  useEffect(() => {
+    const handler = () => load();
+    window.addEventListener("app:refresh", handler);
+    return () => window.removeEventListener("app:refresh", handler);
+  }, [familyId]);
+
+  useEffect(() => { setVisibleCount(30); }, [query]);
 
   const handleUpdateQty = async (item, quantity) => {
     const prevItems = items;
@@ -105,7 +114,8 @@ export default function Items() {
       return (i.name || "").toLowerCase().includes(q) || (i.brand || "").toLowerCase().includes(q) || (i.category || "").toLowerCase().includes(q);
     });
 
-  const grouped = filtered.reduce((acc, item) => {
+  const visibleFiltered = filtered.slice(0, visibleCount);
+  const grouped = visibleFiltered.reduce((acc, item) => {
     const cat = item.category || "Uncategorized";
     if (!acc[cat]) acc[cat] = [];
     acc[cat].push(item);
@@ -178,6 +188,14 @@ export default function Items() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {filtered.length > visibleCount && (
+        <div className="flex justify-center pt-2">
+          <Button variant="outline" onClick={() => setVisibleCount((c) => c + 30)}>
+            Load more ({filtered.length - visibleCount} remaining)
+          </Button>
         </div>
       )}
 

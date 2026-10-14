@@ -91,7 +91,7 @@ export default function Family() {
           <div className="w-14 h-14 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center mx-auto mb-3">
             <Users className="w-7 h-7" />
           </div>
-          <h1 className="font-heading text-2xl font-semibold text-orange-500">{user.family_name}</h1>
+          <h1 className="font-heading text-2xl font-semibold text-orange-700">{user.family_name}</h1>
           <p className="text-green-600 text-sm">Your family pantry is set up.</p>
         </div>
         <Card>

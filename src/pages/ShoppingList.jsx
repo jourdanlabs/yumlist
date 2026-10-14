@@ -24,6 +24,7 @@ export default function ShoppingList() {
   const [tripOpen, setTripOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [atStore, setAtStore] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(30);
 
   const load = async () => {
     if (!familyId) return;
@@ -39,6 +40,14 @@ export default function ShoppingList() {
   };
 
   useEffect(() => { load(); }, [familyId]);
+
+  useEffect(() => {
+    const handler = () => load();
+    window.addEventListener("app:refresh", handler);
+    return () => window.removeEventListener("app:refresh", handler);
+  }, [familyId]);
+
+  useEffect(() => { setVisibleCount(30); }, [query]);
 
   // Shopping list = items explicitly marked to buy (recipe ingredients auto-set this on creation)
   const shopping = useMemo(
@@ -67,14 +76,14 @@ export default function ShoppingList() {
   const grouped = useMemo(() => {
     const order = GROCERY_CATEGORIES.reduce((acc, c, i) => { acc[c] = i; return acc; }, {});
     const groups = {};
-    filteredShopping.forEach((item) => {
+    filteredShopping.slice(0, visibleCount).forEach((item) => {
       const cat = normalizeCategory(item.category) || "Other";
       (groups[cat] = groups[cat] || []).push(item);
     });
     return Object.keys(groups)
       .sort((a, b) => (order[a] ?? 99) - (order[b] ?? 99))
       .map((cat) => ({ category: cat, items: groups[cat] }));
-  }, [filteredShopping]);
+  }, [filteredShopping, visibleCount]);
 
   const checkedIds = Object.keys(checked).filter((id) => checked[id]);
   const allChecked = filteredShopping.length > 0 && checkedIds.length === filteredShopping.length;
@@ -249,6 +258,14 @@ export default function ShoppingList() {
                 />
               ))}
 
+              {filteredShopping.length > visibleCount && (
+                <div className="flex justify-center pt-2 no-print">
+                  <Button variant="outline" size="sm" onClick={() => setVisibleCount((c) => c + 30)}>
+                    Load more ({filteredShopping.length - visibleCount} remaining)
+                  </Button>
+                </div>
+              )}
+
               <div className="flex items-center gap-3 pt-2 no-print flex-wrap">
                 <Button variant="outline" size="sm" onClick={toggleAll}>
                   {allChecked ? "Clear selection" : "Select all"}
@@ -322,7 +339,7 @@ function CategorySection({ category, items, checked, onToggle, onRemove }) {
                 <button
                   type="button"
                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); onRemove(item.id); }}
-                  className="no-print text-muted-foreground hover:text-destructive transition-colors p-1"
+                  className="no-print text-muted-foreground hover:text-destructive transition-colors p-1 min-h-[44px] min-w-[44px] flex items-center justify-center"
                   aria-label="Remove from list"
                 >
                   <X className="w-4 h-4" />

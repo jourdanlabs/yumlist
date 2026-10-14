@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Bell } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
@@ -22,101 +23,93 @@ function timeAgo(dateStr) {
   return `${days}d ago`;
 }
 
+async function fetchNotifications(familyId, userId, userName) {
+  const [members, reactions, allItems, recipes, storeNotices, suggestions] = await Promise.all([
+    base44.entities.User.filter({ family_id: familyId }),
+    base44.entities.Reaction.filter({ family_id: familyId }, "-created_date", 30),
+    base44.entities.GroceryItem.filter({ family_id: familyId }, "-created_date"),
+    base44.entities.Recipe.filter({ family_id: familyId }),
+    base44.entities.StoreNotice.filter({ family_id: familyId }, "-created_date", 20),
+    base44.entities.RecipeSuggestion.filter({ family_id: familyId, status: "active" }, "-created_date", 20),
+  ]);
+
+  const memberName = (id) => {
+    const m = members.find((mm) => mm.id === id);
+    return m?.full_name || m?.email || "A member";
+  };
+
+  const recipeName = (id) => recipes.find((r) => r.id === id)?.title || "a recipe";
+  const itemName = (id) => allItems.find((i) => i.id === id)?.name || "an item";
+
+  const reactionNotifs = reactions
+    .filter((r) => r.created_by_id !== userId && r.target_type !== "suggestion")
+    .map((r) => ({
+      id: r.id,
+      type: "reaction",
+      who: memberName(r.created_by_id),
+      verb: REACTION_LABEL[r.reaction] || "reacted to",
+      target: r.target_type === "recipe" ? recipeName(r.target_id) : itemName(r.target_id),
+      targetLabel: r.target_type === "recipe" ? "recipe" : "item",
+      date: r.created_date,
+    }));
+
+  const requestedItems = allItems.slice(0, 50);
+  const requestNotifs = requestedItems
+    .filter((i) => i.recipe_title && (i.requested_by_name || "") !== (userName || ""))
+    .map((i) => ({
+      id: `req-${i.id}`,
+      type: "request",
+      who: i.requested_by_name || "A member",
+      verb: "requested ingredients for",
+      target: i.recipe_title,
+      targetLabel: "recipe",
+      date: i.created_date,
+    }));
+
+  const suggestionNotifs = suggestions
+    .filter((s) => s.created_by_id !== userId)
+    .map((s) => ({
+      id: `sug-${s.id}`,
+      type: "suggestion",
+      who: s.suggested_by_name || memberName(s.created_by_id),
+      verb: "suggested cooking",
+      target: s.recipe_title,
+      targetLabel: "recipe",
+      date: s.created_date,
+    }));
+
+  const storeNotifs = storeNotices
+    .filter((s) => s.created_by_id !== userId)
+    .map((s) => ({
+      id: `store-${s.id}`,
+      type: "store",
+      who: memberName(s.created_by_id),
+      verb: "is at the store",
+      target: s.note || "shopping now",
+      targetLabel: "shopping",
+      date: s.created_date,
+    }));
+
+  return [...reactionNotifs, ...suggestionNotifs, ...requestNotifs, ...storeNotifs]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 20);
+}
+
 export default function NotificationsBell({ className }) {
   const { user } = useCurrentUser();
   const familyId = user?.family_id;
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [notifications, setNotifications] = useState([]);
   const [lastSeen, setLastSeen] = useState(() => {
     const stored = localStorage.getItem(`fp_notif_seen_${familyId || "x"}`);
     return stored ? Number(stored) : 0;
   });
 
-  useEffect(() => {
-    if (!familyId) return;
-    let active = true;
-    setLoading(true);
-    (async () => {
-      try {
-        const [members, reactions, requestedItems, recipes, items, storeNotices, suggestions] = await Promise.all([
-          base44.entities.User.filter({ family_id: familyId }),
-          base44.entities.Reaction.filter({ family_id: familyId }, "-created_date", 30),
-          base44.entities.GroceryItem.filter({ family_id: familyId }, "-created_date", 50),
-          base44.entities.Recipe.filter({ family_id: familyId }),
-          base44.entities.GroceryItem.filter({ family_id: familyId }),
-          base44.entities.StoreNotice.filter({ family_id: familyId }, "-created_date", 20),
-          base44.entities.RecipeSuggestion.filter({ family_id: familyId, status: "active" }, "-created_date", 20),
-        ]);
-
-        const memberName = (id) => {
-          const m = members.find((mm) => mm.id === id);
-          return m?.full_name || m?.email || "A member";
-        };
-
-        const recipeName = (id) => recipes.find((r) => r.id === id)?.title || "a recipe";
-        const itemName = (id) => items.find((i) => i.id === id)?.name || "an item";
-
-        const reactionNotifs = reactions
-          .filter((r) => r.created_by_id !== user?.id && r.target_type !== "suggestion")
-          .map((r) => ({
-            id: r.id,
-            type: "reaction",
-            who: memberName(r.created_by_id),
-            verb: REACTION_LABEL[r.reaction] || "reacted to",
-            target: r.target_type === "recipe" ? recipeName(r.target_id) : itemName(r.target_id),
-            targetLabel: r.target_type === "recipe" ? "recipe" : "item",
-            date: r.created_date,
-          }));
-
-        const requestNotifs = requestedItems
-          .filter((i) => i.recipe_title && (i.requested_by_name || "") !== (user?.full_name || user?.email || ""))
-          .map((i) => ({
-            id: `req-${i.id}`,
-            type: "request",
-            who: i.requested_by_name || "A member",
-            verb: "requested ingredients for",
-            target: i.recipe_title,
-            targetLabel: "recipe",
-            date: i.created_date,
-          }));
-
-        const suggestionNotifs = suggestions
-          .filter((s) => s.created_by_id !== user?.id)
-          .map((s) => ({
-            id: `sug-${s.id}`,
-            type: "suggestion",
-            who: s.suggested_by_name || memberName(s.created_by_id),
-            verb: "suggested cooking",
-            target: s.recipe_title,
-            targetLabel: "recipe",
-            date: s.created_date,
-          }));
-
-        const storeNotifs = storeNotices
-          .filter((s) => s.created_by_id !== user?.id)
-          .map((s) => ({
-            id: `store-${s.id}`,
-            type: "store",
-            who: memberName(s.created_by_id),
-            verb: "is at the store",
-            target: s.note || "shopping now",
-            targetLabel: "shopping",
-            date: s.created_date,
-          }));
-
-        const all = [...reactionNotifs, ...suggestionNotifs, ...requestNotifs, ...storeNotifs]
-          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-          .slice(0, 20);
-        if (active) setNotifications(all);
-      } catch (e) {
-        // ignore - notifications are non-critical
-      } finally {
-        if (active) setLoading(false);
-      }
-    })();
-    return () => { active = false; };
-  }, [familyId, user?.id, user?.full_name, user?.email]);
+  const { data: notifications = [], isLoading: loading } = useQuery({
+    queryKey: ["notifications", familyId, user?.id],
+    queryFn: () => fetchNotifications(familyId, user?.id, user?.full_name || user?.email || ""),
+    enabled: !!familyId,
+    staleTime: 30_000,
+  });
 
   const newCount = useMemo(
     () => notifications.filter((n) => new Date(n.date).getTime() > lastSeen).length,
