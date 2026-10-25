@@ -90,8 +90,6 @@ export default function Home() {
         </section>
       )}
 
-      <RecallNotices alerts={alerts} />
-
       <ConsumptionChart familyId={user?.family_id} />
 
       <div className="grid md:grid-cols-2 gap-6">
@@ -141,6 +139,8 @@ export default function Home() {
           </div>
         </section>
       </div>
+
+      <RecallNotices alerts={alerts} />
     </div>
   );
 }
