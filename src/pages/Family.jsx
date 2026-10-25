@@ -143,7 +143,7 @@ export default function Family() {
   }
 
   return (
-    <div className="max-w-sm w-full ml-auto mr-4 md:mr-12 mt-24 md:mt-40 space-y-4">
+    <div className="max-w-xl w-full mx-auto px-4 py-8 md:py-16 space-y-4">
       <div className="text-center">
         <div className="w-12 h-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center mx-auto mb-2">
           <Users className="w-6 h-6" />

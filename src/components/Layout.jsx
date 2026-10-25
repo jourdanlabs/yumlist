@@ -193,19 +193,19 @@ export default function Layout() {
           {navItems.map((item) => {
             const active = location.pathname === item.to;
             return (
-              <Link
+              <button
                 key={item.to}
-                to={item.to}
+                type="button"
                 onClick={(e) => handleTabClick(e, item)}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "flex flex-col items-center gap-1 py-2.5 text-xs font-medium transition-colors min-h-[44px] justify-center",
+                  "flex flex-col items-center gap-1 py-2.5 text-xs font-medium transition-colors min-h-[44px] w-full justify-center",
                   active ? "text-primary" : "text-muted-foreground"
                 )}
               >
                 <item.icon className="w-5 h-5" />
                 {item.label}
-              </Link>
+              </button>
             );
           })}
         </div>

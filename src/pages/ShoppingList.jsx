@@ -320,7 +320,7 @@ function CategorySection({ category, items, checked, onToggle, onRemove }) {
             const unit = item.unit || "units";
             const isChecked = !!checked[item.id];
             return (
-              <label key={item.id} className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-accent/40 transition-colors">
+              <label key={item.id} className="flex items-center gap-3 px-4 py-3 min-h-[44px] cursor-pointer hover:bg-accent/40 transition-colors">
                 <input
                   type="checkbox"
                   checked={isChecked}
@@ -331,9 +331,9 @@ function CategorySection({ category, items, checked, onToggle, onRemove }) {
                   <div className={`font-medium truncate ${isChecked ? "line-through text-muted-foreground" : ""}`}>
                     {capitalize(item.name)}
                   </div>
-                  {item.brand && <span className="text-xs text-muted-foreground truncate block mt-0.5">{item.brand}</span>}
+                  {item.brand && <span className="text-sm text-muted-foreground truncate block mt-0.5">{item.brand}</span>}
                   {item.recipe_title && (
-                    <span className="text-xs text-muted-foreground/80 truncate block mt-0.5 flex items-center gap-1">
+                    <span className="text-sm text-muted-foreground/80 truncate block mt-0.5 flex items-center gap-1">
                       <span className="no-print">For:</span>
                       <span className="italic">{item.recipe_title}</span>
                       {item.requested_by_name && <span className="no-print">· requested by {item.requested_by_name}</span>}

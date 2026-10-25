@@ -264,10 +264,10 @@ export default function Recipes() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="font-heading text-lg md:text-2xl font-semibold">Recipes</h1>
-          <p className="text-xs md:text-sm text-muted-foreground">Recipes your family has collected.</p>
+          <p className="text-sm text-muted-foreground">Recipes your family has collected.</p>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           <Button
@@ -287,7 +287,7 @@ export default function Recipes() {
         <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search recipes or ingredients…" className="pl-9 bg-card border-0 shadow-none focus-visible:ring-0" />
       </div>
 
-      <div className="lg:grid lg:grid-cols-[240px_1fr] gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-6 lg:gap-8 items-start">
         <RecipeFilters
           categories={pantryCategories}
           selectedCategories={selectedCategories}

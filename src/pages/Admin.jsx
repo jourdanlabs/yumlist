@@ -92,7 +92,7 @@ export default function Admin() {
         <p className="text-sm text-muted-foreground">User growth, install source, and retention analytics.</p>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard icon={Users} label="Total users" value={stats.total} />
         <StatCard icon={Activity} label="Active (7 days)" value={stats.active7} sub={`${stats.total ? Math.round((stats.active7 / stats.total) * 100) : 0}% of total`} />
         <StatCard icon={Gauge} label="Stickiness" value={`${stats.stickiness}%`} sub="WAU / MAU" />
@@ -103,7 +103,7 @@ export default function Admin() {
         <CardHeader><CardTitle className="text-base">Download source</CardTitle></CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[480px] text-sm">
             <thead className="text-muted-foreground text-xs">
               <tr>
                 <th className="text-left font-medium px-4 py-2">Source</th>
@@ -147,7 +147,7 @@ export default function Admin() {
         <CardHeader><CardTitle className="text-base">Cohort retention</CardTitle></CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[480px] text-sm">
             <thead className="text-muted-foreground text-xs">
               <tr>
                 <th className="text-left font-medium px-4 py-2">Signup week</th>
