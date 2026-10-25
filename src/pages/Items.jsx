@@ -12,6 +12,8 @@ import ImportItemsDialog from "@/components/ImportItemsDialog";
 import ScanReceiptDialog from "@/components/ScanReceiptDialog";
 import EditItemDialog from "@/components/EditItemDialog";
 import FlagAllergyDialog from "@/components/FlagAllergyDialog";
+import RecallNotices from "@/components/RecallNotices";
+import { useRecalls } from "@/hooks/useRecalls";
 
 export default function Items() {
   const { user } = useCurrentUser();
@@ -29,6 +31,7 @@ export default function Items() {
   const [flagging, setFlagging] = useState(null);
   const [allergyFlags, setAllergyFlags] = useState([]);
   const [visibleCount, setVisibleCount] = useState(30);
+  const { alerts } = useRecalls(familyId);
 
   const openBarcodeScan = () => {
     setAddTab("scan");
@@ -102,6 +105,12 @@ export default function Items() {
     }
   };
 
+  const recallByName = alerts.reduce((acc, a) => {
+    const key = (a.item_name || "").toLowerCase().trim();
+    if (key && !acc[key]) acc[key] = a;
+    return acc;
+  }, {});
+
   const flagsByName = allergyFlags.reduce((acc, f) => {
     const key = (f.item_name || "").toLowerCase();
     if (!acc[key]) acc[key] = f;
@@ -152,6 +161,8 @@ export default function Items() {
         </div>
       </div>
 
+      <RecallNotices alerts={alerts} />
+
       <div className="relative rounded-lg border border-border bg-card p-2">
         <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search items…" className="pl-9 bg-card border-0 shadow-none focus-visible:ring-0" />
@@ -184,6 +195,7 @@ export default function Items() {
                     onUpdate={(quantity) => handleUpdateQty(item, quantity)}
                     onEdit={(it) => setEditing(it)}
                     allergyFlag={flagsByName[(item.name || "").toLowerCase()]}
+                    recall={recallByName[(item.name || "").toLowerCase().trim()]}
                     onFlag={(it) => setFlagging(it)}
                   />
                 ))}

@@ -7,6 +7,8 @@ import { differenceInCalendarDays } from "date-fns";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { capitalize } from "@/lib/utils";
 import ConsumptionChart from "@/components/ConsumptionChart";
+import RecallNotices from "@/components/RecallNotices";
+import { useRecalls } from "@/hooks/useRecalls";
 
 const EXPIRY_WINDOW_DAYS = 3;
 
@@ -16,6 +18,7 @@ export default function Home() {
   const [recipes, setRecipes] = useState([]);
   const [expiring, setExpiring] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { alerts } = useRecalls(user?.family_id);
 
   const load = () => {
     if (!user?.family_id) return;
@@ -86,6 +89,8 @@ export default function Home() {
           </div>
         </section>
       )}
+
+      <RecallNotices alerts={alerts} />
 
       <ConsumptionChart familyId={user?.family_id} />
 
