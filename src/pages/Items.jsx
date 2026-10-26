@@ -31,7 +31,7 @@ export default function Items() {
   const [flagging, setFlagging] = useState(null);
   const [allergyFlags, setAllergyFlags] = useState([]);
   const [visibleCount, setVisibleCount] = useState(30);
-  const { alerts } = useRecalls(familyId);
+  const { alerts, dismiss, dismissAll } = useRecalls(familyId);
 
   const openBarcodeScan = () => {
     setAddTab("scan");
@@ -161,7 +161,7 @@ export default function Items() {
         </div>
       </div>
 
-      <RecallNotices alerts={alerts} />
+      <RecallNotices alerts={alerts} onDismiss={dismiss} onDismissAll={dismissAll} />
 
       <div className="relative rounded-lg border border-border bg-card p-2">
         <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />

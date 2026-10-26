@@ -115,18 +115,20 @@ export default async function (req) {
     const familyId = user.family_id;
     if (!familyId) return Response.json({ alerts: [], checked: 0 });
 
-    const [pantryRaw, consumedRaw, reactionsRaw] = await Promise.all([
+    const [pantryRaw, consumedRaw, reactionsRaw, clearedRaw] = await Promise.all([
       base44.entities.GroceryItem.filter({ family_id: familyId }, { sort: '-created_date', limit: 200 }),
       base44.entities.ConsumptionLog.filter({ family_id: familyId }, { sort: '-consumed_date', limit: 200 }),
       base44.entities.Reaction.filter(
         { family_id: familyId, target_type: 'item', reaction: 'like' },
         { sort: '-created_date', limit: 200 }
       ),
+      base44.entities.RecallDismissal.filter({ family_id: familyId }, { limit: 200 }),
     ]);
 
     const pantry = asList(pantryRaw);
     const consumed = asList(consumedRaw);
     const reactions = asList(reactionsRaw);
+    const cleared = new Set(asList(clearedRaw).map((d: any) => d.alert_key));
 
     const pantryById = {};
     pantry.forEach((it) => { pantryById[it.id] = it; });
@@ -190,7 +192,8 @@ export default async function (req) {
       const key = `${normalize(a.item_name)}|${a.recall.recall_number}`;
       if (seen.has(key)) return false;
       seen.add(key);
-      return true;
+      // Anything the family already cleared must not take up a MAX_ALERTS slot.
+      return !cleared.has(key);
     });
 
     // Brand-confirmed matches first.

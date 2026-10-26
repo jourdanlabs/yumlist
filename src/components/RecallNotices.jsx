@@ -1,6 +1,8 @@
 import React from "react";
-import { AlertOctagon } from "lucide-react";
+import { AlertOctagon, Trash2, X } from "lucide-react";
 import { capitalize } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { recallKey } from "@/lib/recallKey";
 
 const SOURCE_LABELS = {
   liked: "Liked",
@@ -21,20 +23,33 @@ function formatDate(value) {
   return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
 }
 
-export default function RecallNotices({ alerts }) {
+export default function RecallNotices({ alerts, onDismiss, onDismissAll }) {
   if (!alerts || alerts.length === 0) return null;
+  const canClear = typeof onDismiss === "function";
 
   return (
     <section className="rounded-2xl border border-destructive/30 bg-destructive/5 p-5">
-      <h2 className="font-heading text-lg font-semibold flex items-center gap-2 text-destructive">
-        <AlertOctagon className="w-5 h-5" /> Recall alerts · {alerts.length}
-      </h2>
+      <div className="flex items-start justify-between gap-3">
+        <h2 className="font-heading text-lg font-semibold flex items-center gap-2 text-destructive">
+          <AlertOctagon className="w-5 h-5" /> Recall alerts · {alerts.length}
+        </h2>
+        {canClear && alerts.length > 1 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-destructive hover:text-destructive hover:bg-destructive/10 shrink-0"
+            onClick={() => onDismissAll?.()}
+          >
+            <Trash2 className="w-4 h-4" /> Clear all
+          </Button>
+        )}
+      </div>
       <p className="text-xs md:text-sm text-muted-foreground mt-1">
-        Recent FDA food recalls that may affect items your family bought or liked. Check the product details against what you have.
+        Recent FDA food recalls that may affect items your family bought or liked. Check the product details against what you have. Clear one once you have checked it, or clear them all.
       </p>
       <div className="mt-3 space-y-2">
         {alerts.map((a, i) => (
-          <div key={i} className="rounded-lg border border-destructive/20 bg-card p-3">
+          <div key={recallKey(a) || i} className="rounded-lg border border-destructive/20 bg-card p-3">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <p className="font-medium truncate">
@@ -46,11 +61,24 @@ export default function RecallNotices({ alerts }) {
                   {a.recall.recall_initiation_date ? ` · ${formatDate(a.recall.recall_initiation_date)}` : ""}
                 </p>
               </div>
-              {a.recall.classification && (
-                <span className={`text-xs px-2 py-0.5 rounded-full whitespace-nowrap ${classificationTone(a.recall.classification)}`}>
-                  {a.recall.classification}
-                </span>
-              )}
+              <div className="flex items-center gap-0.5 shrink-0">
+                {a.recall.classification && (
+                  <span className={`text-xs px-2 py-0.5 rounded-full whitespace-nowrap ${classificationTone(a.recall.classification)}`}>
+                    {a.recall.classification}
+                  </span>
+                )}
+                {canClear && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-muted-foreground hover:text-destructive"
+                    aria-label={`Clear the recall alert for ${a.item_name}`}
+                    onClick={() => onDismiss(a)}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
             </div>
             {a.recall.reason_for_recall && (
               <p className="text-xs md:text-sm text-muted-foreground mt-2">{a.recall.reason_for_recall}</p>

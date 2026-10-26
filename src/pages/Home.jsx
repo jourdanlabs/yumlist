@@ -18,7 +18,7 @@ export default function Home() {
   const [recipes, setRecipes] = useState([]);
   const [expiring, setExpiring] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { alerts } = useRecalls(user?.family_id);
+  const { alerts, dismiss, dismissAll } = useRecalls(user?.family_id);
 
   const load = () => {
     if (!user?.family_id) return;
@@ -140,7 +140,7 @@ export default function Home() {
         </section>
       </div>
 
-      <RecallNotices alerts={alerts} />
+      <RecallNotices alerts={alerts} onDismiss={dismiss} onDismissAll={dismissAll} />
     </div>
   );
 }
