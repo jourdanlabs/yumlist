@@ -1,10 +1,19 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.49';
 
 // Shared secret used by the scheduled workflow to prove it is the platform
-// scheduler. Stored as an environment secret (set via the dashboard Secrets
-// page) so it never lives in source code. The workflow sends the same value
-// in its "secret" arg.
-const SCHEDULER_SECRET = process.env.PANTRY_SCHEDULER_SECRET;
+// scheduler. The expected value is an environment secret (dashboard Secrets
+// page). NOTE: the workflow definition carries the same value in its "secret"
+// arg, so anyone who can read the workflow file or repo can read it; rotate both
+// together whenever repo/app access widens.
+const SCHEDULER_SECRET = process.env.PANTRY_SCHEDULER_SECRET || '';
+
+// Constant-time compare so the secret can't be recovered by response timing.
+function safeEqual(a, b) {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
 
 export default async function(req) {
   try {
@@ -14,7 +23,8 @@ export default async function(req) {
     // Verify the caller: either the platform scheduler (shared secret) or an
     // authenticated admin. Reject everyone else before any data access.
     let authorized = false;
-    if (typeof body.secret === 'string' && body.secret === SCHEDULER_SECRET) {
+    // An unset/empty env secret must never authorize anyone (empty === empty).
+    if (SCHEDULER_SECRET && typeof body.secret === 'string' && safeEqual(body.secret, SCHEDULER_SECRET)) {
       authorized = true;
     } else {
       const user = await base44.auth.me().catch(() => null);
