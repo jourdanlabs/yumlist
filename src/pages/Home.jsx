@@ -7,6 +7,8 @@ import { differenceInCalendarDays } from "date-fns";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { capitalize } from "@/lib/utils";
 import ConsumptionChart from "@/components/ConsumptionChart";
+import RecallBadge from "@/components/RecallBadge";
+import { useRecalls } from "@/hooks/useRecalls";
 
 const EXPIRY_WINDOW_DAYS = 3;
 
@@ -16,6 +18,13 @@ export default function Home() {
   const [recipes, setRecipes] = useState([]);
   const [expiring, setExpiring] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { alerts: recallAlerts, dismiss: dismissRecall } = useRecalls(user?.family_id);
+
+  const recallByName = {};
+  recallAlerts.forEach((a) => {
+    const key = (a.item_name || "").toLowerCase().trim();
+    if (key) recallByName[key] = a;
+  });
 
   const load = () => {
     if (!user?.family_id) return;
@@ -119,8 +128,14 @@ export default function Home() {
               <Empty text="No items yet. Add your first grocery item." />
             ) : (
               items.slice(0, 5).map((it) => (
-                <Card key={it.id}><CardContent className="py-3 px-4 flex items-center justify-between">
-                  <span className="font-medium truncate">{capitalize(it.name)}</span>
+                <Card key={it.id}><CardContent className="py-3 px-4 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="font-medium truncate">{capitalize(it.name)}</span>
+                    <RecallBadge
+                      recall={recallByName[(it.name || "").toLowerCase().trim()]}
+                      onDismiss={dismissRecall}
+                    />
+                  </div>
                   <span className="text-xs text-muted-foreground truncate ml-2">{it.brand}</span>
                 </CardContent></Card>
               ))
