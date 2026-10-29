@@ -41,13 +41,19 @@ export default function Settings() {
 
   const handleSaveProfile = async (e) => {
     e.preventDefault();
+    if (!fullName.trim()) {
+      toast({ title: "Enter a name", variant: "destructive" });
+      return;
+    }
     setSavingProfile(true);
     try {
-      await base44.auth.updateMe({ full_name: fullName, phone_number: phoneNumber });
+      await base44.functions.invoke("updateFullName", { full_name: fullName });
+      await base44.auth.updateMe({ phone_number: phoneNumber });
       await refresh();
       toast({ title: "Profile updated", description: "Your details have been saved." });
     } catch (err) {
-      toast({ title: "Update failed", description: err.message, variant: "destructive" });
+      const message = err?.response?.data?.error || err.message;
+      toast({ title: "Update failed", description: message, variant: "destructive" });
     } finally {
       setSavingProfile(false);
     }
@@ -119,13 +125,15 @@ export default function Settings() {
               <p className="text-xs text-muted-foreground">Email cannot be changed here.</p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="fullName">Full name</Label>
+              <Label htmlFor="fullName">Your name</Label>
               <Input
                 id="fullName"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="Your name"
+                maxLength={60}
               />
+              <p className="text-xs text-muted-foreground">Any format works — a nickname, full name, or handle.</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="phone">Phone number</Label>
