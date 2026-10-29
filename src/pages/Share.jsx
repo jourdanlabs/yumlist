@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Share2, Mail, MessageSquare, Copy, Check, ThumbsUp, ThumbsDown } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import ShareRecipeCard from "@/components/share/ShareRecipeCard";
 
 export default function Share() {
   const { user } = useCurrentUser();
@@ -181,6 +182,12 @@ export default function Share() {
           <p className="text-xs text-muted-foreground text-center">Email and text open your device's apps with the summary pre-filled.</p>
         </CardContent>
       </Card>
+
+      <ShareRecipeCard
+        recipes={recipes}
+        sharedBy={user?.full_name || user?.email || "Your family"}
+        familyName={user?.family_name}
+      />
     </div>
   );
 }
