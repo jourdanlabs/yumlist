@@ -82,8 +82,14 @@ export default function AddMemberCard({ onAdded }) {
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium truncate">{member.name || "Unnamed member"}</p>
               <p className="text-xs text-muted-foreground truncate">{member.email}</p>
-              {member.has_family && (
-                <p className="text-xs text-amber-600 mt-0.5">Already in a family — they must leave before you can add them.</p>
+              {member.family_is_yours ? (
+                <p className="text-xs text-emerald-600 mt-0.5">Family: {member.family_name || "your family"} (already a member)</p>
+              ) : member.has_family ? (
+                <p className="text-xs text-amber-600 mt-0.5">
+                  Family: {member.family_name || "another family"} — they must leave before you can add them.
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground mt-0.5">Not in a family yet</p>
               )}
             </div>
             <Button size="sm" onClick={() => invite(member)} disabled={addingId === member.id || member.has_family}>

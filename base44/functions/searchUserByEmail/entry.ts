@@ -37,14 +37,24 @@ export default async function (req) {
         .slice(0, MAX_RESULTS);
     }
 
-    const users = matches
-      .filter((u) => u.id !== user.id)
-      .map((u) => ({
-        id: u.id,
-        name: u.display_name || u.full_name || u.email,
-        email: u.email,
-        has_family: !!u.family_id,
-      }));
+    const found = matches.filter((u) => u.id !== user.id);
+
+    // Resolve the family each match belongs to so the inviter can see it.
+    const familyIds = [...new Set(found.map((u) => u.family_id).filter(Boolean))];
+    const familyNames = {};
+    await Promise.all(familyIds.map(async (id) => {
+      const fam = await base44.asServiceRole.entities.Family.get(id).catch(() => null);
+      if (fam) familyNames[id] = fam.name;
+    }));
+
+    const users = found.map((u) => ({
+      id: u.id,
+      name: u.display_name || u.full_name || u.email,
+      email: u.email,
+      has_family: !!u.family_id,
+      family_name: u.family_id ? familyNames[u.family_id] || null : null,
+      family_is_yours: !!u.family_id && u.family_id === user.family_id,
+    }));
 
     return Response.json({ users });
   } catch (error) {
