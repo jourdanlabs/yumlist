@@ -123,8 +123,7 @@ export default function Family() {
                   {(m.display_name || m.full_name || m.email || "?").charAt(0).toUpperCase()}
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm font-medium truncate">{m.display_name || m.full_name || "Unnamed member"}</p>
-                  <p className="text-xs text-muted-foreground truncate">{m.email}</p>
+                  <p className="text-sm font-medium truncate">{m.display_name || m.full_name || m.email || "Unnamed member"}</p>
                 </div>
                 {m.id === user.id && <span className="ml-auto text-xs text-muted-foreground">You</span>}
               </div>
