@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,11 +12,19 @@ import DietLibraryList from "@/components/diets/DietLibraryList";
 export default function Diets() {
   const { user } = useCurrentUser();
   const familyId = user?.family_id;
-  const { diets, loading, reload } = useDiets(familyId);
+  const { diets, loading, reload } = useDiets(familyId, user?.id);
+  const [members, setMembers] = useState([]);
   const [query, setQuery] = useState("");
   const [searching, setSearching] = useState(false);
   const [results, setResults] = useState(null);
   const [adding, setAdding] = useState(null);
+
+  useEffect(() => {
+    if (!familyId) return;
+    base44.entities.User.filter({ family_id: familyId })
+      .then((data) => setMembers(Array.isArray(data) ? data : data.items || []))
+      .catch(() => setMembers([]));
+  }, [familyId]);
 
   const search = async () => {
     const q = query.trim();
@@ -42,12 +50,13 @@ export default function Diets() {
         avoid_ingredients: diet.avoid_ingredients || [],
         rules: diet.rules || [],
         active: false,
+        scope: "family",
         source: "search",
       });
       await reload();
       toast({
         title: `${diet.name} added`,
-        description: "Turn it on to apply it to your pantry and recipes.",
+        description: "Turn it on, then choose whether it applies to the family or one person.",
       });
     } catch (e) {
       toast({ title: "Could not add that diet", variant: "destructive" });
@@ -62,6 +71,26 @@ export default function Diets() {
       await reload();
     } catch (e) {
       toast({ title: "Could not update that diet", variant: "destructive" });
+    }
+  };
+
+  const changeScope = async (diet, value) => {
+    const patch =
+      value === "family"
+        ? { scope: "family", member_id: "", member_name: "" }
+        : (() => {
+            const member = members.find((m) => `member:${m.id}` === value);
+            return {
+              scope: "member",
+              member_id: member?.id || "",
+              member_name: member?.full_name || member?.email || "",
+            };
+          })();
+    try {
+      await base44.entities.Diet.update(diet.id, patch);
+      await reload();
+    } catch (e) {
+      toast({ title: "Could not change who this diet applies to", variant: "destructive" });
     }
   };
 
@@ -82,7 +111,7 @@ export default function Diets() {
           <Salad className="w-5 h-5 text-primary" /> Diets
         </h1>
         <p className="text-sm text-muted-foreground">
-          Search for a diet, add it, then switch it on to flag pantry items and recipes that don't fit.
+          Add a diet, switch it on, and choose whether it applies to the whole family or just one person.
         </p>
       </div>
 
@@ -123,7 +152,13 @@ export default function Diets() {
             {[0, 1].map((i) => <div key={i} className="h-20 rounded-xl bg-muted animate-pulse" />)}
           </div>
         ) : (
-          <DietLibraryList diets={diets} onToggle={toggleDiet} onDelete={removeDiet} />
+          <DietLibraryList
+            diets={diets}
+            members={members}
+            onToggle={toggleDiet}
+            onDelete={removeDiet}
+            onScopeChange={changeScope}
+          />
         )}
       </div>
     </div>

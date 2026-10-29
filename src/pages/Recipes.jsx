@@ -20,7 +20,7 @@ export default function Recipes() {
   const { user } = useCurrentUser();
   const familyId = user?.family_id;
   const { countsFor, react, reload: reloadReactions } = useReactions(familyId, "recipe", user?.id);
-  const { activeDiets } = useDiets(familyId);
+  const { myDiets } = useDiets(familyId, user?.id);
   const { toast } = useToast();
   const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -265,7 +265,7 @@ export default function Recipes() {
       selectedCategories.some((c) => recipeCategories(r).has(c));
     const fitsDiets =
       !dietOnly ||
-      dietConflicts(activeDiets, r.title, (r.ingredients || []).join(" ")).length === 0;
+      dietConflicts(myDiets, r.title, (r.ingredients || []).join(" ")).length === 0;
     return matchesQuery && matchesLikes && matchesCategory && fitsDiets;
   });
 
@@ -299,7 +299,7 @@ export default function Recipes() {
         <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search recipes or ingredients…" className="pl-9 bg-card border-0 shadow-none focus-visible:ring-0" />
       </div>
 
-      {activeDiets.length > 0 && (
+      {myDiets.length > 0 && (
         <button
           type="button"
           onClick={() => setDietOnly((v) => !v)}
@@ -379,7 +379,7 @@ export default function Recipes() {
                     selectable={planMode}
                     selected={selectedIds.has(recipe.id)}
                     onToggleSelect={toggleSelect}
-                    dietConflicts={dietConflicts(activeDiets, recipe.title, (recipe.ingredients || []).join(" ")).map((d) => d.name)}
+                    dietConflicts={dietConflicts(myDiets, recipe.title, (recipe.ingredients || []).join(" ")).map((d) => d.name)}
                   />
                 ))}
               </div>

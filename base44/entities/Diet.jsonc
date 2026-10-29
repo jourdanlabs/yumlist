@@ -33,6 +33,23 @@
       "title": "Applied to pantry and recipes",
       "default": false
     },
+    "scope": {
+      "type": "string",
+      "title": "Applies to",
+      "enum": [
+        "family",
+        "member"
+      ],
+      "default": "family"
+    },
+    "member_id": {
+      "type": "string",
+      "title": "Member ID"
+    },
+    "member_name": {
+      "type": "string",
+      "title": "Member name"
+    },
     "source": {
       "type": "string",
       "title": "Source",

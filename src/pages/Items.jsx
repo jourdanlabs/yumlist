@@ -35,7 +35,7 @@ export default function Items() {
   const [visibleCount, setVisibleCount] = useState(30);
   const [dietOnly, setDietOnly] = useState(false);
   const { alerts, dismiss, dismissAll } = useRecalls(familyId);
-  const { activeDiets } = useDiets(familyId);
+  const { myDiets } = useDiets(familyId, user?.id);
 
   const openBarcodeScan = () => {
     setAddTab("scan");
@@ -123,7 +123,7 @@ export default function Items() {
 
   const filtered = items
     .filter((i) => !i.recipe_title)
-    .filter((i) => !dietOnly || dietConflicts(activeDiets, i.name, i.brand, i.category).length === 0)
+    .filter((i) => !dietOnly || dietConflicts(myDiets, i.name, i.brand, i.category).length === 0)
     .filter((i) => {
       const q = query.toLowerCase();
       if (!q) return true;
@@ -173,7 +173,7 @@ export default function Items() {
         <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search items…" className="pl-9 bg-card border-0 shadow-none focus-visible:ring-0" />
       </div>
 
-      {activeDiets.length > 0 && (
+      {myDiets.length > 0 && (
         <button
           type="button"
           onClick={() => setDietOnly((v) => !v)}
@@ -217,7 +217,7 @@ export default function Items() {
                     allergyFlag={flagsByName[(item.name || "").toLowerCase()]}
                     recall={recallByName[(item.name || "").toLowerCase().trim()]}
                     onFlag={(it) => setFlagging(it)}
-                    dietConflicts={dietConflicts(activeDiets, item.name, item.brand, item.category).map((d) => d.name)}
+                    dietConflicts={dietConflicts(myDiets, item.name, item.brand, item.category).map((d) => d.name)}
                   />
                 ))}
               </div>

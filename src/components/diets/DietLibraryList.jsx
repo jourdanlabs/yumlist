@@ -1,8 +1,9 @@
 import React from "react";
 import { Switch } from "@/components/ui/switch";
-import { Trash2 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Trash2, Users } from "lucide-react";
 
-export default function DietLibraryList({ diets, onToggle, onDelete }) {
+export default function DietLibraryList({ diets, members = [], onToggle, onDelete, onScopeChange }) {
   if (!diets.length) {
     return (
       <div className="text-center py-10 border border-dashed border-border rounded-2xl">
@@ -38,8 +39,31 @@ export default function DietLibraryList({ diets, onToggle, onDelete }) {
               </button>
             </div>
           </div>
+
+          <div className="flex flex-wrap items-center gap-2 mt-3">
+            <span className="text-sm text-muted-foreground flex items-center gap-1">
+              <Users className="w-3.5 h-3.5" /> Applies to
+            </span>
+            <Select
+              value={diet.scope === "member" && diet.member_id ? `member:${diet.member_id}` : "family"}
+              onValueChange={(value) => onScopeChange(diet, value)}
+            >
+              <SelectTrigger className="h-9 w-auto min-w-[180px] text-sm" aria-label={`Who ${diet.name} applies to`}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="family">Entire family</SelectItem>
+                {members.map((m) => (
+                  <SelectItem key={m.id} value={`member:${m.id}`}>
+                    {m.full_name || m.email}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           {(diet.avoid_ingredients || []).length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mt-2">
+            <div className="flex flex-wrap gap-1.5 mt-3">
               {diet.avoid_ingredients.map((k) => (
                 <span key={k} className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
                   {k}

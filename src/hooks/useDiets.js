@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 
-export function useDiets(familyId) {
+export function useDiets(familyId, userId) {
   const [diets, setDiets] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -26,5 +26,9 @@ export function useDiets(familyId) {
     return () => window.removeEventListener("app:refresh", handler);
   }, [reload]);
 
-  return { diets, activeDiets: diets.filter((d) => d.active), loading, reload };
+  const activeDiets = diets.filter((d) => d.active);
+  // A diet applies to me if it is family-wide or assigned to my account.
+  const myDiets = activeDiets.filter((d) => d.scope !== "member" || d.member_id === userId);
+
+  return { diets, activeDiets, myDiets, loading, reload };
 }
