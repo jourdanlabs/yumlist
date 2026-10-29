@@ -1,5 +1,27 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.49';
 
+// Best-effort in-memory rate limit per caller (same pattern as joinFamilyByCode).
+// Any signed-up user can create a family and become its owner, so without a cap
+// this lookup can be scripted to harvest which emails are registered (plus names).
+const WINDOW_MS = 60_000;
+const MAX_LOOKUPS = 10;
+const lookups = new Map();
+
+function rateLimited(userId) {
+  const now = Date.now();
+  if (lookups.size > 1000) {
+    for (const [k, v] of lookups) if (now - v.firstAt >= WINDOW_MS) lookups.delete(k);
+  }
+  const entry = lookups.get(userId);
+  if (entry && now - entry.firstAt < WINDOW_MS) {
+    if (entry.count >= MAX_LOOKUPS) return true;
+    entry.count++;
+    return false;
+  }
+  lookups.set(userId, { firstAt: now, count: 1 });
+  return false;
+}
+
 export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
@@ -13,6 +35,10 @@ export default async function(req) {
       if (!family || family.created_by_id !== user.id) {
         return Response.json({ error: 'Only the family owner can add members' }, { status: 403 });
       }
+    }
+
+    if (rateLimited(user.id)) {
+      return Response.json({ error: 'Too many lookups. Please try again in a minute.' }, { status: 429 });
     }
 
     let body = {};

@@ -1,5 +1,34 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.49';
 
+// Best-effort in-memory rate limit per caller (same pattern as joinFamilyByCode).
+// Every call either probes whether an email is registered (404 vs 400) or makes the
+// platform send an email to a stranger, so cap both.
+const WINDOW_MS = 10 * 60_000;
+const MAX_INVITES = 10;
+const invites = new Map();
+
+function rateLimited(userId) {
+  const now = Date.now();
+  if (invites.size > 1000) {
+    for (const [k, v] of invites) if (now - v.firstAt >= WINDOW_MS) invites.delete(k);
+  }
+  const entry = invites.get(userId);
+  if (entry && now - entry.firstAt < WINDOW_MS) {
+    if (entry.count >= MAX_INVITES) return true;
+    entry.count++;
+    return false;
+  }
+  invites.set(userId, { firstAt: now, count: 1 });
+  return false;
+}
+
+// Names are user-controlled and end up in an email the platform sends under its own
+// name. Collapse control characters / newlines and cap the length so a family or
+// profile name can't carry a long phishing message or spoof extra lines.
+function clean(value, max) {
+  return String(value ?? '').replace(/[\u0000-\u001F\u007F\u2028\u2029]+/g, ' ').trim().slice(0, max);
+}
+
 export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
@@ -13,6 +42,10 @@ export default async function(req) {
       if (!family || family.created_by_id !== user.id) {
         return Response.json({ error: 'Only the family owner can invite members' }, { status: 403 });
       }
+    }
+
+    if (rateLimited(user.id)) {
+      return Response.json({ error: 'Too many invitations. Please try again later.' }, { status: 429 });
     }
 
     let body = {};
@@ -38,14 +71,15 @@ export default async function(req) {
     const family = await base44.asServiceRole.entities.Family.get(user.family_id).catch(() => null);
     if (!family) return Response.json({ error: 'Family not found' }, { status: 500 });
 
-    const inviterName = user.full_name || user.email;
-    const inviteeName = found.full_name || 'there';
+    const inviterName = clean(user.full_name || user.email, 60);
+    const inviteeName = clean(found.full_name || 'there', 60);
+    const familyName = clean(family.name, 60);
     await base44.asServiceRole.integrations.Core.SendEmail({
       to: found.email,
-      subject: `${inviterName} invited you to join ${family.name} on Family Pantry`,
+      subject: `${inviterName} invited you to join ${familyName} on Family Pantry`,
       body:
         `Hi ${inviteeName},\n\n` +
-        `${inviterName} has invited you to join their family "${family.name}" on Family Pantry.\n\n` +
+        `${inviterName} has invited you to join their family "${familyName}" on Family Pantry.\n\n` +
         `To accept, open Family Pantry, go to the Family page, and join using this invite code:\n\n` +
         `${family.invite_code}\n\n` +
         `If you weren't expecting this invitation, you can safely ignore this email.\n\n` +

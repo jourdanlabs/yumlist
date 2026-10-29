@@ -21,7 +21,9 @@ export default async function(req) {
     if (user.family_id) return Response.json({ error: 'You already belong to a family' }, { status: 400 });
 
     const body = await req.json().catch(() => ({}));
-    const name = String(body.name || '').trim();
+    // Family names appear in invite emails sent by the platform: strip control
+    // characters / newlines and cap the length.
+    const name = String(body.name || '').replace(/[\u0000-\u001F\u007F\u2028\u2029]+/g, ' ').trim().slice(0, 60);
     if (!name) return Response.json({ error: 'Family name is required' }, { status: 400 });
 
     const fam = await base44.asServiceRole.entities.Family.create({ name, invite_code: makeInviteCode() });
