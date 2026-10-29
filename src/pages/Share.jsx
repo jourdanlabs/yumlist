@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ThumbsUp, ThumbsDown, AlertTriangle } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
-import ShareRecipeCard from "@/components/share/ShareRecipeCard";
 import ShareWithFriendsCard from "@/components/share/ShareWithFriendsCard";
 import ReceivedShares from "@/components/share/ReceivedShares";
 import { buildTasteSummary } from "@/lib/shareText";
@@ -177,12 +176,6 @@ export default function Share() {
         senderName={user?.full_name || user?.email || "Your family"}
         familyName={user?.family_name}
         onSent={loadReceived}
-      />
-
-      <ShareRecipeCard
-        recipes={recipes}
-        sharedBy={user?.full_name || user?.email || "Your family"}
-        familyName={user?.family_name}
       />
 
       <ReceivedShares notes={received} onDelete={deleteReceived} />

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -85,6 +86,11 @@ export default function ShareWithFriendsCard({ recipes = [], summary, senderName
               ))}
             </SelectContent>
           </Select>
+          {recipes.length === 0 && (
+            <p className="text-xs text-muted-foreground">
+              You don't have any recipes yet. <Link to="/recipes" className="text-primary hover:underline">Add one on the Recipes page</Link> to share it.
+            </p>
+          )}
         </div>
 
         <Textarea readOnly value={preview} rows={8} className="text-xs" />
