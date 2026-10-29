@@ -4,6 +4,24 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_RECIPIENTS = 20;
 const BATCH = 6;
 
+// Invite links may only point at the app's own domains. Any other origin the
+// caller sends is ignored, so this endpoint can't be used to mail links to a
+// third-party site.
+const APP_ORIGINS = ['https://yumlist.base44.app', 'https://fampan.com', 'https://www.fampan.com'];
+
+function resolveInviteOrigin(serverAppUrl, requestedUrl) {
+  const candidates = [serverAppUrl, requestedUrl];
+  for (const raw of candidates) {
+    try {
+      const origin = new URL(String(raw || '')).origin;
+      if (APP_ORIGINS.includes(origin)) return origin;
+    } catch (e) {
+      // not a URL - try the next candidate
+    }
+  }
+  return APP_ORIGINS[0];
+}
+
 // A family member asks their guests by email. Only that family's own party can
 // be invited to, recipients are capped, and delivery problems are reported as
 // counts so the host can fall back to their own email app.
@@ -52,10 +70,10 @@ export default async function (req) {
       return Response.json({ error: 'Not found' }, { status: 404 });
     }
 
-    let origin = '';
-    try { origin = new URL(String(body.app_url || '')).origin; } catch (e) { origin = ''; }
-    if (!origin.startsWith('http')) return Response.json({ error: 'Missing app link' }, { status: 400 });
-
+    const origin = resolveInviteOrigin(
+      req.headers.get('x-base44-app-url'),
+      body.app_url
+    );
     const inviteUrl = `${origin}/party-invite/${event.invite_token}`;
     const dateLabel = event.event_date
       ? new Date(`${event.event_date}T00:00:00`).toLocaleDateString('en-US', {
