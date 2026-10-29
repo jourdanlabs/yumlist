@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate, Navigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Home as HomeIcon, Carrot, ChefHat, Share2, Users, LogOut, ShoppingCart, Shield, Settings as SettingsIcon, ChevronLeft } from "lucide-react";
+import { Home as HomeIcon, Carrot, ChefHat, Share2, Users, LogOut, ShoppingCart, Shield, Settings as SettingsIcon, ChevronLeft, Salad } from "lucide-react";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { base44 } from "@/api/base44Client";
 import { cn } from "@/lib/utils";
@@ -14,6 +14,7 @@ const nav = [
   { to: "/items", label: "Pantry", icon: Carrot },
   { to: "/shopping-list", label: "Shop", icon: ShoppingCart },
   { to: "/recipes", label: "Recipes", icon: ChefHat },
+  { to: "/diets", label: "Diets", icon: Salad },
   { to: "/share", label: "Share", icon: Share2 },
   { to: "/family", label: "Family", icon: Users },
   { to: "/settings", label: "Settings", icon: SettingsIcon },

@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, ListChecks, X, ShoppingCart } from "lucide-react";
+import { Plus, Search, ListChecks, X, ShoppingCart, Sparkles, Salad } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useReactions } from "@/hooks/useReactions";
@@ -12,16 +12,22 @@ import AddRecipeDialog from "@/components/AddRecipeDialog";
 import RecipeSuggestions from "@/components/RecipeSuggestions";
 import RecipeFilters from "@/components/RecipeFilters";
 import SuggestionBoard from "@/components/SuggestionBoard";
+import FindRecipesDialog from "@/components/recipes/FindRecipesDialog";
+import { useDiets } from "@/hooks/useDiets";
+import { dietConflicts } from "@/lib/diets";
 
 export default function Recipes() {
   const { user } = useCurrentUser();
   const familyId = user?.family_id;
   const { countsFor, react, reload: reloadReactions } = useReactions(familyId, "recipe", user?.id);
+  const { activeDiets } = useDiets(familyId);
   const { toast } = useToast();
   const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [addOpen, setAddOpen] = useState(false);
+  const [findOpen, setFindOpen] = useState(false);
+  const [dietOnly, setDietOnly] = useState(false);
   const [matchMode, setMatchMode] = useState("off"); // "off" | "one" | "all"
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [items, setItems] = useState([]);
@@ -257,7 +263,10 @@ export default function Recipes() {
     const matchesCategory =
       selectedCategories.length === 0 ||
       selectedCategories.some((c) => recipeCategories(r).has(c));
-    return matchesQuery && matchesLikes && matchesCategory;
+    const fitsDiets =
+      !dietOnly ||
+      dietConflicts(activeDiets, r.title, (r.ingredients || []).join(" ")).length === 0;
+    return matchesQuery && matchesLikes && matchesCategory && fitsDiets;
   });
 
   const activeFilterCount = selectedCategories.length + (matchMode !== "off" ? 1 : 0);
@@ -276,6 +285,9 @@ export default function Recipes() {
           >
             <ListChecks className="w-4 h-4 mr-1" /> {planMode ? "Done" : "Plan week"}
           </Button>
+          <Button variant="outline" onClick={() => setFindOpen(true)}>
+            <Sparkles className="w-4 h-4 mr-1" /> Find recipes
+          </Button>
           <Button onClick={() => setAddOpen(true)}>
             <Plus className="w-4 h-4 mr-1" /> Add recipe
           </Button>
@@ -286,6 +298,21 @@ export default function Recipes() {
         <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search recipes or ingredients…" className="pl-9 bg-card border-0 shadow-none focus-visible:ring-0" />
       </div>
+
+      {activeDiets.length > 0 && (
+        <button
+          type="button"
+          onClick={() => setDietOnly((v) => !v)}
+          className={`inline-flex items-center gap-2 self-start rounded-full border px-3 py-1.5 text-sm transition-colors min-h-[44px] ${
+            dietOnly
+              ? "bg-primary text-primary-foreground border-primary"
+              : "bg-card text-muted-foreground border-border hover:text-foreground"
+          }`}
+        >
+          <Salad className="w-4 h-4" />
+          {dietOnly ? "Showing recipes that fit my diets" : "Only recipes that fit my diets"}
+        </button>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-6 lg:gap-8 items-start">
         <RecipeFilters
@@ -352,6 +379,7 @@ export default function Recipes() {
                     selectable={planMode}
                     selected={selectedIds.has(recipe.id)}
                     onToggleSelect={toggleSelect}
+                    dietConflicts={dietConflicts(activeDiets, recipe.title, (recipe.ingredients || []).join(" ")).map((d) => d.name)}
                   />
                 ))}
               </div>
@@ -386,6 +414,13 @@ export default function Recipes() {
           )}
         </div>
       </div>
+
+      <FindRecipesDialog
+        open={findOpen}
+        onOpenChange={setFindOpen}
+        familyId={familyId}
+        onImported={load}
+      />
 
       <AddRecipeDialog
         open={addOpen}

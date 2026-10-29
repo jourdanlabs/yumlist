@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Upload, Receipt, ScanLine } from "lucide-react";
+import { Plus, Search, Upload, Receipt, ScanLine, Salad } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useReactions } from "@/hooks/useReactions";
@@ -14,6 +14,8 @@ import EditItemDialog from "@/components/EditItemDialog";
 import FlagAllergyDialog from "@/components/FlagAllergyDialog";
 import RecallNotices from "@/components/RecallNotices";
 import { useRecalls } from "@/hooks/useRecalls";
+import { useDiets } from "@/hooks/useDiets";
+import { dietConflicts } from "@/lib/diets";
 
 export default function Items() {
   const { user } = useCurrentUser();
@@ -31,7 +33,9 @@ export default function Items() {
   const [flagging, setFlagging] = useState(null);
   const [allergyFlags, setAllergyFlags] = useState([]);
   const [visibleCount, setVisibleCount] = useState(30);
+  const [dietOnly, setDietOnly] = useState(false);
   const { alerts, dismiss, dismissAll } = useRecalls(familyId);
+  const { activeDiets } = useDiets(familyId);
 
   const openBarcodeScan = () => {
     setAddTab("scan");
@@ -119,6 +123,7 @@ export default function Items() {
 
   const filtered = items
     .filter((i) => !i.recipe_title)
+    .filter((i) => !dietOnly || dietConflicts(activeDiets, i.name, i.brand, i.category).length === 0)
     .filter((i) => {
       const q = query.toLowerCase();
       if (!q) return true;
@@ -168,6 +173,21 @@ export default function Items() {
         <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search items…" className="pl-9 bg-card border-0 shadow-none focus-visible:ring-0" />
       </div>
 
+      {activeDiets.length > 0 && (
+        <button
+          type="button"
+          onClick={() => setDietOnly((v) => !v)}
+          className={`inline-flex items-center gap-2 self-start rounded-full border px-3 py-1.5 text-sm transition-colors min-h-[44px] ${
+            dietOnly
+              ? "bg-primary text-primary-foreground border-primary"
+              : "bg-card text-muted-foreground border-border hover:text-foreground"
+          }`}
+        >
+          <Salad className="w-4 h-4" />
+          {dietOnly ? "Showing items that fit my diets" : "Only items that fit my diets"}
+        </button>
+      )}
+
       {loading ? (
         <div className="space-y-3">
           {[0, 1, 2].map((i) => <div key={i} className="h-24 rounded-2xl bg-muted animate-pulse" />)}
@@ -197,6 +217,7 @@ export default function Items() {
                     allergyFlag={flagsByName[(item.name || "").toLowerCase()]}
                     recall={recallByName[(item.name || "").toLowerCase().trim()]}
                     onFlag={(it) => setFlagging(it)}
+                    dietConflicts={dietConflicts(activeDiets, item.name, item.brand, item.category).map((d) => d.name)}
                   />
                 ))}
               </div>

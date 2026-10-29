@@ -2,9 +2,10 @@ import React, { useState } from "react";
 import { Image } from "@/components/ui/image";
 import { Trash2, ChevronDown, ShoppingCart, Check, Megaphone } from "lucide-react";
 import ReactionBar from "@/components/ReactionBar";
+import DietBadge from "@/components/diets/DietBadge";
 import { cn } from "@/lib/utils";
 
-export default function RecipeCard({ recipe, counts, onReact, onDelete, onRequest, onSuggest, alreadySuggested, selectable, selected, onToggleSelect }) {
+export default function RecipeCard({ recipe, counts, onReact, onDelete, onRequest, onSuggest, alreadySuggested, selectable, selected, onToggleSelect, dietConflicts = [] }) {
   const [open, setOpen] = useState(false);
   const [requested, setRequested] = useState(false);
   return (
@@ -38,6 +39,9 @@ export default function RecipeCard({ recipe, counts, onReact, onDelete, onReques
               <h3 className="text-sm md:text-base font-medium truncate">{recipe.title}</h3>
               {recipe.source && <p className="text-sm text-muted-foreground truncate">From {recipe.source}</p>}
               <p className="text-sm text-muted-foreground mt-0.5">{(recipe.ingredients || []).length} ingredients</p>
+              {dietConflicts.length > 0 && (
+                <div className="mt-1"><DietBadge diets={dietConflicts} /></div>
+              )}
             </div>
             {onDelete && !selectable && (
               <button

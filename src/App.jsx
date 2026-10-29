@@ -25,6 +25,7 @@ const Settings = lazy(() => import('@/pages/Settings'));
 const PrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'));
 const Party = lazy(() => import('@/pages/Party'));
 const PartyInvite = lazy(() => import('@/pages/PartyInvite'));
+const Diets = lazy(() => import('@/pages/Diets'));
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -71,6 +72,7 @@ const AuthenticatedApp = () => {
           <Route path="/shared/:familyId" element={<SharedFamily />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/party" element={<Party />} />
+          <Route path="/diets" element={<Diets />} />
         </Route>
       </Route>
       <Route path="*" element={<PageNotFound />} />

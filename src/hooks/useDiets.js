@@ -1,0 +1,30 @@
+import { useCallback, useEffect, useState } from "react";
+import { base44 } from "@/api/base44Client";
+
+export function useDiets(familyId) {
+  const [diets, setDiets] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const reload = useCallback(async () => {
+    if (!familyId) return;
+    setLoading(true);
+    try {
+      const data = await base44.entities.Diet.filter({ family_id: familyId }, "-created_date");
+      setDiets(Array.isArray(data) ? data : data.items || []);
+    } catch (e) {
+      // leave the previous list in place
+    } finally {
+      setLoading(false);
+    }
+  }, [familyId]);
+
+  useEffect(() => { reload(); }, [reload]);
+
+  useEffect(() => {
+    const handler = () => reload();
+    window.addEventListener("app:refresh", handler);
+    return () => window.removeEventListener("app:refresh", handler);
+  }, [reload]);
+
+  return { diets, activeDiets: diets.filter((d) => d.active), loading, reload };
+}

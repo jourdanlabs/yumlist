@@ -2,6 +2,7 @@ import React from "react";
 import { Image } from "@/components/ui/image";
 import { Trash2, CalendarClock, Package, Minus, Plus, Pencil, AlertTriangle, AlertOctagon } from "lucide-react";
 import ReactionBar from "@/components/ReactionBar";
+import DietBadge from "@/components/diets/DietBadge";
 import { capitalize } from "@/lib/utils";
 import { itemEmoji } from "@/lib/itemEmoji";
 
@@ -22,7 +23,7 @@ const toneClasses = {
   ok: "bg-muted text-muted-foreground",
 };
 
-export default function ItemCard({ item, counts, onReact, onDelete, onUpdate, onEdit, allergyFlag, onFlag, recall }) {
+export default function ItemCard({ item, counts, onReact, onDelete, onUpdate, onEdit, allergyFlag, onFlag, recall, dietConflicts = [] }) {
   const qty = item.quantity ?? 1;
   const unit = item.unit || "units";
   const exp = expiryStatus(item.expiration_date);
@@ -90,6 +91,7 @@ export default function ItemCard({ item, counts, onReact, onDelete, onUpdate, on
                     {allergyFlag.member_name && <span className="opacity-80">· {allergyFlag.member_name}</span>}
                   </span>
                 )}
+                <DietBadge diets={dietConflicts} />
               </div>
             </div>
             <div className="flex items-center gap-1">
