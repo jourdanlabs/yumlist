@@ -17,12 +17,23 @@ export default async function(req) {
 
     let body = {};
     try { body = await req.json(); } catch (e) {}
+    const userId = (body.user_id || '').toString().trim();
     const email = (body.email || '').toString().trim().toLowerCase();
-    if (!email) return Response.json({ error: 'Email is required' }, { status: 400 });
+    if (!userId && !email) return Response.json({ error: 'A user is required' }, { status: 400 });
 
-    const users = await base44.asServiceRole.entities.User.filter({ email });
-    const found = users.find(u => (u.email || '').toLowerCase() === email);
-    if (!found) return Response.json({ error: 'No user found with that email' }, { status: 404 });
+    // Preferred path: the user picked from search is addressed by id, so their
+    // address never has to leave the server.
+    let found = null;
+    if (userId) {
+      found = await base44.asServiceRole.entities.User
+        .get(userId)
+        .catch((e) => (e.status === 404 ? null : Promise.reject(e)));
+      if (!found) return Response.json({ error: 'No user found' }, { status: 404 });
+    } else {
+      const users = await base44.asServiceRole.entities.User.filter({ email });
+      found = users.find(u => (u.email || '').toLowerCase() === email) || null;
+      if (!found) return Response.json({ error: 'No user found with that email' }, { status: 404 });
+    }
     if (found.id === user.id) return Response.json({ error: 'You cannot invite yourself' }, { status: 400 });
     // Never hijack a user who already belongs to another family.
     if (found.family_id && found.family_id !== user.family_id) {

@@ -1,0 +1,66 @@
+{
+  "name": "InviteSendLog",
+  "type": "object",
+  "properties": {
+    "family_id": {
+      "type": "string",
+      "title": "Family ID"
+    },
+    "event_id": {
+      "type": "string",
+      "title": "Party event ID"
+    },
+    "recipient": {
+      "type": "string",
+      "title": "Recipient address"
+    }
+  },
+  "required": [
+    "family_id",
+    "recipient"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.family_id": "{{user.data.family_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.family_id": "{{user.data.family_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

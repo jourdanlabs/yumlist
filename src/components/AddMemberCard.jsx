@@ -30,7 +30,7 @@ export default function AddMemberCard({ onAdded }) {
   const invite = async (member) => {
     setAddingId(member.id);
     try {
-      const res = await base44.functions.invoke("addFamilyMember", { email: member.email });
+      const res = await base44.functions.invoke("addFamilyMember", { user_id: member.id });
       if (res.data.already_member) {
         toast({ title: "Already a member", description: `${member.name} is already in your family.` });
       } else {
@@ -77,11 +77,10 @@ export default function AddMemberCard({ onAdded }) {
         {results?.map((member) => (
           <div key={member.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted/40">
             <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
-              {(member.name || member.email || "?").charAt(0).toUpperCase()}
+              {(member.name || "?").charAt(0).toUpperCase()}
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium truncate">{member.name || "Unnamed member"}</p>
-              <p className="text-xs text-muted-foreground truncate">{member.email}</p>
               {member.family_is_yours ? (
                 <p className="text-xs text-emerald-600 mt-0.5">Family: {member.family_name || "your family"} (already a member)</p>
               ) : member.has_family ? (

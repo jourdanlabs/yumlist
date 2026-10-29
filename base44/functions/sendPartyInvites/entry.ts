@@ -3,6 +3,8 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_RECIPIENTS = 20;
 const BATCH = 6;
+// Ceiling on how many invites one family can send through the app per day.
+const DAILY_LIMIT = 40;
 
 // Invite links may only point at the app's own domains. Any other origin the
 // caller sends is ignored, so this endpoint can't be used to mail links to a
@@ -70,6 +72,27 @@ export default async function (req) {
       return Response.json({ error: 'Not found' }, { status: 404 });
     }
 
+    // Abuse guard: each family gets a daily ceiling on invites sent through the
+    // app, and every recipient is recorded for abuse review. Without this the
+    // endpoint could be used as a relay for unsolicited mail to arbitrary
+    // addresses.
+    const dayStart = new Date();
+    dayStart.setHours(0, 0, 0, 0);
+    const sentToday = await base44.asServiceRole.entities.InviteSendLog
+      .filter({ family_id: user.family_id, created_date: { $gte: dayStart.toISOString() } });
+    const usedToday = Array.isArray(sentToday) ? sentToday.length : 0;
+    if (usedToday >= DAILY_LIMIT) {
+      return Response.json(
+        { error: 'Daily invite limit reached. Send the rest from your own email app.' },
+        { status: 429 }
+      );
+    }
+    const recipients = emails.slice(0, Math.min(MAX_RECIPIENTS, DAILY_LIMIT - usedToday));
+
+    await base44.asServiceRole.entities.InviteSendLog.bulkCreate(
+      recipients.map((to) => ({ family_id: user.family_id, event_id: eventId, recipient: to }))
+    );
+
     const origin = resolveInviteOrigin(
       req.headers.get('x-base44-app-url'),
       body.app_url
@@ -84,8 +107,8 @@ export default async function (req) {
     let sent = 0;
     let failed = 0;
 
-    for (let i = 0; i < emails.length; i += BATCH) {
-      const batch = emails.slice(i, i + BATCH);
+    for (let i = 0; i < recipients.length; i += BATCH) {
+      const batch = recipients.slice(i, i + BATCH);
       const settled = await Promise.allSettled(batch.map((to) =>
         base44.asServiceRole.integrations.Core.SendEmail({
           to,
