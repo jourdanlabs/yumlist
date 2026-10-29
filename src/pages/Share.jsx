@@ -1,15 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Share2, Mail, MessageSquare, Copy, Check, ThumbsUp, ThumbsDown, AlertTriangle } from "lucide-react";
+import { ThumbsUp, ThumbsDown, AlertTriangle } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import ShareRecipeCard from "@/components/share/ShareRecipeCard";
-import SendInAppCard from "@/components/share/SendInAppCard";
+import ShareWithFriendsCard from "@/components/share/ShareWithFriendsCard";
 import ReceivedShares from "@/components/share/ReceivedShares";
 import { buildTasteSummary } from "@/lib/shareText";
 
@@ -21,8 +17,6 @@ export default function Share() {
   const [reactions, setReactions] = useState([]);
   const [allergyFlags, setAllergyFlags] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [copied, setCopied] = useState(false);
-  const [recipient, setRecipient] = useState("");
   const [received, setReceived] = useState([]);
 
   useEffect(() => {
@@ -89,26 +83,6 @@ export default function Share() {
     () => buildTasteSummary({ user, likes: myLikes, dislikes: myDislikes, avoid: myAvoid }),
     [myLikes, myDislikes, myAvoid, user]
   );
-
-  const copy = () => {
-    navigator.clipboard.writeText(summary);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
-    toast({ title: "Copied to clipboard" });
-  };
-
-  const sendEmail = () => {
-    if (!recipient.trim()) { toast({ title: "Enter an email address", variant: "destructive" }); return; }
-    const subject = `${user?.full_name || user?.email || "Family member"}'s likes & dislikes`;
-    window.location.href = `mailto:${encodeURIComponent(recipient)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(summary)}`;
-    toast({ title: "Opened in your email app" });
-  };
-
-  const sendText = () => {
-    if (!recipient.trim()) { toast({ title: "Enter a phone number", variant: "destructive" }); return; }
-    window.location.href = `sms:${encodeURIComponent(recipient)}?&body=${encodeURIComponent(summary)}`;
-    toast({ title: "Opened in your messaging app" });
-  };
 
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
@@ -197,41 +171,18 @@ export default function Share() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2"><Share2 className="w-4 h-4" /> Shareable summary</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Textarea readOnly value={summary} rows={10} className="font-mono text-xs" />
-          <Button variant="secondary" className="w-full" onClick={copy}>
-            {copied ? <Check className="w-4 h-4 mr-2" /> : <Copy className="w-4 h-4 mr-2" />}
-            {copied ? "Copied" : "Copy summary"}
-          </Button>
-
-          <div className="space-y-2">
-            <Label htmlFor="recipient">Recipient</Label>
-            <Input id="recipient" value={recipient} onChange={(e) => setRecipient(e.target.value)} placeholder="Email or phone number" />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <Button variant="outline" onClick={sendEmail}><Mail className="w-4 h-4 mr-2" /> Send email</Button>
-            <Button variant="outline" onClick={sendText}><MessageSquare className="w-4 h-4 mr-2" /> Send text</Button>
-          </div>
-          <p className="text-xs text-muted-foreground text-center">Email and text open your device's apps with the summary pre-filled.</p>
-        </CardContent>
-      </Card>
-
-      <ShareRecipeCard
-        recipes={recipes}
-        sharedBy={user?.full_name || user?.email || "Your family"}
-        familyName={user?.family_name}
-      />
-
-      <SendInAppCard
+      <ShareWithFriendsCard
         recipes={recipes}
         summary={summary}
         senderName={user?.full_name || user?.email || "Your family"}
         familyName={user?.family_name}
         onSent={loadReceived}
+      />
+
+      <ShareRecipeCard
+        recipes={recipes}
+        sharedBy={user?.full_name || user?.email || "Your family"}
+        familyName={user?.family_name}
       />
 
       <ReceivedShares notes={received} onDelete={deleteReceived} />
