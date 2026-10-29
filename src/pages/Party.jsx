@@ -12,6 +12,7 @@ import { toast } from "@/components/ui/use-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import CreatePartyForm from "@/components/party/CreatePartyForm";
 import PartyInviteCard from "@/components/party/PartyInviteCard";
+import InviteAppUsersCard from "@/components/party/InviteAppUsersCard";
 import GuestPreferencesList from "@/components/party/GuestPreferencesList";
 
 export default function Party() {
@@ -109,6 +110,8 @@ export default function Party() {
             hostName={user?.full_name}
             requestCount={preferences.length}
           />
+
+          <InviteAppUsersCard event={event} />
 
           <GuestPreferencesList preferences={preferences} onRemove={removePreference} />
 
