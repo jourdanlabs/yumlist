@@ -1,9 +1,13 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.49';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
 
-export default async function(req) {
+const MAX_RESULTS = 5;
+
+// Family-owner lookup: finds an existing app user by username (their chosen
+// display name) or by their exact email address, so they can be invited.
+export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const user = await base44.auth.me().catch((e) => (e.status === 401 ? null : Promise.reject(e)));
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
     if (!user.family_id) return Response.json({ error: 'You must be in a family first' }, { status: 400 });
 
@@ -15,21 +19,34 @@ export default async function(req) {
       }
     }
 
-    let body = {};
-    try { body = await req.json(); } catch (e) {}
-    const email = (body.email || '').toString().trim().toLowerCase();
-    if (!email) return Response.json({ error: 'Email is required' }, { status: 400 });
-    const users = await base44.asServiceRole.entities.User.filter({ email });
-    const found = users.find(u => (u.email || '').toLowerCase() === email);
-    if (!found) return Response.json({ found: false });
-    return Response.json({
-      found: true,
-      user: {
-        full_name: found.full_name,
-        email: found.email,
-        has_family: !!found.family_id
-      }
-    });
+    const body = await req.json().catch(() => ({}));
+    const query = (body.query || body.email || '').toString().trim().slice(0, 120);
+    if (!query) return Response.json({ users: [] });
+    const q = query.toLowerCase();
+
+    let matches = [];
+    if (q.includes('@')) {
+      const res = await base44.asServiceRole.entities.User.filter({ email: q });
+      matches = (Array.isArray(res) ? res : res.items || [])
+        .filter((u) => (u.email || '').toLowerCase() === q);
+    } else {
+      const res = await base44.asServiceRole.entities.User.list('-created_date', 500);
+      const list = Array.isArray(res) ? res : (res.items || []);
+      matches = list
+        .filter((u) => `${u.display_name || ''} ${u.full_name || ''} ${u.email || ''}`.toLowerCase().includes(q))
+        .slice(0, MAX_RESULTS);
+    }
+
+    const users = matches
+      .filter((u) => u.id !== user.id)
+      .map((u) => ({
+        id: u.id,
+        name: u.display_name || u.full_name || u.email,
+        email: u.email,
+        has_family: !!u.family_id,
+      }));
+
+    return Response.json({ users });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
