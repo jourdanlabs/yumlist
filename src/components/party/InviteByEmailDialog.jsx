@@ -7,11 +7,13 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 import { Mail, Send } from "lucide-react";
+import UserSearchPicker from "@/components/party/UserSearchPicker";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function InviteByEmailDialog({ open, onOpenChange, event, link }) {
   const [emails, setEmails] = useState("");
+  const [picked, setPicked] = useState([]);
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState(null);
 
@@ -23,15 +25,20 @@ export default function InviteByEmailDialog({ open, onOpenChange, event, link })
     .split(/[\s,;]+/)
     .map((e) => e.trim())
     .filter((e) => EMAIL_RE.test(e));
+  const total = valid.length + picked.length;
+
+  const selectUser = (u) => setPicked((list) => (list.some((p) => p.id === u.id) ? list : [...list, u]));
+  const removeUser = (id) => setPicked((list) => list.filter((p) => p.id !== id));
 
   const send = async () => {
-    if (valid.length === 0) return;
+    if (total === 0) return;
     setSending(true);
     setResult(null);
     try {
       const res = await base44.functions.invoke("sendPartyInvites", {
         event_id: event.id,
         emails: valid,
+        user_ids: picked.map((u) => u.id),
         app_url: window.location.origin,
       });
       const data = res.data || {};
@@ -52,7 +59,7 @@ export default function InviteByEmailDialog({ open, onOpenChange, event, link })
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Mail className="w-4 h-4" /> Request by email
@@ -62,18 +69,20 @@ export default function InviteByEmailDialog({ open, onOpenChange, event, link })
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-3">
+        <div className="space-y-4">
+          <UserSearchPicker selected={picked} onSelect={selectUser} onRemove={removeUser} />
+
           <div className="space-y-2">
-            <Label htmlFor="guest-emails">Guest emails</Label>
+            <Label htmlFor="guest-emails">Or add an email address</Label>
             <Textarea
               id="guest-emails"
               value={emails}
               onChange={(e) => setEmails(e.target.value)}
               placeholder="alex@example.com, sam@example.com"
-              rows={3}
+              rows={2}
             />
             <p className="text-xs text-muted-foreground">
-              Separate addresses with a comma. {valid.length > 0 && `${valid.length} ready to send.`}
+              Separate addresses with a comma.
             </p>
           </div>
 
@@ -90,9 +99,9 @@ export default function InviteByEmailDialog({ open, onOpenChange, event, link })
           )}
 
           <div className="grid gap-2">
-            <Button onClick={send} disabled={sending || valid.length === 0}>
+            <Button onClick={send} disabled={sending || total === 0}>
               <Send className="w-4 h-4 mr-2" />
-              {sending ? "Sending…" : "Send invites"}
+              {sending ? "Sending…" : `Send ${total > 0 ? `${total} ` : ""}invite${total === 1 ? "" : "s"}`}
             </Button>
             <Button variant="outline" onClick={openMailApp} disabled={valid.length === 0}>
               Open in my email app

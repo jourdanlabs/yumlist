@@ -17,11 +17,32 @@ export default async function (req) {
     const eventId = String(body.event_id || '');
     if (!eventId) return Response.json({ error: 'Missing event' }, { status: 400 });
 
-    const emails = Array.from(new Set(
-      (Array.isArray(body.emails) ? body.emails : [])
-        .map((e) => String(e || '').trim().toLowerCase())
-        .filter((e) => EMAIL_RE.test(e))
+    const typed = (Array.isArray(body.emails) ? body.emails : [])
+      .map((e) => String(e || '').trim().toLowerCase());
+
+    // Users picked from the in-app search are addressed by id; their email is
+    // resolved here so addresses never reach the browser.
+    const userIds = Array.from(new Set(
+      (Array.isArray(body.user_ids) ? body.user_ids : [])
+        .map((id) => String(id || '').trim())
+        .filter(Boolean)
     )).slice(0, MAX_RECIPIENTS);
+
+    let pickedEmails = [];
+    if (userIds.length > 0) {
+      const wanted = new Set(userIds);
+      const found = await base44.asServiceRole.entities.User
+        .list('-created_date', 500)
+        .catch(() => []);
+      const list = Array.isArray(found) ? found : (found.items || []);
+      pickedEmails = list
+        .filter((u) => wanted.has(u.id))
+        .map((u) => String(u.email || '').trim().toLowerCase());
+    }
+
+    const emails = Array.from(new Set([...typed, ...pickedEmails]))
+      .filter((e) => EMAIL_RE.test(e))
+      .slice(0, MAX_RECIPIENTS);
     if (emails.length === 0) return Response.json({ error: 'No valid email addresses' }, { status: 400 });
 
     const event = await base44.entities.PartyEvent
