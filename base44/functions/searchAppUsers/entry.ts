@@ -25,7 +25,7 @@ export default async function (req) {
       .filter((u) => `${u.full_name || ''} ${u.email || ''}`.toLowerCase().includes(query))
       .sort((a, b) => String(b.last_active || '').localeCompare(String(a.last_active || '')))
       .slice(0, MAX_RESULTS)
-      .map((u) => ({ id: u.id, full_name: u.full_name || 'App user' }));
+      .map((u) => ({ id: u.id, full_name: u.display_name || u.full_name || 'App user' }));
 
     return Response.json({ users });
   } catch (error) {

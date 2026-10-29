@@ -34,7 +34,7 @@ export default function Settings() {
 
   useEffect(() => {
     if (user) {
-      setFullName(user.full_name || "");
+      setFullName(user.display_name || user.full_name || "");
       setPhoneNumber(user.phone_number || "");
     }
   }, [user]);

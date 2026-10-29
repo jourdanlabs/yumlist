@@ -55,7 +55,7 @@ export default function DietLibraryList({ diets, members = [], onToggle, onDelet
                 <SelectItem value="family">Entire family</SelectItem>
                 {members.map((m) => (
                   <SelectItem key={m.id} value={`member:${m.id}`}>
-                    {m.full_name || m.email}
+                    {m.display_name || m.full_name || m.email}
                   </SelectItem>
                 ))}
               </SelectContent>

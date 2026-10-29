@@ -35,7 +35,7 @@ async function fetchNotifications(familyId, userId, userName) {
 
   const memberName = (id) => {
     const m = members.find((mm) => mm.id === id);
-    return m?.full_name || m?.email || "A member";
+    return m?.display_name || m?.full_name || m?.email || "A member";
   };
 
   const recipeName = (id) => recipes.find((r) => r.id === id)?.title || "a recipe";

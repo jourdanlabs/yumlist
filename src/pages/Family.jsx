@@ -120,10 +120,10 @@ export default function Family() {
             {members.map((m) => (
               <div key={m.id} className="flex items-center gap-3 p-2 rounded-lg bg-muted/40">
                 <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
-                  {(m.full_name || m.email || "?").charAt(0).toUpperCase()}
+                  {(m.display_name || m.full_name || m.email || "?").charAt(0).toUpperCase()}
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm font-medium truncate">{m.full_name || "Unnamed member"}</p>
+                  <p className="text-sm font-medium truncate">{m.display_name || m.full_name || "Unnamed member"}</p>
                   <p className="text-xs text-muted-foreground truncate">{m.email}</p>
                 </div>
                 {m.id === user.id && <span className="ml-auto text-xs text-muted-foreground">You</span>}

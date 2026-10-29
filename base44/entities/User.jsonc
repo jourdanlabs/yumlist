@@ -8,6 +8,11 @@
         "user"
       ]
     },
+    "display_name": {
+      "type": "string",
+      "title": "Display name",
+      "description": "The name the user chose to go by. Any format is allowed."
+    },
     "family_id": {
       "type": "string",
       "title": "Family ID",
