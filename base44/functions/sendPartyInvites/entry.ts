@@ -1,0 +1,74 @@
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const MAX_RECIPIENTS = 20;
+const BATCH = 6;
+
+// A family member asks their guests by email. Only that family's own party can
+// be invited to, recipients are capped, and delivery problems are reported as
+// counts so the host can fall back to their own email app.
+export default async function (req) {
+  try {
+    const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me().catch((e) => (e.status === 401 ? null : Promise.reject(e)));
+    if (!user || !user.family_id) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const body = await req.json().catch(() => ({}));
+    const eventId = String(body.event_id || '');
+    if (!eventId) return Response.json({ error: 'Missing event' }, { status: 400 });
+
+    const emails = Array.from(new Set(
+      (Array.isArray(body.emails) ? body.emails : [])
+        .map((e) => String(e || '').trim().toLowerCase())
+        .filter((e) => EMAIL_RE.test(e))
+    )).slice(0, MAX_RECIPIENTS);
+    if (emails.length === 0) return Response.json({ error: 'No valid email addresses' }, { status: 400 });
+
+    const event = await base44.entities.PartyEvent
+      .get(eventId)
+      .catch((e) => (e.status === 404 ? null : Promise.reject(e)));
+    if (!event || event.family_id !== user.family_id || !event.invite_token) {
+      return Response.json({ error: 'Not found' }, { status: 404 });
+    }
+
+    let origin = '';
+    try { origin = new URL(String(body.app_url || '')).origin; } catch (e) { origin = ''; }
+    if (!origin.startsWith('http')) return Response.json({ error: 'Missing app link' }, { status: 400 });
+
+    const inviteUrl = `${origin}/party-invite/${event.invite_token}`;
+    const dateLabel = event.event_date
+      ? new Date(`${event.event_date}T00:00:00`).toLocaleDateString('en-US', {
+          weekday: 'long', month: 'long', day: 'numeric',
+        })
+      : 'Soon';
+
+    let sent = 0;
+    let failed = 0;
+
+    for (let i = 0; i < emails.length; i += BATCH) {
+      const batch = emails.slice(i, i + BATCH);
+      const settled = await Promise.allSettled(batch.map((to) =>
+        base44.asServiceRole.integrations.Core.SendEmail({
+          to,
+          template_name: 'PartyInvite',
+          variables: {
+            event_name: event.name || 'our party',
+            event_date: dateLabel,
+            host_name: user.full_name || 'Your host',
+            invite_url: inviteUrl,
+          },
+          category: 'marketing',
+        })
+      ));
+      settled.forEach((res) => {
+        if (res.status === 'fulfilled' && res.value && res.value.success === false) failed++;
+        else if (res.status === 'fulfilled') sent++;
+        else failed++;
+      });
+    }
+
+    return Response.json({ sent, failed });
+  } catch (error) {
+    return Response.json({ error: error.message }, { status: 500 });
+  }
+}

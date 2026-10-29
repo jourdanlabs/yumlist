@@ -23,6 +23,8 @@ const Admin = lazy(() => import('@/pages/Admin'));
 const SharedFamily = lazy(() => import('@/pages/SharedFamily'));
 const Settings = lazy(() => import('@/pages/Settings'));
 const PrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'));
+const Party = lazy(() => import('@/pages/Party'));
+const PartyInvite = lazy(() => import('@/pages/PartyInvite'));
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -56,6 +58,7 @@ const AuthenticatedApp = () => {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+      <Route path="/party-invite/:token" element={<PartyInvite />} />
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
@@ -67,6 +70,7 @@ const AuthenticatedApp = () => {
           <Route path="/admin" element={<Admin />} />
           <Route path="/shared/:familyId" element={<SharedFamily />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/party" element={<Party />} />
         </Route>
       </Route>
       <Route path="*" element={<PageNotFound />} />

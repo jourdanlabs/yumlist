@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent } from "@/components/ui/card";
-import { Carrot, ChefHat, ThumbsUp, ArrowRight, AlertTriangle } from "lucide-react";
+import { Carrot, ChefHat, ThumbsUp, ArrowRight, AlertTriangle, PartyPopper } from "lucide-react";
 import { differenceInCalendarDays } from "date-fns";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { capitalize } from "@/lib/utils";
@@ -66,6 +66,21 @@ export default function Home() {
         <StatCard icon={ChefHat} label="Recipes" value={loading ? "—" : recipes.length} to="/recipes" />
         <StatCard icon={ThumbsUp} label="Share your likes" value="" to="/share" wide />
       </div>
+
+      <Link to="/party" className="block">
+        <Card className="hover:shadow-md transition-shadow">
+          <CardContent className="py-4 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <PartyPopper className="w-5 h-5" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-medium">Party guest list</div>
+              <div className="text-sm text-muted-foreground">Ask guests by email what they would like, then clear it after the party.</div>
+            </div>
+            <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0" />
+          </CardContent>
+        </Card>
+      </Link>
 
       {!loading && expiring.length > 0 && (
         <section className="rounded-2xl border border-amber-500/30 bg-amber-50 dark:bg-amber-950/30 p-5">
