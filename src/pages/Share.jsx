@@ -9,6 +9,9 @@ import { Share2, Mail, MessageSquare, Copy, Check, ThumbsUp, ThumbsDown } from "
 import { useToast } from "@/components/ui/use-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import ShareRecipeCard from "@/components/share/ShareRecipeCard";
+import SendInAppCard from "@/components/share/SendInAppCard";
+import ReceivedShares from "@/components/share/ReceivedShares";
+import { buildTasteSummary } from "@/lib/shareText";
 
 export default function Share() {
   const { user } = useCurrentUser();
@@ -19,6 +22,7 @@ export default function Share() {
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [recipient, setRecipient] = useState("");
+  const [received, setReceived] = useState([]);
 
   useEffect(() => {
     if (!user?.family_id) return;
@@ -32,6 +36,21 @@ export default function Share() {
     }).catch(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, [user?.family_id]);
+
+  const loadReceived = () => {
+    if (!user?.id) return;
+    base44.entities.ShareNote.filter({ recipient_id: user.id }, "-created_date", 20)
+      .then((res) => setReceived(Array.isArray(res) ? res : (res?.items || [])))
+      .catch(() => {});
+  };
+
+  useEffect(() => { loadReceived(); }, [user?.id]);
+
+  const deleteReceived = (note) => {
+    base44.entities.ShareNote.delete(note.id)
+      .then(() => setReceived((prev) => prev.filter((n) => n.id !== note.id)))
+      .catch(() => toast({ title: "Couldn't remove that share", variant: "destructive" }));
+  };
 
   const collectReactions = (type) => {
     const itemIds = new Set(
@@ -49,33 +68,10 @@ export default function Share() {
   const myLikes = useMemo(() => collectReactions("like"), [items, recipes, reactions, user?.id]);
   const myDislikes = useMemo(() => collectReactions("dislike"), [items, recipes, reactions, user?.id]);
 
-  const summary = useMemo(() => {
-    const name = user?.full_name || user?.email || "A family member";
-    const lines = [`${name}'s tastes from ${user?.family_name || "YumList"}`, ""];
-    if (myLikes.items.length) {
-      lines.push("Grocery items I love:");
-      myLikes.items.forEach((i) => lines.push(`  • ${i.name}${i.brand ? ` (${i.brand})` : ""}`));
-      lines.push("");
-    }
-    if (myLikes.recipes.length) {
-      lines.push("Recipes I love:");
-      myLikes.recipes.forEach((r) => lines.push(`  • ${r.title}`));
-      lines.push("");
-    }
-    if (myDislikes.items.length) {
-      lines.push("Grocery items I don't like:");
-      myDislikes.items.forEach((i) => lines.push(`  • ${i.name}${i.brand ? ` (${i.brand})` : ""}`));
-      lines.push("");
-    }
-    if (myDislikes.recipes.length) {
-      lines.push("Recipes I don't like:");
-      myDislikes.recipes.forEach((r) => lines.push(`  • ${r.title}`));
-    }
-    if (!myLikes.items.length && !myLikes.recipes.length && !myDislikes.items.length && !myDislikes.recipes.length) {
-      lines.push("No reactions yet — start tapping the thumbs-up or thumbs-down on items and recipes!");
-    }
-    return lines.join("\n");
-  }, [myLikes, myDislikes, user]);
+  const summary = useMemo(
+    () => buildTasteSummary({ user, likes: myLikes, dislikes: myDislikes }),
+    [myLikes, myDislikes, user]
+  );
 
   const copy = () => {
     navigator.clipboard.writeText(summary);
@@ -188,6 +184,16 @@ export default function Share() {
         sharedBy={user?.full_name || user?.email || "Your family"}
         familyName={user?.family_name}
       />
+
+      <SendInAppCard
+        recipes={recipes}
+        summary={summary}
+        senderName={user?.full_name || user?.email || "Your family"}
+        familyName={user?.family_name}
+        onSent={loadReceived}
+      />
+
+      <ReceivedShares notes={received} onDelete={deleteReceived} />
     </div>
   );
 }

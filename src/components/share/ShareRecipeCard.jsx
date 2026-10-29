@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ChefHat, Copy, Check, Mail, MessageSquare } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { buildRecipeText } from "@/lib/shareText";
 
 export default function ShareRecipeCard({ recipes, sharedBy, familyName }) {
   const { toast } = useToast();
@@ -17,22 +18,10 @@ export default function ShareRecipeCard({ recipes, sharedBy, familyName }) {
 
   const recipe = recipes.find((r) => r.id === recipeId);
 
-  const text = useMemo(() => {
-    if (!recipe) return "";
-    const lines = [`${recipe.title} — shared by ${sharedBy}${familyName ? ` from ${familyName}` : ""}`, ""];
-    if (recipe.ingredients?.length) {
-      lines.push("Ingredients:");
-      recipe.ingredients.forEach((i) => lines.push(`  • ${i}`));
-      lines.push("");
-    }
-    if (recipe.instructions) {
-      lines.push("Instructions:");
-      lines.push(recipe.instructions);
-      lines.push("");
-    }
-    if (recipe.source) lines.push(`Source: ${recipe.source}`);
-    return lines.join("\n");
-  }, [recipe, sharedBy, familyName]);
+  const text = useMemo(
+    () => buildRecipeText({ recipe, sharedBy, familyName }),
+    [recipe, sharedBy, familyName]
+  );
 
   const copy = () => {
     navigator.clipboard.writeText(text);
