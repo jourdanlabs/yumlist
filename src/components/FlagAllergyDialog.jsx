@@ -122,7 +122,10 @@ export default function FlagAllergyDialog({ open, onOpenChange, itemName, family
               label="Who has it"
               options={[
                 { value: "none", label: "No one / skip" },
-                ...members.map((m) => ({ value: m.full_name || m.email, label: m.full_name || m.email })),
+                ...members.map((m) => {
+                  const name = m.display_name || m.full_name || m.email;
+                  return { value: name, label: name };
+                }),
                 { value: "__custom", label: "Someone not listed…" },
               ]}
             />

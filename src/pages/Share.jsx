@@ -77,11 +77,13 @@ export default function Share() {
   const myDislikes = useMemo(() => collectReactions("dislike"), [items, recipes, reactions, user?.id]);
 
   const myAvoid = useMemo(() => {
-    const myName = (user?.full_name || "").trim().toLowerCase();
+    const myNames = [user?.display_name, user?.full_name]
+      .filter(Boolean)
+      .map((n) => n.trim().toLowerCase());
     return allergyFlags.filter(
-      (f) => !f.member_name || (myName && f.member_name.trim().toLowerCase() === myName)
+      (f) => !f.member_name || myNames.includes(f.member_name.trim().toLowerCase())
     );
-  }, [allergyFlags, user?.full_name]);
+  }, [allergyFlags, user?.display_name, user?.full_name]);
 
   const summary = useMemo(
     () => buildTasteSummary({ user, likes: myLikes, dislikes: myDislikes, avoid: myAvoid }),
