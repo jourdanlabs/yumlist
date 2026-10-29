@@ -12,7 +12,6 @@ import ImportItemsDialog from "@/components/ImportItemsDialog";
 import ScanReceiptDialog from "@/components/ScanReceiptDialog";
 import EditItemDialog from "@/components/EditItemDialog";
 import FlagAllergyDialog from "@/components/FlagAllergyDialog";
-import RecallNotices from "@/components/RecallNotices";
 import { useRecalls } from "@/hooks/useRecalls";
 import { useDiets } from "@/hooks/useDiets";
 import { dietConflicts } from "@/lib/diets";
@@ -34,7 +33,7 @@ export default function Items() {
   const [allergyFlags, setAllergyFlags] = useState([]);
   const [visibleCount, setVisibleCount] = useState(30);
   const [dietOnly, setDietOnly] = useState(false);
-  const { alerts, dismiss, dismissAll } = useRecalls(familyId);
+  const { alerts, dismiss } = useRecalls(familyId);
   const { myDiets } = useDiets(familyId, user?.id);
 
   const openBarcodeScan = () => {
@@ -166,8 +165,6 @@ export default function Items() {
         </div>
       </div>
 
-      <RecallNotices alerts={alerts} onDismiss={dismiss} onDismissAll={dismissAll} />
-
       <div className="relative rounded-lg border border-border bg-card p-2">
         <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search items…" className="pl-9 bg-card border-0 shadow-none focus-visible:ring-0" />
@@ -216,6 +213,7 @@ export default function Items() {
                     onEdit={(it) => setEditing(it)}
                     allergyFlag={flagsByName[(item.name || "").toLowerCase()]}
                     recall={recallByName[(item.name || "").toLowerCase().trim()]}
+                    onDismissRecall={dismiss}
                     onFlag={(it) => setFlagging(it)}
                     dietConflicts={dietConflicts(myDiets, item.name, item.brand, item.category).map((d) => d.name)}
                   />

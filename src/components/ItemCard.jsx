@@ -1,7 +1,8 @@
 import React from "react";
 import { Image } from "@/components/ui/image";
-import { Trash2, CalendarClock, Package, Minus, Plus, Pencil, AlertTriangle, AlertOctagon } from "lucide-react";
+import { Trash2, CalendarClock, Package, Minus, Plus, Pencil, AlertTriangle } from "lucide-react";
 import ReactionBar from "@/components/ReactionBar";
+import RecallBadge from "@/components/RecallBadge";
 import DietBadge from "@/components/diets/DietBadge";
 import { capitalize } from "@/lib/utils";
 import { itemEmoji } from "@/lib/itemEmoji";
@@ -23,7 +24,7 @@ const toneClasses = {
   ok: "bg-muted text-muted-foreground",
 };
 
-export default function ItemCard({ item, counts, onReact, onDelete, onUpdate, onEdit, allergyFlag, onFlag, recall, dietConflicts = [] }) {
+export default function ItemCard({ item, counts, onReact, onDelete, onUpdate, onEdit, allergyFlag, onFlag, recall, onDismissRecall, dietConflicts = [] }) {
   const qty = item.quantity ?? 1;
   const unit = item.unit || "units";
   const exp = expiryStatus(item.expiration_date);
@@ -78,12 +79,7 @@ export default function ItemCard({ item, counts, onReact, onDelete, onUpdate, on
                     {exp.label}
                   </span>
                 )}
-                {recall && (
-                  <span className="inline-flex items-center gap-1 text-sm px-2 py-0.5 rounded-full bg-destructive/15 text-destructive">
-                    <AlertOctagon className="w-3 h-3" />
-                    Recall
-                  </span>
-                )}
+                <RecallBadge recall={recall} onDismiss={onDismissRecall} />
                 {allergyFlag && (
                   <span className={`inline-flex items-center gap-1 text-sm px-2 py-0.5 rounded-full ${allergyFlag.flag_type === "allergy" ? "bg-destructive/15 text-destructive" : "bg-amber-500/15 text-amber-700 dark:text-amber-400"}`}>
                     <AlertTriangle className="w-3 h-3" />

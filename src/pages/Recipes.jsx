@@ -14,6 +14,7 @@ import RecipeFilters from "@/components/RecipeFilters";
 import SuggestionBoard from "@/components/SuggestionBoard";
 import FindRecipesDialog from "@/components/recipes/FindRecipesDialog";
 import { useDiets } from "@/hooks/useDiets";
+import { useRecalls } from "@/hooks/useRecalls";
 import { dietConflicts } from "@/lib/diets";
 
 export default function Recipes() {
@@ -21,6 +22,7 @@ export default function Recipes() {
   const familyId = user?.family_id;
   const { countsFor, react, reload: reloadReactions } = useReactions(familyId, "recipe", user?.id);
   const { myDiets } = useDiets(familyId, user?.id);
+  const { alerts: recallAlerts, dismiss: dismissRecall } = useRecalls(familyId);
   const { toast } = useToast();
   const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -269,6 +271,15 @@ export default function Recipes() {
     return matchesQuery && matchesLikes && matchesCategory && fitsDiets;
   });
 
+  // A recipe is flagged when a recalled product appears in its title or ingredients.
+  const recallForRecipe = (recipe) => {
+    const text = [recipe.title, ...(recipe.ingredients || [])].join(" ").toLowerCase();
+    return recallAlerts.find((a) => {
+      const key = (a.item_name || "").toLowerCase().trim();
+      return key.length >= 3 && text.includes(key);
+    });
+  };
+
   const activeFilterCount = selectedCategories.length + (matchMode !== "off" ? 1 : 0);
 
   return (
@@ -380,6 +391,8 @@ export default function Recipes() {
                     selected={selectedIds.has(recipe.id)}
                     onToggleSelect={toggleSelect}
                     dietConflicts={dietConflicts(myDiets, recipe.title, (recipe.ingredients || []).join(" ")).map((d) => d.name)}
+                    recall={recallForRecipe(recipe)}
+                    onDismissRecall={dismissRecall}
                   />
                 ))}
               </div>
