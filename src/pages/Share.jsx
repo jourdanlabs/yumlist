@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Share2, Mail, MessageSquare, Copy, Check, ThumbsUp, ThumbsDown } from "lucide-react";
+import { Share2, Mail, MessageSquare, Copy, Check, ThumbsUp, ThumbsDown, AlertTriangle } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import ShareRecipeCard from "@/components/share/ShareRecipeCard";
@@ -19,6 +19,7 @@ export default function Share() {
   const [items, setItems] = useState([]);
   const [recipes, setRecipes] = useState([]);
   const [reactions, setReactions] = useState([]);
+  const [allergyFlags, setAllergyFlags] = useState([]);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [recipient, setRecipient] = useState("");
@@ -31,8 +32,15 @@ export default function Share() {
       base44.entities.GroceryItem.filter({ family_id: user.family_id }),
       base44.entities.Recipe.filter({ family_id: user.family_id }),
       base44.entities.Reaction.filter({ family_id: user.family_id }),
-    ]).then(([i, r, rx]) => {
-      if (active) { setItems(i); setRecipes(r); setReactions(rx); setLoading(false); }
+      base44.entities.AllergyFlag.filter({ family_id: user.family_id }, "-created_date"),
+    ]).then(([i, r, rx, flags]) => {
+      if (active) {
+        setItems(i);
+        setRecipes(r);
+        setReactions(rx);
+        setAllergyFlags(Array.isArray(flags) ? flags : (flags?.items || []));
+        setLoading(false);
+      }
     }).catch(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, [user?.family_id]);
@@ -68,9 +76,16 @@ export default function Share() {
   const myLikes = useMemo(() => collectReactions("like"), [items, recipes, reactions, user?.id]);
   const myDislikes = useMemo(() => collectReactions("dislike"), [items, recipes, reactions, user?.id]);
 
+  const myAvoid = useMemo(() => {
+    const myName = (user?.full_name || "").trim().toLowerCase();
+    return allergyFlags.filter(
+      (f) => !f.member_name || (myName && f.member_name.trim().toLowerCase() === myName)
+    );
+  }, [allergyFlags, user?.full_name]);
+
   const summary = useMemo(
-    () => buildTasteSummary({ user, likes: myLikes, dislikes: myDislikes }),
-    [myLikes, myDislikes, user]
+    () => buildTasteSummary({ user, likes: myLikes, dislikes: myDislikes, avoid: myAvoid }),
+    [myLikes, myDislikes, myAvoid, user]
   );
 
   const copy = () => {
@@ -130,26 +145,50 @@ export default function Share() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2"><ThumbsDown className="w-4 h-4" /> Your dislikes</CardTitle>
+          <CardTitle className="text-base flex items-center gap-2"><ThumbsDown className="w-4 h-4" /> Your dislikes & allergies</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {loading ? (
             <div className="h-24 rounded-xl bg-muted animate-pulse" />
-          ) : myDislikes.items.length === 0 && myDislikes.recipes.length === 0 ? (
-            <p className="text-sm text-muted-foreground">You haven't disliked anything yet. Tap the thumbs-down on items and recipes to build your shareable list.</p>
+          ) : myDislikes.items.length === 0 && myDislikes.recipes.length === 0 && myAvoid.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Nothing on your avoid list yet. Tap the thumbs-down on items and recipes, or flag an allergy, to build your shareable list.</p>
           ) : (
-            <div className="grid sm:grid-cols-2 gap-3 text-sm">
-              <div>
-                <div className="font-medium mb-1">Items ({myDislikes.items.length})</div>
-                <ul className="text-muted-foreground space-y-0.5">
-                  {myDislikes.items.map((i) => <li key={i.id}>• {i.name}</li>)}
-                </ul>
+            <div className="space-y-4 text-sm">
+              <div className="grid sm:grid-cols-2 gap-3">
+                <div>
+                  <div className="font-medium mb-1">Items ({myDislikes.items.length})</div>
+                  <ul className="text-muted-foreground space-y-0.5">
+                    {myDislikes.items.map((i) => <li key={i.id}>• {i.name}</li>)}
+                  </ul>
+                </div>
+                <div>
+                  <div className="font-medium mb-1">Recipes ({myDislikes.recipes.length})</div>
+                  <ul className="text-muted-foreground space-y-0.5">
+                    {myDislikes.recipes.map((r) => <li key={r.id}>• {r.title}</li>)}
+                  </ul>
+                </div>
               </div>
+
               <div>
-                <div className="font-medium mb-1">Recipes ({myDislikes.recipes.length})</div>
-                <ul className="text-muted-foreground space-y-0.5">
-                  {myDislikes.recipes.map((r) => <li key={r.id}>• {r.title}</li>)}
-                </ul>
+                <div className="font-medium mb-1">Allergies & sensitivities ({myAvoid.length})</div>
+                {myAvoid.length === 0 ? (
+                  <p className="text-muted-foreground">None flagged.</p>
+                ) : (
+                  <ul className="space-y-1.5">
+                    {myAvoid.map((f) => (
+                      <li key={f.id} className="flex items-start gap-2">
+                        <AlertTriangle className="w-4 h-4 mt-0.5 text-amber-600 shrink-0" />
+                        <span>
+                          <span className="font-medium">{f.item_name}</span>
+                          <span className="text-muted-foreground">
+                            {" · "}{f.flag_type}{f.severity ? ` · ${f.severity}` : ""}{f.member_name ? ` · ${f.member_name}` : ""}
+                          </span>
+                          {f.notes && <span className="block text-xs text-muted-foreground">{f.notes}</span>}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             </div>
           )}

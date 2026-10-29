@@ -1,4 +1,4 @@
-export function buildTasteSummary({ user, likes, dislikes }) {
+export function buildTasteSummary({ user, likes, dislikes, avoid = [] }) {
   const name = user?.full_name || user?.email || "A family member";
   const lines = [`${name}'s tastes from ${user?.family_name || "YumList"}`, ""];
   if (likes.items.length) {
@@ -19,8 +19,17 @@ export function buildTasteSummary({ user, likes, dislikes }) {
   if (dislikes.recipes.length) {
     lines.push("Recipes I don't like:");
     dislikes.recipes.forEach((r) => lines.push(`  • ${r.title}`));
+    lines.push("");
   }
-  if (!likes.items.length && !likes.recipes.length && !dislikes.items.length && !dislikes.recipes.length) {
+  if (avoid.length) {
+    lines.push("Allergies & sensitivities to avoid:");
+    avoid.forEach((f) => {
+      const detail = [f.flag_type, f.severity, f.member_name].filter(Boolean).join(", ");
+      lines.push(`  • ${f.item_name} (${detail})`);
+    });
+    lines.push("");
+  }
+  if (!likes.items.length && !likes.recipes.length && !dislikes.items.length && !dislikes.recipes.length && !avoid.length) {
     lines.push("No reactions yet — start tapping the thumbs-up or thumbs-down on items and recipes!");
   }
   return lines.join("\n");
