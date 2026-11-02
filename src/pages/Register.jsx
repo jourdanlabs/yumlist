@@ -128,7 +128,7 @@ export default function Register() {
   return (
     <AuthLayout
       icon={UserPlus}
-      title="Welcome to Your YUM LIST!"
+      title={<span> <span className="text-green-600">Welcome</span> <span className="text-orange-700">to</span> <span className="text-green-600">Your</span> <span className="text-orange-700">YUM LIST!</span> </span>}
       subtitle="Create your free account"
       footer={
         <>
