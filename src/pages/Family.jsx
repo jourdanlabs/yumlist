@@ -10,6 +10,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import FamilySharing from "@/components/FamilySharing";
 import AddMemberCard from "@/components/AddMemberCard";
+import MemberRolesCard from "@/components/family/MemberRolesCard";
 
 function makeCode() {
   return Math.random().toString(36).slice(2, 8).toUpperCase();
@@ -109,27 +110,7 @@ export default function Family() {
             </Button>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2"><Users className="w-4 h-4" /> Members</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {members.length === 0 && (
-              <p className="text-sm text-muted-foreground">No members found.</p>
-            )}
-            {members.map((m) => (
-              <div key={m.id} className="flex items-center gap-3 p-2 rounded-lg bg-muted/40">
-                <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
-                  {(m.display_name || m.full_name || m.email || "?").charAt(0).toUpperCase()}
-                </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-medium truncate">{m.display_name || m.full_name || m.email || "Unnamed member"}</p>
-                </div>
-                {m.id === user.id && <span className="ml-auto text-xs text-muted-foreground">You</span>}
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+        <MemberRolesCard familyId={user.family_id} members={members} currentUserId={user.id} />
         <AddMemberCard onAdded={() => {
           base44.entities.User.filter({ family_id: user.family_id }).then(setMembers).catch(() => {});
         }} />
