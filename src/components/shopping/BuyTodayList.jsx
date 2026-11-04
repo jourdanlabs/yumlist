@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { ChefHat, ShoppingBasket, X } from "lucide-react";
+import { ChevronDown, ChefHat, ShoppingBasket, X } from "lucide-react";
 import { cn, capitalize } from "@/lib/utils";
 
 // Everything to buy on this trip: individual items plus the recipe ingredients you selected.
 export default function BuyTodayList({ items, checked = {}, onToggle, onRemove }) {
+  const [open, setOpen] = useState(true);
   const individual = items.filter((i) => !(i.recipe_title || "").trim());
   const fromRecipes = items.filter((i) => (i.recipe_title || "").trim());
   const remaining = items.filter((i) => !checked[i.id]).length;
@@ -52,29 +53,44 @@ export default function BuyTodayList({ items, checked = {}, onToggle, onRemove }
   return (
     <Card className="no-print">
       <CardContent className="p-0">
-        <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          className="w-full flex items-center gap-2 px-4 py-3 min-h-[44px] text-left hover:bg-accent/40 transition-colors"
+        >
           <ShoppingBasket className="w-4 h-4 text-muted-foreground" />
           <h2 className="text-sm font-medium">Buy today</h2>
           <span className="text-sm text-muted-foreground">
             {remaining === 0 ? "all items checked off" : `${remaining} left`}
           </span>
-        </div>
+          <ChevronDown
+            className={cn(
+              "w-4 h-4 ml-auto text-muted-foreground transition-transform",
+              open && "rotate-180"
+            )}
+          />
+        </button>
 
-        {individual.length > 0 && (
-          <div>
-            <div className="px-4 pt-3 pb-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-              Individual items ({individual.length})
-            </div>
-            <div className="divide-y divide-border">{individual.map(renderRow)}</div>
-          </div>
-        )}
-
-        {fromRecipes.length > 0 && (
+        {open && (
           <div className="border-t border-border">
-            <div className="px-4 pt-3 pb-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground flex items-center gap-1.5">
-              <ChefHat className="w-3.5 h-3.5" /> From recipes ({fromRecipes.length})
-            </div>
-            <div className="divide-y divide-border">{fromRecipes.map(renderRow)}</div>
+            {individual.length > 0 && (
+              <div>
+                <div className="px-4 pt-3 pb-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                  Individual items ({individual.length})
+                </div>
+                <div className="divide-y divide-border">{individual.map(renderRow)}</div>
+              </div>
+            )}
+
+            {fromRecipes.length > 0 && (
+              <div className="border-t border-border">
+                <div className="px-4 pt-3 pb-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground flex items-center gap-1.5">
+                  <ChefHat className="w-3.5 h-3.5" /> From recipes ({fromRecipes.length})
+                </div>
+                <div className="divide-y divide-border">{fromRecipes.map(renderRow)}</div>
+              </div>
+            )}
           </div>
         )}
       </CardContent>
