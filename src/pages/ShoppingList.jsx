@@ -68,10 +68,19 @@ export default function ShoppingList() {
     [shopping, q]
   );
 
+  // Items requested from a recipe are shown inside the recipe request list instead.
+  const recipeShopping = useMemo(
+    () => filteredShopping.filter((i) => !!(i.recipe_title || "").trim()),
+    [filteredShopping]
+  );
+
   const grouped = useMemo(() => {
     const order = GROCERY_CATEGORIES.reduce((acc, c, i) => { acc[c] = i; return acc; }, {});
     const groups = {};
-    filteredShopping.slice(0, visibleCount).forEach((item) => {
+    filteredShopping
+      .filter((item) => !(item.recipe_title || "").trim())
+      .slice(0, visibleCount)
+      .forEach((item) => {
       const cat = normalizeCategory(item.category) || "Other";
       (groups[cat] = groups[cat] || []).push(item);
     });
@@ -189,14 +198,37 @@ export default function ShoppingList() {
         />
       </div>
 
-      <RecipeRequestSummary items={shopping} />
-
       <div className="print-only mb-6">
         <h1 className="text-2xl font-bold">Shop List</h1>
         <p className="text-sm text-muted-foreground">
           {user?.family_name || "YumList"} · {new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}
         </p>
         <hr className="my-3 border-black" />
+        {recipeShopping.length > 0 && (
+          <div className="mb-4">
+            <h2 className="text-lg font-bold uppercase tracking-wide border-b border-black pb-1 mb-2">
+              Recipe requests
+            </h2>
+            {Object.keys(
+              recipeShopping.reduce((acc, i) => { acc[i.recipe_title] = true; return acc; }, {})
+            ).map((title) => {
+              const group = recipeShopping.filter((i) => i.recipe_title === title);
+              return (
+                <div key={title} className="mb-2">
+                  <div className="text-sm font-semibold">
+                    {title}
+                    <span className="font-normal text-muted-foreground">
+                      {" "}· requested by {group[0]?.requested_by_name || "a family member"}
+                    </span>
+                  </div>
+                  <ul className="list-disc list-inside text-sm">
+                    {group.map((i) => <li key={i.id}>{capitalize(i.name)}</li>)}
+                  </ul>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {loading ? (
@@ -214,6 +246,12 @@ export default function ShoppingList() {
             </div>
           ) : (
             <div className="space-y-6">
+              <RecipeRequestSummary
+                items={shopping}
+                checked={checked}
+                onToggle={toggle}
+                onRemove={removeFromShopping}
+              />
               {grouped.map((group) => (
                 <CategorySection
                   key={group.category}
