@@ -277,8 +277,10 @@ export default function Recipes() {
   };
 
   const filtered = recipes.filter((r) => {
-    const q = query.toLowerCase();
-    const matchesQuery = !q || (r.title || "").toLowerCase().includes(q) || (r.ingredients || []).some((i) => i.toLowerCase().includes(q));
+    // Every word in the query must appear somewhere in the title or ingredients.
+    const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+    const haystack = [r.title || "", ...(r.ingredients || [])].join(" ").toLowerCase();
+    const matchesQuery = terms.every((t) => haystack.includes(t));
     const matchesLikes = matchMode === "off" || recipeMatchesLikes(r, matchMode);
     const matchesCategory =
       selectedCategories.length === 0 ||
