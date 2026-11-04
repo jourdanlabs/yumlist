@@ -13,6 +13,25 @@
       "title": "Display name",
       "description": "The name the user chose to go by. Any format is allowed."
     },
+    "family_role": {
+      "type": "string",
+      "title": "Family role",
+      "description": "The role the user identified for themselves in their family.",
+      "enum": [
+        "parent",
+        "adult",
+        "teen",
+        "child",
+        "guest"
+      ],
+      "enumColors": [
+        "purple",
+        "blue",
+        "yellow",
+        "green",
+        "gray"
+      ]
+    },
     "family_id": {
       "type": "string",
       "title": "Family ID",
