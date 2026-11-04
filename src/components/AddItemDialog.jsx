@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -12,13 +12,17 @@ import { GROCERY_CATEGORIES, detectCategory } from "@/lib/groceryCategories";
 import VoiceButton from "@/components/VoiceButton";
 import MobileSelect from "@/components/MobileSelect";
 
-export default function AddItemDialog({ open, onOpenChange, familyId, onAdded, initialTab = "manual", onTabChange }) {
+export default function AddItemDialog({ open, onOpenChange, familyId, onAdded, initialTab = "scan", onTabChange }) {
   const { toast } = useToast();
   const [scanning, setScanning] = useState(false);
   const [looking, setLooking] = useState(false);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState(initialTab);
   const [form, setForm] = useState({ name: "", brand: "", barcode: "", category: "", image_url: "", quantity: 1, unit: "units", expiration_date: "" });
+
+  useEffect(() => {
+    if (open) setActiveTab(initialTab);
+  }, [open, initialTab]);
 
   const handleTabChange = (val) => {
     setActiveTab(val);

@@ -25,7 +25,7 @@ export default function Items() {
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [addOpen, setAddOpen] = useState(false);
-  const [addTab, setAddTab] = useState("manual");
+  const [addTab, setAddTab] = useState("scan");
   const [importOpen, setImportOpen] = useState(false);
   const [receiptOpen, setReceiptOpen] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -43,7 +43,7 @@ export default function Items() {
 
   const handleAddOpenChange = (o) => {
     setAddOpen(o);
-    if (!o) setAddTab("manual");
+    if (!o) setAddTab("scan");
   };
 
   const load = async () => {
