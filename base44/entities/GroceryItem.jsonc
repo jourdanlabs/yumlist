@@ -66,6 +66,15 @@
       "type": "boolean",
       "title": "On shopping list",
       "default": false
+    },
+    "bought_at": {
+      "type": "string",
+      "title": "Bought on",
+      "format": "date-time"
+    },
+    "bought_by_name": {
+      "type": "string",
+      "title": "Bought by"
     }
   },
   "required": [

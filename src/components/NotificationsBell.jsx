@@ -78,6 +78,32 @@ async function fetchNotifications(familyId, userId, userName) {
       date: s.created_date,
     }));
 
+  // One notice per recipe whose ingredients someone checked off as bought.
+  const boughtByRecipe = {};
+  if (userName) {
+    allItems
+      .filter((i) => i.bought_at && i.recipe_title && (i.requested_by_name || "") === userName)
+      .forEach((i) => {
+        const existing = boughtByRecipe[i.recipe_title];
+        if (!existing || new Date(i.bought_at).getTime() > new Date(existing.date).getTime()) {
+          boughtByRecipe[i.recipe_title] = {
+            date: i.bought_at,
+            who: i.bought_by_name || existing?.who || "A family member",
+          };
+        }
+      });
+  }
+
+  const boughtNotifs = Object.entries(boughtByRecipe).map(([title, v]) => ({
+    id: `bought-${title}`,
+    type: "bought",
+    who: v.who,
+    verb: "bought your ingredients for",
+    target: title,
+    targetLabel: "recipe",
+    date: v.date,
+  }));
+
   const storeNotifs = storeNotices
     .filter((s) => s.created_by_id !== userId)
     .map((s) => ({
@@ -90,7 +116,7 @@ async function fetchNotifications(familyId, userId, userName) {
       date: s.created_date,
     }));
 
-  return [...reactionNotifs, ...suggestionNotifs, ...requestNotifs, ...storeNotifs]
+  return [...reactionNotifs, ...suggestionNotifs, ...requestNotifs, ...storeNotifs, ...boughtNotifs]
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 20);
 }

@@ -104,7 +104,19 @@ export default function ShoppingList() {
   const checkedIds = Object.keys(checked).filter((id) => checked[id]);
   const allChecked = filteredShopping.length > 0 && checkedIds.length === filteredShopping.length;
 
-  const toggle = (id) => setChecked((c) => ({ ...c, [id]: !c[id] }));
+  // Checking a recipe ingredient off in Buy today marks it bought, so the requester sees it.
+  const toggle = (id) => {
+    const willCheck = !checked[id];
+    setChecked((c) => ({ ...c, [id]: !c[id] }));
+    const item = items.find((i) => i.id === id);
+    if (!item?.recipe_title) return;
+    const patch = willCheck
+      ? { bought_at: new Date().toISOString(), bought_by_name: user?.display_name || user?.full_name || user?.email || "" }
+      : { bought_at: null, bought_by_name: "" };
+    base44.entities.GroceryItem.update(id, patch).catch(() => {
+      toast({ title: "Could not update the requester's notification", variant: "destructive" });
+    });
+  };
   const toggleAll = () => {
     if (allChecked) {
       setChecked({});
