@@ -144,22 +144,28 @@ export default function Items() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
+      <div className="space-y-3 sm:flex sm:items-center sm:justify-between sm:gap-4 sm:space-y-0">
         <div>
-          <h1 className="font-heading text-2xl font-semibold">Pantry</h1>
-          <p className="text-sm text-muted-foreground">Grocery items your family has added.</p>
+          <h1 className="font-heading text-xl sm:text-2xl font-semibold">Pantry</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">Grocery items your family has added.</p>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
-          <Button variant="outline" onClick={openBarcodeScan}>
-            <ScanLine className="w-4 h-4 mr-1" /> Scan barcode
+        <div className="grid grid-cols-3 gap-2 sm:flex sm:items-center sm:flex-shrink-0">
+          <Button variant="outline" onClick={openBarcodeScan} className="px-2">
+            <ScanLine className="w-4 h-4" />
+            <span className="ml-1 hidden sm:inline">Scan barcode</span>
+            <span className="ml-1 text-xs sm:hidden">Scan</span>
           </Button>
-          <Button variant="outline" onClick={() => setReceiptOpen(true)}>
-            <Receipt className="w-4 h-4 mr-1" /> Scan receipt
+          <Button variant="outline" onClick={() => setReceiptOpen(true)} className="px-2">
+            <Receipt className="w-4 h-4" />
+            <span className="ml-1 hidden sm:inline">Scan receipt</span>
+            <span className="ml-1 text-xs sm:hidden">Receipt</span>
           </Button>
-          <Button variant="outline" onClick={() => setImportOpen(true)}>
-            <Upload className="w-4 h-4 mr-1" /> Import
+          <Button variant="outline" onClick={() => setImportOpen(true)} className="px-2">
+            <Upload className="w-4 h-4" />
+            <span className="ml-1 hidden sm:inline">Import</span>
+            <span className="ml-1 text-xs sm:hidden">Import</span>
           </Button>
-          <Button onClick={() => setAddOpen(true)}>
+          <Button onClick={() => setAddOpen(true)} className="col-span-3 sm:col-auto">
             <Plus className="w-4 h-4 mr-1" /> Add item
           </Button>
         </div>
@@ -174,7 +180,7 @@ export default function Items() {
         <button
           type="button"
           onClick={() => setDietOnly((v) => !v)}
-          className={`inline-flex items-center gap-2 self-start rounded-full border px-3 py-1.5 text-sm transition-colors min-h-[44px] ${
+          className={`inline-flex items-center gap-2 self-start rounded-full border px-3 py-1.5 text-xs sm:text-sm transition-colors min-h-[44px] ${
             dietOnly
               ? "bg-primary text-primary-foreground border-primary"
               : "bg-card text-muted-foreground border-border hover:text-foreground"
@@ -194,14 +200,14 @@ export default function Items() {
           <p className="text-muted-foreground">{query ? "No items match your search." : "Your pantry is empty. Add your first item."}</p>
         </div>
       ) : (
-        <div className="space-y-8">
+        <div className="space-y-6 sm:space-y-8">
           {categories.map((cat) => (
             <div key={cat}>
-              <h2 className="font-heading text-lg font-semibold mb-3 flex items-center gap-2">
+              <h2 className="font-heading text-base sm:text-lg font-semibold mb-2 sm:mb-3 flex items-center gap-2">
                 {cat}
-                <span className="text-sm font-normal text-muted-foreground">({grouped[cat].length})</span>
+                <span className="text-xs sm:text-sm font-normal text-muted-foreground">({grouped[cat].length})</span>
               </h2>
-              <div className="grid sm:grid-cols-2 gap-4">
+              <div className="grid gap-3 sm:grid-cols-2 sm:gap-4">
                 {grouped[cat].map((item) => (
                   <ItemCard
                     key={item.id}
