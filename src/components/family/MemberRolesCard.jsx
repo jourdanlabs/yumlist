@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { roleLabel, roleStyle } from "@/lib/familyRoles";
+import { roleLabel } from "@/lib/familyRoles";
 import RolePicker from "@/components/family/RolePicker";
+import RoleBadge from "@/components/family/RoleBadge";
 import { useToast } from "@/components/ui/use-toast";
 
 export default function MemberRolesCard({ members = [], currentUser, onUpdated }) {
@@ -19,7 +19,7 @@ export default function MemberRolesCard({ members = [], currentUser, onUpdated }
     try {
       await base44.auth.updateMe({ family_role: value });
       onUpdated?.();
-      toast({ title: `You're listed as ${roleLabel(value)}` });
+      toast({ title: `You're ${roleLabel(value)}` });
     } catch (e) {
       setRole(previous);
       toast({ title: "Could not save your role", variant: "destructive" });
@@ -64,9 +64,7 @@ export default function MemberRolesCard({ members = [], currentUser, onUpdated }
                     {m.id === currentUser?.id && <span className="text-xs text-muted-foreground">You</span>}
                   </span>
                   {memberRole ? (
-                    <span className={cn("text-xs font-medium px-2 py-0.5 rounded-full border flex-shrink-0", roleStyle(memberRole))}>
-                      {roleLabel(memberRole)}
-                    </span>
+                    <RoleBadge value={memberRole} className="flex-shrink-0 max-w-[55%]" />
                   ) : (
                     <span className="text-xs text-muted-foreground flex-shrink-0">No role yet</span>
                   )}

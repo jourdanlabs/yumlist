@@ -226,8 +226,10 @@ export default function Register() {
           </div>
         </div>
         <div className="space-y-2">
-          <Label>Your role in the family</Label>
-          <RolePicker value={familyRole} onChange={setFamilyRole} disabled={loading} />
+          <Label>Pick your family role</Label>
+          <div className="max-h-60 overflow-y-auto rounded-lg border border-border p-2">
+            <RolePicker value={familyRole} onChange={setFamilyRole} disabled={loading} />
+          </div>
         </div>
         <Button type="submit" className="w-full h-12 font-medium" disabled={loading}>
           {loading ? (
