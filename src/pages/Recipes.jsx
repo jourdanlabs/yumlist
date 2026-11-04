@@ -257,10 +257,9 @@ export default function Recipes() {
           <p className="text-xs sm:text-sm text-muted-foreground">Recipes your family has collected.</p>
         </div>
         <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:flex-shrink-0">
-          <Button variant="outline" onClick={() => setFindOpen(true)} className="px-2">
-            <Sparkles className="w-4 h-4" />
-            <span className="ml-1 hidden sm:inline">Find recipes</span>
-            <span className="ml-1 text-xs sm:hidden">Find</span>
+          <Button variant="outline" onClick={() => setFindOpen(true)} className="col-span-2 sm:col-auto px-4">
+            <Sparkles className="w-4 h-4 mr-1" />
+            <span>Find recipes</span>
           </Button>
           <Button onClick={() => setAddOpen(true)} className="col-span-2 sm:col-auto">
             <Plus className="w-4 h-4 mr-1" /> Add recipe
