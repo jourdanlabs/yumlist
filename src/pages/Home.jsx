@@ -63,7 +63,7 @@ export default function Home() {
     <div className="space-y-8">
       <div className="text-center">
         <h1 className="font-heading text-3xl font-semibold tracking-tight text-green-600">
-          Our Pantry
+          Our List
         </h1>
         <p className="text-orange-700 mt-1 font-bold uppercase tracking-wide">Less Guessing. More Yum!</p>
         {user?.family_role && (
