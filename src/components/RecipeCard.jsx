@@ -1,37 +1,22 @@
 import React, { useState } from "react";
 import { Image } from "@/components/ui/image";
-import { Trash2, ChevronDown, ShoppingCart, Check, Megaphone } from "lucide-react";
+import { Trash2, ChevronDown, ShoppingCart, Megaphone } from "lucide-react";
 import ReactionBar from "@/components/ReactionBar";
 import DietBadge from "@/components/diets/DietBadge";
 import RecallBadge from "@/components/RecallBadge";
 import { cn } from "@/lib/utils";
 
-export default function RecipeCard({ recipe, counts, onReact, onDelete, onRequest, onSuggest, alreadySuggested, selectable, selected, onToggleSelect, dietConflicts = [], recall, onDismissRecall, requestedBy = [] }) {
+export default function RecipeCard({ recipe, counts, onReact, onDelete, onRequest, onSuggest, alreadySuggested, dietConflicts = [], recall, onDismissRecall, requestedBy = [] }) {
   const [open, setOpen] = useState(false);
   const [requested, setRequested] = useState(false);
   return (
-    <div className={cn(
-      "group rounded-2xl border bg-card overflow-hidden transition-shadow hover:shadow-md",
-      selected ? "border-primary ring-1 ring-primary" : "border-border"
-    )}>
+    <div className="group rounded-2xl border border-border bg-card overflow-hidden transition-shadow hover:shadow-md">
       <div className="flex gap-3 sm:gap-4 p-3 sm:p-4">
         <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-muted flex-shrink-0">
           {recipe.image_url ? (
             <Image src={recipe.image_url} alt={recipe.title} className="w-full h-full" fittingType="fill" />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-2xl">🍽️</div>
-          )}
-          {selectable && (
-            <button
-              onClick={() => onToggleSelect(recipe.id)}
-              className={cn(
-                "absolute top-1 left-1 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors min-w-[44px] min-h-[44px]",
-                selected ? "bg-primary border-primary text-primary-foreground" : "bg-white/80 border-border"
-              )}
-              aria-label={selected ? "Deselect recipe" : "Select recipe"}
-            >
-              {selected && <Check className="w-3.5 h-3.5" />}
-            </button>
           )}
         </div>
         <div className="flex-1 min-w-0">
@@ -55,7 +40,7 @@ export default function RecipeCard({ recipe, counts, onReact, onDelete, onReques
                 </div>
               )}
             </div>
-            {onDelete && !selectable && (
+            {onDelete && (
               <button
                 onClick={() => onDelete(recipe)}
                 className="md:opacity-0 md:group-hover:opacity-100 text-muted-foreground hover:text-destructive transition min-w-[44px] min-h-[44px]"
@@ -75,7 +60,7 @@ export default function RecipeCard({ recipe, counts, onReact, onDelete, onReques
               <ChevronDown className={cn("w-4 h-4 transition-transform", open && "rotate-180")} />
             </button>
           </div>
-          {(onRequest || onSuggest) && !selectable && (
+          {(onRequest || onSuggest) && (
             <div className="mt-3 flex gap-2">
               {onSuggest && (
                 <button
