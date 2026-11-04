@@ -40,7 +40,7 @@ export default function FindRecipesDialog({ open, onOpenChange, familyId, onImpo
         ingredients: recipe.ingredients,
         instructions: recipe.instructions,
         image_url: recipe.image_url || "",
-        source: recipe.area ? `TheMealDB · ${recipe.area}` : "TheMealDB",
+        source: [recipe.source_name, recipe.cuisine].filter(Boolean).join(" · ") || "Web search",
       });
       setSaved((list) => [...list, recipe.external_id]);
       toast({ title: `"${recipe.title}" saved` });
@@ -58,7 +58,7 @@ export default function FindRecipesDialog({ open, onOpenChange, familyId, onImpo
         <DialogHeader>
           <DialogTitle>Find recipes</DialogTitle>
           <DialogDescription>
-            Search a public recipe collection and save what you like to your family.
+            Search the web for recipes and save what you like to your family.
           </DialogDescription>
         </DialogHeader>
 
@@ -95,7 +95,7 @@ export default function FindRecipesDialog({ open, onOpenChange, familyId, onImpo
                     <div className="flex-1 min-w-0">
                       <h3 className="text-sm font-medium truncate">{recipe.title}</h3>
                       <p className="text-xs text-muted-foreground">
-                        {[recipe.category, recipe.area].filter(Boolean).join(" · ")} · {recipe.ingredients.length} ingredients
+                        {[recipe.category, recipe.cuisine, recipe.source_name].filter(Boolean).join(" · ")} · {recipe.ingredients.length} ingredients
                       </p>
                       <Button
                         size="sm"
