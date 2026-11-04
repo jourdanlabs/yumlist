@@ -140,7 +140,10 @@ export default function ShoppingList() {
       });
     }
     try {
-      await base44.entities.GroceryItem.bulkUpdate(ids.map((id) => ({ id, on_shopping_list: on })));
+      await base44.entities.GroceryItem.updateMany(
+        { id: { $in: ids } },
+        { $set: { on_shopping_list: on } }
+      );
     } catch (e) {
       setItems(prevItems);
       toast({ title: on ? "Could not add to shopping list" : "Could not update shopping list", variant: "destructive" });
@@ -269,6 +272,13 @@ export default function ShoppingList() {
         </div>
       ) : (
         <>
+          <RecipeRequestSummary
+            items={recipeRequests}
+            checked={checked}
+            onToggle={toggle}
+            onRemove={removeFromShopping}
+            onSetState={setRecipeItems}
+          />
           {filteredShopping.length === 0 ? (
             <div className="text-center py-16 border border-dashed border-border rounded-2xl">
               <ClipboardList className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
@@ -278,13 +288,6 @@ export default function ShoppingList() {
             </div>
           ) : (
             <div className="space-y-6">
-              <RecipeRequestSummary
-                items={recipeRequests}
-                checked={checked}
-                onToggle={toggle}
-                onRemove={removeFromShopping}
-                onSetState={setRecipeItems}
-              />
               {grouped.map((group) => (
                 <CategorySection
                   key={group.category}
