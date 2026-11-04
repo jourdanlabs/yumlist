@@ -74,17 +74,6 @@ export default function ShoppingList() {
     [filteredShopping]
   );
 
-  // All recipe-requested items (whether or not already added), so they can be tapped to add.
-  const recipeRequests = useMemo(() => {
-    const list = items.filter((i) => (i.recipe_title || "").trim());
-    return q
-      ? list.filter((i) =>
-          (i.name || "").toLowerCase().includes(q) ||
-          (i.recipe_title || "").toLowerCase().includes(q)
-        )
-      : list;
-  }, [items, q]);
-
   const grouped = useMemo(() => {
     const order = GROCERY_CATEGORIES.reduce((acc, c, i) => { acc[c] = i; return acc; }, {});
     const groups = {};
@@ -123,17 +112,6 @@ export default function ShoppingList() {
     } catch (e) {
       setItems(prevItems);
       toast({ title: "Could not remove from shopping list", variant: "destructive" });
-    }
-  };
-
-  const addToShopping = async (id) => {
-    const prevItems = items;
-    setItems((prev) => prev.map((i) => i.id === id ? { ...i, on_shopping_list: true } : i));
-    try {
-      await base44.entities.GroceryItem.update(id, { on_shopping_list: true });
-    } catch (e) {
-      setItems(prevItems);
-      toast({ title: "Could not add to shopping list", variant: "destructive" });
     }
   };
 
@@ -269,11 +247,10 @@ export default function ShoppingList() {
           ) : (
             <div className="space-y-6">
               <RecipeRequestSummary
-                items={recipeRequests}
+                items={shopping}
                 checked={checked}
                 onToggle={toggle}
                 onRemove={removeFromShopping}
-                onAdd={addToShopping}
               />
               {grouped.map((group) => (
                 <CategorySection
