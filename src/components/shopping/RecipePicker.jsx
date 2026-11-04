@@ -6,13 +6,28 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 
+function ingredientsOf(recipe) {
+  const names = [];
+  const seen = new Set();
+  (recipe.ingredients || []).forEach((ing) => {
+    const trimmed = (ing || "").trim();
+    const key = trimmed.toLowerCase();
+    if (!trimmed || seen.has(key)) return;
+    seen.add(key);
+    names.push(trimmed);
+  });
+  return names;
+}
+
 export default function RecipePicker({ familyId, userName, onAdded }) {
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [recipes, setRecipes] = useState(null);
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState("");
-  const [addingId, setAddingId] = useState(null);
+  const [expandedId, setExpandedId] = useState(null);
+  const [checked, setChecked] = useState({});
+  const [addingKey, setAddingKey] = useState(null);
 
   useEffect(() => {
     if (!open || !familyId || recipes !== null) return;
@@ -36,21 +51,30 @@ export default function RecipePicker({ familyId, userName, onAdded }) {
     );
   }, [recipes, q]);
 
-  const addRecipe = async (recipe) => {
-    const names = [];
-    const seen = new Set();
-    (recipe.ingredients || []).forEach((ing) => {
-      const trimmed = (ing || "").trim();
-      const key = trimmed.toLowerCase();
-      if (!trimmed || seen.has(key)) return;
-      seen.add(key);
-      names.push(trimmed);
-    });
-    if (names.length === 0) {
-      toast({ title: "This recipe has no ingredients to add", variant: "destructive" });
+  const toggleExpand = (recipe) => {
+    if (expandedId === recipe.id) {
+      setExpandedId(null);
       return;
     }
-    setAddingId(recipe.id);
+    setExpandedId(recipe.id);
+    setChecked((c) => {
+      if (c[recipe.id]) return c;
+      const next = {};
+      ingredientsOf(recipe).forEach((name) => { next[name] = true; });
+      return { ...c, [recipe.id]: next };
+    });
+  };
+
+  const toggleIngredient = (recipeId, name) => {
+    setChecked((c) => ({ ...c, [recipeId]: { ...c[recipeId], [name]: !c[recipeId]?.[name] } }));
+  };
+
+  const addItems = async (recipe, names, key) => {
+    if (names.length === 0) {
+      toast({ title: "Select at least one ingredient", variant: "destructive" });
+      return;
+    }
+    setAddingKey(key);
     try {
       await base44.entities.GroceryItem.bulkCreate(
         names.map((name) => ({
@@ -62,12 +86,15 @@ export default function RecipePicker({ familyId, userName, onAdded }) {
           on_shopping_list: true,
         }))
       );
-      toast({ title: `Added ${names.length} ingredient${names.length > 1 ? "s" : ""} from "${recipe.title}"` });
+      toast({
+        title: `Added ${names.length} item${names.length > 1 ? "s" : ""} from "${recipe.title}"`,
+        description: userName ? `Requested by ${userName}` : undefined,
+      });
       onAdded?.();
     } catch (e) {
       toast({ title: "Could not add ingredients", variant: "destructive" });
     } finally {
-      setAddingId(null);
+      setAddingKey(null);
     }
   };
 
@@ -106,30 +133,75 @@ export default function RecipePicker({ familyId, userName, onAdded }) {
             </p>
           ) : (
             <Card>
-              <CardContent className="p-0 divide-y divide-border max-h-80 overflow-y-auto overscroll-none">
+              <CardContent className="p-0 divide-y divide-border max-h-96 overflow-y-auto overscroll-none">
                 {filtered.map((recipe) => {
-                  const count = (recipe.ingredients || []).filter((i) => i && i.trim()).length;
+                  const names = ingredientsOf(recipe);
+                  const isOpen = expandedId === recipe.id;
+                  const picked = names.filter((n) => checked[recipe.id]?.[n]);
                   return (
-                    <div key={recipe.id} className="flex items-center gap-3 px-4 py-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium truncate">{recipe.title}</div>
-                        <span className="text-xs text-muted-foreground block mt-0.5">
-                          {count} ingredient{count === 1 ? "" : "s"}
-                        </span>
+                    <div key={recipe.id} className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => toggleExpand(recipe)}
+                          className="flex-1 min-w-0 text-left"
+                          aria-expanded={isOpen}
+                        >
+                          <div className="font-medium truncate">{recipe.title}</div>
+                          <span className="text-xs text-muted-foreground block mt-0.5">
+                            {names.length} ingredient{names.length === 1 ? "" : "s"} · tap to choose
+                          </span>
+                        </button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => addItems(recipe, names, `${recipe.id}-all`)}
+                          disabled={addingKey === `${recipe.id}-all` || names.length === 0}
+                        >
+                          {addingKey === `${recipe.id}-all` ? (
+                            <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                          ) : (
+                            <Plus className="w-3 h-3 mr-1" />
+                          )}
+                          Add all
+                        </Button>
                       </div>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => addRecipe(recipe)}
-                        disabled={addingId === recipe.id}
-                      >
-                        {addingId === recipe.id ? (
-                          <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                        ) : (
-                          <Plus className="w-3 h-3 mr-1" />
-                        )}
-                        Add
-                      </Button>
+
+                      {isOpen && (
+                        <div className="mt-3 space-y-1">
+                          {names.map((name) => (
+                            <label
+                              key={name}
+                              className="flex items-center gap-3 min-h-[44px] px-2 rounded-md hover:bg-accent/40 cursor-pointer"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={!!checked[recipe.id]?.[name]}
+                                onChange={() => toggleIngredient(recipe.id, name)}
+                                className="w-4 h-4 rounded border-input accent-primary"
+                              />
+                              <span className="text-sm">{name}</span>
+                            </label>
+                          ))}
+                          <div className="flex items-center gap-2 pt-2">
+                            <Button
+                              size="sm"
+                              onClick={() => addItems(recipe, picked, `${recipe.id}-some`)}
+                              disabled={addingKey === `${recipe.id}-some` || picked.length === 0}
+                            >
+                              {addingKey === `${recipe.id}-some` ? (
+                                <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                              ) : (
+                                <Plus className="w-3 h-3 mr-1" />
+                              )}
+                              Add selected ({picked.length})
+                            </Button>
+                            <Button size="sm" variant="ghost" onClick={() => setExpandedId(null)}>
+                              Done
+                            </Button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   );
                 })}

@@ -291,11 +291,11 @@ function CategorySection({ category, items, checked, onToggle, onRemove }) {
                   </div>
                   {item.brand && <span className="text-sm text-muted-foreground truncate block mt-0.5">{item.brand}</span>}
                   {item.recipe_title && (
-                    <span className="text-sm text-muted-foreground/80 truncate block mt-0.5 flex items-center gap-1">
-                      <span className="no-print">For:</span>
+                    <div className="mt-1 text-xs sm:text-sm text-muted-foreground/80 flex flex-wrap items-center gap-x-1 no-print">
+                      <span>For:</span>
                       <span className="italic">{item.recipe_title}</span>
-                      {item.requested_by_name && <span className="no-print">· requested by {item.requested_by_name}</span>}
-                    </span>
+                      {item.requested_by_name && <span>· requested by {item.requested_by_name}</span>}
+                    </div>
                   )}
                 </div>
                 <button
