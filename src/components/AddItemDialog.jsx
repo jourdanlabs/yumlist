@@ -95,8 +95,8 @@ export default function AddItemDialog({ open, onOpenChange, familyId, onAdded, i
         </DialogHeader>
         <Tabs value={activeTab} onValueChange={handleTabChange} className="overflow-y-auto pr-1 -mr-1">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="manual">Manual</TabsTrigger>
             <TabsTrigger value="scan">Scan barcode</TabsTrigger>
+            <TabsTrigger value="manual">Manual</TabsTrigger>
           </TabsList>
           <TabsContent value="scan" className="pt-4">
             <div className="flex flex-col items-center gap-3 py-6 text-center">
