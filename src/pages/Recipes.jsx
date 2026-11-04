@@ -304,22 +304,27 @@ export default function Recipes() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="space-y-3 sm:flex sm:items-center sm:justify-between sm:gap-4 sm:space-y-0">
         <div>
-          <h1 className="font-heading text-lg md:text-2xl font-semibold">Recipes</h1>
-          <p className="text-sm text-muted-foreground">Recipes your family has collected.</p>
+          <h1 className="font-heading text-xl sm:text-2xl font-semibold">Recipes</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">Recipes your family has collected.</p>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:flex-shrink-0">
           <Button
             variant={planMode ? "default" : "outline"}
             onClick={() => planMode ? exitPlanMode() : setPlanMode(true)}
+            className="px-2"
           >
-            <ListChecks className="w-4 h-4 mr-1" /> {planMode ? "Done" : "Plan week"}
+            <ListChecks className="w-4 h-4" />
+            <span className="ml-1 hidden sm:inline">{planMode ? "Done" : "Plan week"}</span>
+            <span className="ml-1 text-xs sm:hidden">{planMode ? "Done" : "Plan"}</span>
           </Button>
-          <Button variant="outline" onClick={() => setFindOpen(true)}>
-            <Sparkles className="w-4 h-4 mr-1" /> Find recipes
+          <Button variant="outline" onClick={() => setFindOpen(true)} className="px-2">
+            <Sparkles className="w-4 h-4" />
+            <span className="ml-1 hidden sm:inline">Find recipes</span>
+            <span className="ml-1 text-xs sm:hidden">Find</span>
           </Button>
-          <Button onClick={() => setAddOpen(true)}>
+          <Button onClick={() => setAddOpen(true)} className="col-span-2 sm:col-auto">
             <Plus className="w-4 h-4 mr-1" /> Add recipe
           </Button>
         </div>
@@ -334,7 +339,7 @@ export default function Recipes() {
         <button
           type="button"
           onClick={() => setDietOnly((v) => !v)}
-          className={`inline-flex items-center gap-2 self-start rounded-full border px-3 py-1.5 text-sm transition-colors min-h-[44px] ${
+          className={`inline-flex items-center gap-2 self-start rounded-full border px-3 py-1.5 text-xs sm:text-sm transition-colors min-h-[44px] ${
             dietOnly
               ? "bg-primary text-primary-foreground border-primary"
               : "bg-card text-muted-foreground border-border hover:text-foreground"
@@ -429,14 +434,14 @@ export default function Recipes() {
           )}
 
           {planMode && selectedIds.size > 0 && (
-            <div className="sticky bottom-4 z-20 flex items-center justify-between gap-3 rounded-2xl border border-border bg-card shadow-lg px-4 py-3">
-              <div className="text-sm">
+            <div className="sticky bottom-4 z-20 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3 rounded-2xl border border-border bg-card shadow-lg px-4 py-3">
+              <div className="text-xs sm:text-sm">
                 <span className="font-medium">{selectedIds.size} recipe{selectedIds.size > 1 ? "s" : ""} selected</span>
                 <span className="text-muted-foreground ml-2">
                   · {recipes.filter((r) => selectedIds.has(r.id)).reduce((n, r) => n + (r.ingredients || []).filter((i) => i && i.trim()).length, 0)} ingredients (merged)
                 </span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center justify-end gap-2">
                 <Button variant="ghost" size="sm" onClick={() => setSelectedIds(new Set())}>
                   <X className="w-4 h-4 mr-1" /> Clear
                 </Button>

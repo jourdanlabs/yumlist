@@ -14,8 +14,8 @@ export default function RecipeCard({ recipe, counts, onReact, onDelete, onReques
       "group rounded-2xl border bg-card overflow-hidden transition-shadow hover:shadow-md",
       selected ? "border-primary ring-1 ring-primary" : "border-border"
     )}>
-      <div className="flex gap-4 p-4">
-        <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-muted flex-shrink-0">
+      <div className="flex gap-3 sm:gap-4 p-3 sm:p-4">
+        <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-muted flex-shrink-0">
           {recipe.image_url ? (
             <Image src={recipe.image_url} alt={recipe.title} className="w-full h-full" fittingType="fill" />
           ) : (
@@ -37,11 +37,11 @@ export default function RecipeCard({ recipe, counts, onReact, onDelete, onReques
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <h3 className="text-sm md:text-base font-medium truncate">{recipe.title}</h3>
-              {recipe.source && <p className="text-sm text-muted-foreground truncate">From {recipe.source}</p>}
-              <p className="text-sm text-muted-foreground mt-0.5">{(recipe.ingredients || []).length} ingredients</p>
+              <h3 className="text-sm md:text-base font-medium break-words">{recipe.title}</h3>
+              {recipe.source && <p className="text-xs sm:text-sm text-muted-foreground truncate">From {recipe.source}</p>}
+              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">{(recipe.ingredients || []).length} ingredients</p>
               {requestedBy.length > 0 && (
-                <p className="text-sm text-muted-foreground mt-0.5 flex items-center gap-1">
+                <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 flex items-center gap-1">
                   <ShoppingCart className="w-3.5 h-3.5 flex-shrink-0" />
                   <span className="truncate">
                     Requested by <span className="font-medium text-foreground">{requestedBy.join(", ")}</span>
