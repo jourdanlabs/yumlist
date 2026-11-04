@@ -74,6 +74,17 @@ export default function ShoppingList() {
     [filteredShopping]
   );
 
+  // Every recipe-requested item, added or not, so each can be selected or rejected.
+  const recipeRequests = useMemo(() => {
+    const list = items.filter((i) => (i.recipe_title || "").trim());
+    return q
+      ? list.filter((i) =>
+          (i.name || "").toLowerCase().includes(q) ||
+          (i.recipe_title || "").toLowerCase().includes(q)
+        )
+      : list;
+  }, [items, q]);
+
   const grouped = useMemo(() => {
     const order = GROCERY_CATEGORIES.reduce((acc, c, i) => { acc[c] = i; return acc; }, {});
     const groups = {};
@@ -112,6 +123,27 @@ export default function ShoppingList() {
     } catch (e) {
       setItems(prevItems);
       toast({ title: "Could not remove from shopping list", variant: "destructive" });
+    }
+  };
+
+  // Add or reject a batch of recipe items in one go.
+  const setRecipeItems = async (ids, on) => {
+    if (!ids.length) return;
+    const prevItems = items;
+    const idSet = new Set(ids);
+    setItems((prev) => prev.map((i) => idSet.has(i.id) ? { ...i, on_shopping_list: on } : i));
+    if (!on) {
+      setChecked((c) => {
+        const next = { ...c };
+        ids.forEach((id) => delete next[id]);
+        return next;
+      });
+    }
+    try {
+      await base44.entities.GroceryItem.bulkUpdate(ids.map((id) => ({ id, on_shopping_list: on })));
+    } catch (e) {
+      setItems(prevItems);
+      toast({ title: on ? "Could not add to shopping list" : "Could not update shopping list", variant: "destructive" });
     }
   };
 
@@ -247,10 +279,11 @@ export default function ShoppingList() {
           ) : (
             <div className="space-y-6">
               <RecipeRequestSummary
-                items={shopping}
+                items={recipeRequests}
                 checked={checked}
                 onToggle={toggle}
                 onRemove={removeFromShopping}
+                onSetState={setRecipeItems}
               />
               {grouped.map((group) => (
                 <CategorySection
