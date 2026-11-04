@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { ChefHat, ChevronDown, Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -22,6 +23,11 @@ export default function RecipeRequestSummary({ items, checked = {}, onToggle, on
       .sort((a, b) => b.items.length - a.items.length);
   }, [items]);
 
+  // Items still missing from the shopping list, across every recipe.
+  const pendingIds = requests.flatMap((r) =>
+    r.items.filter((i) => !i.on_shopping_list).map((i) => i.id)
+  );
+
   if (requests.length === 0) return null;
 
   return (
@@ -31,6 +37,16 @@ export default function RecipeRequestSummary({ items, checked = {}, onToggle, on
           <ChefHat className="w-4 h-4 text-muted-foreground" />
           <h2 className="text-sm font-medium">Recipe requests</h2>
           <span className="text-sm text-muted-foreground">{requests.length}</span>
+          <Button
+            size="sm"
+            variant="outline"
+            className="ml-auto"
+            disabled={pendingIds.length === 0}
+            onClick={() => onSetState?.(pendingIds, true)}
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add all ({pendingIds.length})
+          </Button>
         </div>
         {requests.map((r) => {
           const open = openRecipe === r.recipe;
