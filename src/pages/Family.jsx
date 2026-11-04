@@ -110,7 +110,7 @@ export default function Family() {
             </Button>
           </CardContent>
         </Card>
-        <MemberRolesCard familyId={user.family_id} members={members} currentUserId={user.id} />
+        <MemberRolesCard members={members} currentUser={user} onUpdated={refresh} />
         <AddMemberCard onAdded={() => {
           base44.entities.User.filter({ family_id: user.family_id }).then(setMembers).catch(() => {});
         }} />

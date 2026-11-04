@@ -10,6 +10,7 @@ import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
 import { toast } from "@/components/ui/use-toast";
 import { safeReturnTo } from "@/lib/authReturnTo";
+import RolePicker from "@/components/family/RolePicker";
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -19,6 +20,7 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [showOtp, setShowOtp] = useState(false);
   const [otpCode, setOtpCode] = useState("");
+  const [familyRole, setFamilyRole] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -45,6 +47,13 @@ export default function Register() {
       const result = await base44.auth.verifyOtp({ email, otpCode });
       if (result?.access_token) {
         base44.auth.setToken(result.access_token);
+        if (familyRole) {
+          try {
+            await base44.auth.updateMe({ family_role: familyRole });
+          } catch (err) {
+            // Role can still be picked later from the Family tab
+          }
+        }
       }
       window.location.href = safeReturnTo();
     } catch (err) {
@@ -215,6 +224,10 @@ export default function Register() {
               required
             />
           </div>
+        </div>
+        <div className="space-y-2">
+          <Label>Your role in the family</Label>
+          <RolePicker value={familyRole} onChange={setFamilyRole} disabled={loading} />
         </div>
         <Button type="submit" className="w-full h-12 font-medium" disabled={loading}>
           {loading ? (
