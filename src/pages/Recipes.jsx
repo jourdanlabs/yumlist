@@ -238,6 +238,24 @@ export default function Recipes() {
     return [...set].sort();
   }, [nameToCategory]);
 
+  // Recipe title (lowercased) -> family members who requested its ingredients
+  const requestersByRecipe = useMemo(() => {
+    const map = {};
+    items.forEach((i) => {
+      if (!i.recipe_title || !i.requested_by_name) return;
+      i.recipe_title.split(",").forEach((t) => {
+        const key = t.trim().toLowerCase();
+        if (!key) return;
+        (map[key] = map[key] || new Set()).add(i.requested_by_name);
+      });
+    });
+    return map;
+  }, [items]);
+
+  const requestersFor = (recipe) => [
+    ...(requestersByRecipe[(recipe.title || "").trim().toLowerCase()] || []),
+  ];
+
   const recipeCategories = (recipe) => {
     const cats = new Set();
     (recipe.ingredients || []).forEach((ing) => {
@@ -386,6 +404,7 @@ export default function Recipes() {
                     onDelete={() => handleDelete(recipe)}
                     onRequest={() => handleRequest(recipe)}
                     onSuggest={() => handleSuggest(recipe)}
+                    requestedBy={requestersFor(recipe)}
                     alreadySuggested={suggestions.some((s) => s.recipe_id === recipe.id)}
                     selectable={planMode}
                     selected={selectedIds.has(recipe.id)}

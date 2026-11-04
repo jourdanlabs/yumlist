@@ -6,7 +6,7 @@ import DietBadge from "@/components/diets/DietBadge";
 import RecallBadge from "@/components/RecallBadge";
 import { cn } from "@/lib/utils";
 
-export default function RecipeCard({ recipe, counts, onReact, onDelete, onRequest, onSuggest, alreadySuggested, selectable, selected, onToggleSelect, dietConflicts = [], recall, onDismissRecall }) {
+export default function RecipeCard({ recipe, counts, onReact, onDelete, onRequest, onSuggest, alreadySuggested, selectable, selected, onToggleSelect, dietConflicts = [], recall, onDismissRecall, requestedBy = [] }) {
   const [open, setOpen] = useState(false);
   const [requested, setRequested] = useState(false);
   return (
@@ -40,6 +40,14 @@ export default function RecipeCard({ recipe, counts, onReact, onDelete, onReques
               <h3 className="text-sm md:text-base font-medium truncate">{recipe.title}</h3>
               {recipe.source && <p className="text-sm text-muted-foreground truncate">From {recipe.source}</p>}
               <p className="text-sm text-muted-foreground mt-0.5">{(recipe.ingredients || []).length} ingredients</p>
+              {requestedBy.length > 0 && (
+                <p className="text-sm text-muted-foreground mt-0.5 flex items-center gap-1">
+                  <ShoppingCart className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span className="truncate">
+                    Requested by <span className="font-medium text-foreground">{requestedBy.join(", ")}</span>
+                  </span>
+                </p>
+              )}
               {(recall || dietConflicts.length > 0) && (
                 <div className="mt-1 flex flex-wrap items-center gap-1.5">
                   <RecallBadge recall={recall} onDismiss={onDismissRecall} />

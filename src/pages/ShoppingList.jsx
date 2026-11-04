@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ClipboardList, Loader2, Printer, ShoppingCart, CheckCheck, CalendarPlus, ChefHat, Search, Store, X, MapPin } from "lucide-react";
 import ScheduleTripDialog from "@/components/ScheduleTripDialog";
 import RecipePicker from "@/components/shopping/RecipePicker";
+import RecipeRequestSummary from "@/components/shopping/RecipeRequestSummary";
 import BestPricesDialog from "@/components/BestPricesDialog";
 import { useToast } from "@/components/ui/use-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
@@ -187,6 +188,8 @@ export default function ShoppingList() {
           className="pl-9 bg-card border-0 shadow-none focus-visible:ring-0"
         />
       </div>
+
+      <RecipeRequestSummary items={shopping} />
 
       <div className="print-only mb-6">
         <h1 className="text-2xl font-bold">Shop List</h1>
