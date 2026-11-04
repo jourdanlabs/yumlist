@@ -3,16 +3,14 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { ClipboardList, Loader2, Package, Printer, RefreshCw, ShoppingCart, CheckCheck, CalendarPlus, Search, Store, X, MapPin } from "lucide-react";
+import { ClipboardList, Loader2, Printer, ShoppingCart, CheckCheck, CalendarPlus, Search, Store, X, MapPin } from "lucide-react";
 import ScheduleTripDialog from "@/components/ScheduleTripDialog";
-import PantryPicker from "@/components/PantryPicker";
+import RecipePicker from "@/components/shopping/RecipePicker";
 import BestPricesDialog from "@/components/BestPricesDialog";
 import { useToast } from "@/components/ui/use-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { GROCERY_CATEGORIES, categoryStyle, normalizeCategory } from "@/lib/groceryCategories";
 import { capitalize } from "@/lib/utils";
-
-const RESTOCK_DEFAULT = 5;
 
 export default function ShoppingList() {
   const { user } = useCurrentUser();
@@ -57,12 +55,6 @@ export default function ShoppingList() {
     [items]
   );
 
-  // Pantry items available to manually add (not already on the list)
-  const pantryAvailable = useMemo(
-    () => items.filter((i) => !i.on_shopping_list),
-    [items]
-  );
-
   const q = query.trim().toLowerCase();
   const filteredShopping = useMemo(
     () => q
@@ -101,17 +93,6 @@ export default function ShoppingList() {
     }
   };
 
-  const addToShopping = async (id) => {
-    const prevItems = items;
-    setItems((prev) => prev.map((i) => i.id === id ? { ...i, on_shopping_list: true } : i));
-    try {
-      await base44.entities.GroceryItem.update(id, { on_shopping_list: true });
-    } catch (e) {
-      setItems(prevItems);
-      toast({ title: "Could not add to shopping list", variant: "destructive" });
-    }
-  };
-
   const removeFromShopping = async (id) => {
     const prevItems = items;
     setItems((prev) => prev.map((i) => i.id === id ? { ...i, on_shopping_list: false } : i));
@@ -121,26 +102,6 @@ export default function ShoppingList() {
     } catch (e) {
       setItems(prevItems);
       toast({ title: "Could not remove from shopping list", variant: "destructive" });
-    }
-  };
-
-  const restockSelected = async () => {
-    if (checkedIds.length === 0) {
-      toast({ title: "Select items to restock", variant: "destructive" });
-      return;
-    }
-    setRestocking(true);
-    try {
-      await base44.entities.GroceryItem.bulkUpdate(
-        checkedIds.map((id) => ({ id, quantity: RESTOCK_DEFAULT, on_shopping_list: false }))
-      );
-      toast({ title: `Restocked ${checkedIds.length} item${checkedIds.length > 1 ? "s" : ""}` });
-      setChecked({});
-      await load();
-    } catch (e) {
-      toast({ title: "Could not restock", variant: "destructive" });
-    } finally {
-      setRestocking(false);
     }
   };
 
@@ -168,8 +129,9 @@ export default function ShoppingList() {
     }
     setRestocking(true);
     try {
-      await base44.entities.GroceryItem.bulkUpdate(
-        checkedIds.map((id) => ({ id, quantity: RESTOCK_DEFAULT, on_shopping_list: false }))
+      await base44.entities.GroceryItem.updateMany(
+        { id: { $in: checkedIds } },
+        { $set: { on_shopping_list: false } }
       );
       toast({ title: `Cleared ${checkedIds.length} checked item${checkedIds.length > 1 ? "s" : ""} from your list` });
       setChecked({});
@@ -188,7 +150,7 @@ export default function ShoppingList() {
           <ShoppingCart className="w-6 h-6" /> Shop list
         </h1>
         <p className="text-sm text-muted-foreground">
-          Recipe ingredients are added here automatically. Pick pantry items to restock from the list below.
+          Add ingredients straight from a recipe to build your list.
         </p>
       </div>
       <div className="flex flex-wrap items-center gap-2 no-print">
@@ -196,12 +158,6 @@ export default function ShoppingList() {
           {atStore ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Store className="w-4 h-4 mr-2" />}
           At the Store
         </Button>
-        {shopping.length > 0 && (
-          <Button onClick={restockSelected} disabled={restocking || checkedIds.length === 0}>
-            {restocking ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-2" />}
-            Restock selected ({checkedIds.length})
-          </Button>
-        )}
         {shopping.length > 0 && (
           <Button onClick={() => setTripOpen(true)}>
             <CalendarPlus className="w-4 h-4 mr-2" /> Schedule trip
@@ -250,7 +206,7 @@ export default function ShoppingList() {
             <div className="text-center py-16 border border-dashed border-border rounded-2xl">
               <ClipboardList className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
               <p className="text-muted-foreground">
-                {q ? "No items match your search." : "Your shopping list is empty. Request recipe ingredients or add pantry items below."}
+                {q ? "No items match your search." : "Your shopping list is empty. Add ingredients from a recipe below."}
               </p>
             </div>
           ) : (
@@ -293,7 +249,11 @@ export default function ShoppingList() {
             </div>
           )}
 
-          <PantryPicker items={pantryAvailable} onAdd={addToShopping} />
+          <RecipePicker
+            familyId={familyId}
+            userName={user?.full_name || user?.email || ""}
+            onAdded={load}
+          />
         </>
       )}
     </div>
@@ -316,8 +276,6 @@ function CategorySection({ category, items, checked, onToggle, onRemove }) {
       <Card>
         <CardContent className="p-0 divide-y divide-border">
           {items.map((item) => {
-            const qty = item.quantity ?? 1;
-            const unit = item.unit || "units";
             const isChecked = !!checked[item.id];
             return (
               <label key={item.id} className="flex items-center gap-3 px-4 py-3 min-h-[44px] cursor-pointer hover:bg-accent/40 transition-colors">
@@ -340,10 +298,6 @@ function CategorySection({ category, items, checked, onToggle, onRemove }) {
                     </span>
                   )}
                 </div>
-                <span className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full whitespace-nowrap no-print ${qty <= 0 ? "bg-destructive/10 text-destructive" : "bg-amber-500/15 text-amber-700 dark:text-amber-400"}`}>
-                  <Package className="w-3 h-3" />
-                  {qty <= 0 ? "Out of stock" : `${qty} ${unit}`}
-                </span>
                 <button
                   type="button"
                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); onRemove(item.id); }}
@@ -353,7 +307,6 @@ function CategorySection({ category, items, checked, onToggle, onRemove }) {
                   <X className="w-4 h-4" />
                 </button>
                 <span className="print-only text-sm text-muted-foreground whitespace-nowrap">
-                  {qty <= 0 ? "(out of stock)" : `have ${qty} ${unit}`}
                   {item.recipe_title ? ` · ${item.recipe_title}` : ""}
                   {item.requested_by_name ? ` · by ${item.requested_by_name}` : ""}
                 </span>
