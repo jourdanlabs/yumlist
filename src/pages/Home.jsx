@@ -8,6 +8,7 @@ import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { capitalize } from "@/lib/utils";
 import ConsumptionChart from "@/components/ConsumptionChart";
 import RecallBadge from "@/components/RecallBadge";
+import RoleBadge from "@/components/family/RoleBadge";
 import { useRecalls } from "@/hooks/useRecalls";
 
 const EXPIRY_WINDOW_DAYS = 3;
@@ -65,6 +66,11 @@ export default function Home() {
           Our Pantry
         </h1>
         <p className="text-orange-700 mt-1 font-bold uppercase tracking-wide">Less Guessing. More Yum!</p>
+        {user?.family_role && (
+          <div className="mt-3 flex justify-center">
+            <RoleBadge value={user.family_role} className="text-sm px-3 py-1" />
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
