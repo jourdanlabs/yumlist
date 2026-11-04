@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { ClipboardList, Loader2, Printer, ShoppingCart, CheckCheck, CalendarPlus, Search, Store, X, MapPin } from "lucide-react";
+import { ClipboardList, Loader2, Printer, ShoppingCart, CheckCheck, CalendarPlus, ChefHat, Search, Store, X, MapPin } from "lucide-react";
 import ScheduleTripDialog from "@/components/ScheduleTripDialog";
 import RecipePicker from "@/components/shopping/RecipePicker";
 import BestPricesDialog from "@/components/BestPricesDialog";
@@ -291,10 +291,15 @@ function CategorySection({ category, items, checked, onToggle, onRemove }) {
                   </div>
                   {item.brand && <span className="text-sm text-muted-foreground truncate block mt-0.5">{item.brand}</span>}
                   {item.recipe_title && (
-                    <div className="mt-1 text-xs sm:text-sm text-muted-foreground/80 flex flex-wrap items-center gap-x-1 no-print">
-                      <span>For:</span>
-                      <span className="italic">{item.recipe_title}</span>
-                      {item.requested_by_name && <span>· requested by {item.requested_by_name}</span>}
+                    <div className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs sm:text-sm text-muted-foreground no-print">
+                      <span className="inline-flex items-center gap-1">
+                        <ChefHat className="w-3.5 h-3.5 flex-shrink-0" />
+                        <span className="italic">{item.recipe_title}</span>
+                      </span>
+                      <span>· requested by</span>
+                      <span className="font-medium text-foreground">
+                        {item.requested_by_name || "a family member"}
+                      </span>
                     </div>
                   )}
                 </div>
