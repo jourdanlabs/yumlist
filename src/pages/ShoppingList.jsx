@@ -7,6 +7,7 @@ import { ClipboardList, Loader2, Printer, ShoppingCart, CheckCheck, CalendarPlus
 import ScheduleTripDialog from "@/components/ScheduleTripDialog";
 import RecipePicker from "@/components/shopping/RecipePicker";
 import RecipeRequestSummary from "@/components/shopping/RecipeRequestSummary";
+import BuyTodayList from "@/components/shopping/BuyTodayList";
 import BestPricesDialog from "@/components/BestPricesDialog";
 import { useToast } from "@/components/ui/use-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
@@ -272,6 +273,12 @@ export default function ShoppingList() {
         </div>
       ) : (
         <>
+          <BuyTodayList
+            items={filteredShopping}
+            checked={checked}
+            onToggle={toggle}
+            onRemove={removeFromShopping}
+          />
           <RecipeRequestSummary
             items={recipeRequests}
             checked={checked}
