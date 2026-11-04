@@ -257,7 +257,7 @@ export default function Recipes() {
           <p className="text-xs sm:text-sm text-muted-foreground">Recipes your family has collected.</p>
         </div>
         <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:flex-shrink-0">
-          <Button variant="outline" onClick={() => setFindOpen(true)} className="col-span-2 sm:col-auto px-4">
+          <Button onClick={() => setFindOpen(true)} className="col-span-2 sm:col-auto px-4 bg-orange-600 text-white border-orange-600 hover:bg-orange-700 hover:text-white">
             <Sparkles className="w-4 h-4 mr-1" />
             <span>Find recipes</span>
           </Button>
