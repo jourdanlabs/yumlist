@@ -1,10 +1,11 @@
 import React, { useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { ChefHat, ChevronDown, X } from "lucide-react";
+import { ChefHat, ChevronDown, Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Recipe-requested items, grouped by recipe: each recipe expands to its ingredients.
-export default function RecipeRequestSummary({ items, checked = {}, onToggle, onRemove }) {
+// Items not yet on the list can be tapped to add them.
+export default function RecipeRequestSummary({ items, checked = {}, onToggle, onRemove, onAdd }) {
   const [openRecipe, setOpenRecipe] = useState(null);
 
   const requests = useMemo(() => {
@@ -33,6 +34,7 @@ export default function RecipeRequestSummary({ items, checked = {}, onToggle, on
         </div>
         {requests.map((r) => {
           const open = openRecipe === r.recipe;
+          const added = r.items.filter((i) => i.on_shopping_list).length;
           return (
             <div key={r.recipe}>
               <button
@@ -43,7 +45,7 @@ export default function RecipeRequestSummary({ items, checked = {}, onToggle, on
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium italic truncate">{r.recipe}</div>
                   <div className="text-xs sm:text-sm text-muted-foreground truncate">
-                    Requested by {r.requesters.length ? r.requesters.join(", ") : "a family member"} · {r.items.length} item{r.items.length === 1 ? "" : "s"}
+                    Requested by {r.requesters.length ? r.requesters.join(", ") : "a family member"} · {added} of {r.items.length} on list
                   </div>
                 </div>
                 <ChevronDown className={cn("w-4 h-4 flex-shrink-0 text-muted-foreground transition-transform", open && "rotate-180")} />
@@ -52,6 +54,20 @@ export default function RecipeRequestSummary({ items, checked = {}, onToggle, on
                 <div className="divide-y divide-border border-t border-border bg-muted/30">
                   {r.items.map((item) => {
                     const isChecked = !!checked[item.id];
+                    if (!item.on_shopping_list) {
+                      return (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => onAdd?.(item.id)}
+                          className="w-full flex items-center gap-3 pl-8 pr-4 py-2.5 min-h-[44px] text-left hover:bg-accent/40 transition-colors"
+                        >
+                          <Plus className="w-4 h-4 flex-shrink-0 text-primary" />
+                          <span className="flex-1 min-w-0 text-sm truncate">{item.name}</span>
+                          <span className="text-xs text-muted-foreground">Add</span>
+                        </button>
+                      );
+                    }
                     return (
                       <label key={item.id} className="flex items-center gap-3 pl-8 pr-4 py-2.5 min-h-[44px] cursor-pointer hover:bg-accent/40 transition-colors">
                         <input
