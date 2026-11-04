@@ -37,16 +37,8 @@ function ingredientsOf(meal) {
   return out;
 }
 
-// Fallback source: TheMealDB (free, key-less).
-async function searchMealDb(query) {
-  const res = await fetch(
-    `https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(query)}`,
-    { signal: AbortSignal.timeout(10000) }
-  );
-  if (!res.ok) return [];
-  const data = await res.json().catch(() => ({}));
-  const meals = Array.isArray(data?.meals) ? data.meals.slice(0, MAX_RESULTS) : [];
-  return meals.map((m) => ({
+function toRecipe(m) {
+  return {
     external_id: `mealdb-${m.idMeal}`,
     title: m.strMeal || 'Recipe',
     image_url: m.strMealThumb || '',
@@ -56,7 +48,44 @@ async function searchMealDb(query) {
     ingredients: ingredientsOf(m),
     source_name: 'TheMealDB',
     source_url: '',
-  }));
+  };
+}
+
+// Fallback source: TheMealDB (free, key-less).
+async function searchMealDb(query) {
+  const res = await fetch(
+    `https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(query)}`,
+    { signal: AbortSignal.timeout(10000) }
+  );
+  if (!res.ok) return [];
+  const data = await res.json().catch(() => ({}));
+  const meals = Array.isArray(data?.meals) ? data.meals.slice(0, MAX_RESULTS) : [];
+  return meals.map(toRecipe);
+}
+
+// Fallback source by ingredient: TheMealDB filter endpoint, then fetch details.
+async function searchMealDbByIngredient(ingredient) {
+  const listRes = await fetch(
+    `https://www.themealdb.com/api/json/v1/1/filter.php?i=${encodeURIComponent(ingredient)}`,
+    { signal: AbortSignal.timeout(10000) }
+  );
+  if (!listRes.ok) return [];
+  const listData = await listRes.json().catch(() => ({}));
+  const ids = Array.isArray(listData?.meals)
+    ? listData.meals.map((m) => m.idMeal).filter(Boolean).slice(0, MAX_RESULTS)
+    : [];
+  if (ids.length === 0) return [];
+
+  const details = await Promise.allSettled(
+    ids.map((id) =>
+      fetch(`https://www.themealdb.com/api/json/v1/1/lookup.php?i=${encodeURIComponent(id)}`, {
+        signal: AbortSignal.timeout(10000),
+      }).then((r) => (r.ok ? r.json() : null))
+    )
+  );
+  return details
+    .map((d) => (d.status === 'fulfilled' && d.value?.meals?.[0] ? toRecipe(d.value.meals[0]) : null))
+    .filter((r) => r && r.ingredients.length > 0);
 }
 
 // Searches the web for real recipes and returns structured results.
@@ -70,7 +99,8 @@ export default async function (req) {
     const query = String(body.query || '').trim().slice(0, 60);
     if (query.length < 2) return Response.json({ recipes: [] });
 
-    const prompt = `Search the web for real, published recipes matching "${query}".
+    const prompt = `The user is looking for recipes for: "${query}" (may be several words).
+Treat the request as either a recipe name or an ingredient or dish idea. If it sounds like an ingredient (e.g. "chicken", "black beans"), return recipes that use that ingredient as a main component, not only recipes whose title contains the word. If it names a dish or cuisine, match that. Search the web for real, published recipes.
 Return up to ${MAX_RESULTS} distinct recipes from well-known recipe websites.
 For each recipe give:
 - title: the recipe name
@@ -111,6 +141,9 @@ Use only recipes you actually found in search results. Do not invent recipes, in
 
     if (recipes.length === 0) {
       recipes = await searchMealDb(query).catch(() => []);
+    }
+    if (recipes.length === 0) {
+      recipes = await searchMealDbByIngredient(query).catch(() => []);
     }
 
     return Response.json({ recipes });

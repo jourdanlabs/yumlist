@@ -58,7 +58,7 @@ export default function FindRecipesDialog({ open, onOpenChange, familyId, onImpo
         <DialogHeader>
           <DialogTitle>Find recipes</DialogTitle>
           <DialogDescription>
-            Search the web for recipes and save what you like to your family.
+            Search by dish name, several words, or an ingredient — then save what you like to your family.
           </DialogDescription>
         </DialogHeader>
 
@@ -69,7 +69,7 @@ export default function FindRecipesDialog({ open, onOpenChange, familyId, onImpo
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") search(); }}
-              placeholder="Chicken, pasta, curry…"
+              placeholder="Search a dish or ingredient…"
               className="pl-9"
             />
           </div>
