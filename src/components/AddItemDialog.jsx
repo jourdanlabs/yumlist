@@ -94,7 +94,11 @@ export default function AddItemDialog({ open, onOpenChange, familyId, onAdded, i
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col">
+      <DialogContent
+        className="sm:max-w-md max-h-[90vh] flex flex-col"
+        onInteractOutside={(e) => { if (scanning) e.preventDefault(); }}
+        onEscapeKeyDown={(e) => { if (scanning) e.preventDefault(); }}
+      >
         <DialogHeader>
           <DialogTitle>Add grocery item</DialogTitle>
         </DialogHeader>
