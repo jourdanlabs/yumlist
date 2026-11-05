@@ -239,22 +239,22 @@ export default function ShoppingList() {
         </p>
       </div>
       <div className="flex flex-wrap items-center gap-2 no-print">
-        <Button onClick={notifyAtStore} disabled={atStore}>
+        <Button onClick={notifyAtStore} disabled={atStore} className="bg-emerald-600 hover:bg-emerald-700 text-white">
           {atStore ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Store className="w-4 h-4 mr-2" />}
           At the Store
         </Button>
         {shopping.length > 0 && (
-          <Button onClick={() => setTripOpen(true)}>
-            <CalendarPlus className="w-4 h-4 mr-2" /> Schedule trip
+          <Button onClick={() => setTripOpen(true)} className="bg-orange-500 hover:bg-orange-600 text-white">
+            <CalendarPlus className="w-4 h-4 mr-2" /> Schedule Trip
           </Button>
         )}
         {shopping.length > 0 && (
-          <Button onClick={() => setPricesOpen(true)} className="bg-card text-foreground border border-input hover:bg-accent">
-            <MapPin className="w-4 h-4 mr-2" /> Find best prices
+          <Button onClick={() => setPricesOpen(true)} className="bg-orange-500 hover:bg-orange-600 text-white">
+            <MapPin className="w-4 h-4 mr-2" /> Find Best Prices
           </Button>
         )}
         {shopping.length > 0 && (
-          <Button className="bg-card text-foreground border border-input hover:bg-accent" onClick={() => window.print()}>
+          <Button className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={() => window.print()}>
             <Printer className="w-4 h-4 mr-2" /> Print
           </Button>
         )}
