@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { ClipboardList, Loader2, Printer, ShoppingCart, CheckCheck, CalendarPlus, ChefHat, Search, Store, X, MapPin, SkipForward } from "lucide-react";
+import { ClipboardList, Loader2, Printer, ShoppingCart, CheckCheck, CalendarPlus, ChefHat, Search, Store, X, MapPin, Check } from "lucide-react";
 import ScheduleTripDialog from "@/components/ScheduleTripDialog";
 import RecipePicker from "@/components/shopping/RecipePicker";
 import RecipeRequestSummary from "@/components/shopping/RecipeRequestSummary";
@@ -343,7 +343,6 @@ export default function ShoppingList() {
                   items={group.items}
                   checked={checked}
                   onToggle={toggle}
-                  onSkip={skip}
                   onRemove={removeFromShopping}
                 />
               ))}
@@ -386,7 +385,7 @@ export default function ShoppingList() {
   );
 }
 
-function CategorySection({ category, items, checked, onToggle, onSkip, onRemove }) {
+function CategorySection({ category, items, checked, onToggle, onRemove }) {
   if (items.length === 0) return null;
   return (
     <div className="print-break">
@@ -407,18 +406,6 @@ function CategorySection({ category, items, checked, onToggle, onSkip, onRemove 
             const skipped = status === "skipped";
             return (
               <div key={item.id} className="flex items-center gap-2 px-4 py-3 min-h-[44px] hover:bg-accent/40 transition-colors">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <input
-                      type="checkbox"
-                      checked={bought}
-                      onChange={() => onToggle(item.id)}
-                      className="w-4 h-4 flex-shrink-0 rounded border-input accent-primary"
-                      aria-label={`Mark ${item.name} as bought`}
-                    />
-                  </TooltipTrigger>
-                  <TooltipContent>{bought ? "Undo bought" : "Mark as bought"}</TooltipContent>
-                </Tooltip>
                 <button
                   type="button"
                   onClick={() => onToggle(item.id)}
@@ -446,16 +433,19 @@ function CategorySection({ category, items, checked, onToggle, onSkip, onRemove 
                 </button>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <button
+                    <Button
                       type="button"
-                      onClick={() => onSkip(item.id)}
-                      className={`no-print transition-colors p-1 min-h-[44px] min-w-[44px] flex items-center justify-center ${skipped ? "text-amber-600" : "text-muted-foreground hover:text-amber-600"}`}
-                      aria-label={skipped ? "Undo skip" : "Skip this item"}
+                      variant={bought ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => onToggle(item.id)}
+                      className={`no-print text-xs px-2 ${bought ? "bg-emerald-600 hover:bg-emerald-700 text-white" : ""}`}
+                      aria-label={bought ? "Undo bought" : "Mark as bought"}
                     >
-                      <SkipForward className="w-4 h-4" />
-                    </button>
+                      <Check className="w-3.5 h-3.5" />
+                      Bought
+                    </Button>
                   </TooltipTrigger>
-                  <TooltipContent>{skipped ? "Undo skip" : "Skip this trip"}</TooltipContent>
+                  <TooltipContent>{bought ? "Undo bought" : "Mark as bought"}</TooltipContent>
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
