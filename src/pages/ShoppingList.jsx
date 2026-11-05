@@ -10,6 +10,7 @@ import RecipeRequestSummary from "@/components/shopping/RecipeRequestSummary";
 import BuyTodayList from "@/components/shopping/BuyTodayList";
 import BestPricesDialog from "@/components/BestPricesDialog";
 import { useToast } from "@/components/ui/use-toast";
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { GROCERY_CATEGORIES, categoryStyle, normalizeCategory } from "@/lib/groceryCategories";
 import { capitalize } from "@/lib/utils";
@@ -406,13 +407,18 @@ function CategorySection({ category, items, checked, onToggle, onSkip, onRemove 
             const skipped = status === "skipped";
             return (
               <div key={item.id} className="flex items-center gap-2 px-4 py-3 min-h-[44px] hover:bg-accent/40 transition-colors">
-                <input
-                  type="checkbox"
-                  checked={bought}
-                  onChange={() => onToggle(item.id)}
-                  className="w-4 h-4 flex-shrink-0 rounded border-input accent-primary"
-                  aria-label={`Mark ${item.name} as bought`}
-                />
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <input
+                      type="checkbox"
+                      checked={bought}
+                      onChange={() => onToggle(item.id)}
+                      className="w-4 h-4 flex-shrink-0 rounded border-input accent-primary"
+                      aria-label={`Mark ${item.name} as bought`}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>{bought ? "Undo bought" : "Mark as bought"}</TooltipContent>
+                </Tooltip>
                 <button
                   type="button"
                   onClick={() => onToggle(item.id)}
@@ -438,22 +444,32 @@ function CategorySection({ category, items, checked, onToggle, onSkip, onRemove 
                     <span className="inline-block mt-1 text-[11px] uppercase tracking-wide text-amber-600 no-print">Skipped</span>
                   )}
                 </button>
-                <button
-                  type="button"
-                  onClick={() => onSkip(item.id)}
-                  className={`no-print transition-colors p-1 min-h-[44px] min-w-[44px] flex items-center justify-center ${skipped ? "text-amber-600" : "text-muted-foreground hover:text-amber-600"}`}
-                  aria-label={skipped ? "Undo skip" : "Skip this item"}
-                >
-                  <SkipForward className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onRemove(item.id)}
-                  className="no-print text-muted-foreground hover:text-destructive transition-colors p-1 min-h-[44px] min-w-[44px] flex items-center justify-center"
-                  aria-label="Remove from list"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      onClick={() => onSkip(item.id)}
+                      className={`no-print transition-colors p-1 min-h-[44px] min-w-[44px] flex items-center justify-center ${skipped ? "text-amber-600" : "text-muted-foreground hover:text-amber-600"}`}
+                      aria-label={skipped ? "Undo skip" : "Skip this item"}
+                    >
+                      <SkipForward className="w-4 h-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>{skipped ? "Undo skip" : "Skip this trip"}</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      onClick={() => onRemove(item.id)}
+                      className="no-print text-muted-foreground hover:text-destructive transition-colors p-1 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                      aria-label="Remove from list"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>Remove from list</TooltipContent>
+                </Tooltip>
                 <span className="print-only text-sm text-muted-foreground whitespace-nowrap">
                   {item.recipe_title ? ` · ${item.recipe_title}` : ""}
                   {item.requested_by_name ? ` · by ${item.requested_by_name}` : ""}

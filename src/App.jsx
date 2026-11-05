@@ -1,4 +1,5 @@
 import { Toaster } from "@/components/ui/toaster"
+import { TooltipProvider } from "@/components/ui/tooltip"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
@@ -89,7 +90,9 @@ function App() {
       <QueryClientProvider client={queryClientInstance}>
         <Router>
           <ScrollToTop />
-          <AuthenticatedApp />
+          <TooltipProvider delayDuration={300}>
+            <AuthenticatedApp />
+          </TooltipProvider>
         </Router>
         <Toaster />
       </QueryClientProvider>
