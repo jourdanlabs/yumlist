@@ -1,12 +1,12 @@
 import React, { useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChefHat, ChevronDown, Plus, X } from "lucide-react";
+import { ChefHat, ChevronDown, Plus, SkipForward, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Recipe-requested items, grouped by recipe. A recipe's checkbox adds/removes all its
 // items; each item can also be added or rejected on its own.
-export default function RecipeRequestSummary({ items, checked = {}, onToggle, onRemove, onSetState }) {
+export default function RecipeRequestSummary({ items, checked = {}, onToggle, onSkip, onRemove, onSetState }) {
   const [openRecipe, setOpenRecipe] = useState(null);
 
   const requests = useMemo(() => {
@@ -81,7 +81,9 @@ export default function RecipeRequestSummary({ items, checked = {}, onToggle, on
               {open && (
                 <div className="divide-y divide-border border-t border-border bg-muted/30">
                   {r.items.map((item) => {
-                    const isChecked = !!checked[item.id];
+                    const status = checked[item.id];
+                    const bought = status === "bought";
+                    const skipped = status === "skipped";
                     if (!item.on_shopping_list) {
                       return (
                         <button
@@ -97,28 +99,47 @@ export default function RecipeRequestSummary({ items, checked = {}, onToggle, on
                       );
                     }
                     return (
-                      <label key={item.id} className="flex items-center gap-3 pl-8 pr-4 py-2.5 min-h-[44px] cursor-pointer hover:bg-accent/40 transition-colors">
+                      <div key={item.id} className="flex items-center gap-2 pl-8 pr-4 py-2.5 min-h-[44px] hover:bg-accent/40 transition-colors">
                         <input
                           type="checkbox"
-                          checked={isChecked}
+                          checked={bought}
                           onChange={() => onToggle?.(item.id)}
-                          className="w-4 h-4 rounded border-input accent-primary"
+                          className="w-4 h-4 flex-shrink-0 rounded border-input accent-primary"
+                          aria-label={`Mark ${item.name} as bought`}
                         />
-                        <div className="flex-1 min-w-0">
-                          <div className={cn("text-sm truncate", isChecked && "line-through text-muted-foreground")}>
+                        <button
+                          type="button"
+                          onClick={() => onToggle?.(item.id)}
+                          className="flex-1 min-w-0 text-left"
+                        >
+                          <div className={cn("text-sm truncate", bought && "line-through text-muted-foreground", skipped && "text-muted-foreground italic")}>
                             {item.name}
                           </div>
                           {item.brand && <span className="text-xs text-muted-foreground truncate block">{item.brand}</span>}
-                        </div>
+                          {skipped && (
+                            <span className="inline-block mt-0.5 text-[11px] uppercase tracking-wide text-amber-600">Skipped</span>
+                          )}
+                        </button>
                         <button
                           type="button"
-                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onRemove?.(item.id); }}
+                          onClick={() => onSkip?.(item.id)}
+                          className={cn(
+                            "transition-colors p-1 min-h-[44px] min-w-[44px] flex items-center justify-center",
+                            skipped ? "text-amber-600" : "text-muted-foreground hover:text-amber-600"
+                          )}
+                          aria-label={skipped ? "Undo skip" : "Skip this item"}
+                        >
+                          <SkipForward className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onRemove?.(item.id)}
                           className="text-muted-foreground hover:text-destructive transition-colors p-1 min-h-[44px] min-w-[44px] flex items-center justify-center"
                           aria-label="Reject item from shopping list"
                         >
                           <X className="w-4 h-4" />
                         </button>
-                      </label>
+                      </div>
                     );
                   })}
                 </div>

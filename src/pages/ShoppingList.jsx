@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { ClipboardList, Loader2, Printer, ShoppingCart, CheckCheck, CalendarPlus, ChefHat, Search, Store, X, MapPin } from "lucide-react";
+import { ClipboardList, Loader2, Printer, ShoppingCart, CheckCheck, CalendarPlus, ChefHat, Search, Store, X, MapPin, SkipForward } from "lucide-react";
 import ScheduleTripDialog from "@/components/ScheduleTripDialog";
 import RecipePicker from "@/components/shopping/RecipePicker";
 import RecipeRequestSummary from "@/components/shopping/RecipeRequestSummary";
@@ -101,28 +101,38 @@ export default function ShoppingList() {
       .map((cat) => ({ category: cat, items: groups[cat] }));
   }, [filteredShopping, visibleCount]);
 
-  const checkedIds = Object.keys(checked).filter((id) => checked[id]);
-  const allChecked = filteredShopping.length > 0 && checkedIds.length === filteredShopping.length;
+  const boughtIds = Object.keys(checked).filter((id) => checked[id] === "bought");
+  const skippedIds = Object.keys(checked).filter((id) => checked[id] === "skipped");
+  const markedCount = boughtIds.length + skippedIds.length;
+  const allChecked = filteredShopping.length > 0 && markedCount === filteredShopping.length;
 
-  // Checking a recipe ingredient off in Buy today marks it bought, so the requester sees it.
-  const toggle = (id) => {
-    const willCheck = !checked[id];
-    setChecked((c) => ({ ...c, [id]: !c[id] }));
+  // Mark a row bought or skipped; tapping the same mark again clears it.
+  // A bought recipe ingredient also notifies the person who requested it.
+  const setStatus = (id, status) => {
+    const next = checked[id] === status ? undefined : status;
+    setChecked((c) => {
+      const n = { ...c };
+      if (next) n[id] = next;
+      else delete n[id];
+      return n;
+    });
     const item = items.find((i) => i.id === id);
     if (!item?.recipe_title) return;
-    const patch = willCheck
+    const patch = next === "bought"
       ? { bought_at: new Date().toISOString(), bought_by_name: user?.display_name || user?.full_name || user?.email || "" }
       : { bought_at: null, bought_by_name: "" };
     base44.entities.GroceryItem.update(id, patch).catch(() => {
       toast({ title: "Could not update the requester's notification", variant: "destructive" });
     });
   };
+  const toggle = (id) => setStatus(id, "bought");
+  const skip = (id) => setStatus(id, "skipped");
   const toggleAll = () => {
     if (allChecked) {
       setChecked({});
     } else {
       const next = {};
-      filteredShopping.forEach((i) => { next[i.id] = true; });
+      filteredShopping.forEach((i) => { next[i.id] = "bought"; });
       setChecked(next);
     }
   };
@@ -180,22 +190,38 @@ export default function ShoppingList() {
     }
   };
 
-  const clearChecked = async () => {
-    if (checkedIds.length === 0) {
-      toast({ title: "Check off items first to clear them", variant: "destructive" });
+  // Finishing the trip logs one purchase per bought item (this is what the weekly chart counts)
+  // and takes both bought and skipped items off the list.
+  const finishTrip = async () => {
+    if (markedCount === 0) {
+      toast({ title: "Mark items as bought or skipped first", variant: "destructive" });
       return;
     }
     setRestocking(true);
     try {
+      if (boughtIds.length) {
+        const today = new Date().toISOString().slice(0, 10);
+        await base44.entities.ConsumptionLog.bulkCreate(
+          boughtIds.map((id) => ({
+            family_id: familyId,
+            item_name: items.find((i) => i.id === id)?.name || "",
+            quantity: 1,
+            consumed_date: today,
+          }))
+        );
+      }
       await base44.entities.GroceryItem.updateMany(
-        { id: { $in: checkedIds } },
+        { id: { $in: [...boughtIds, ...skippedIds] } },
         { $set: { on_shopping_list: false } }
       );
-      toast({ title: `Cleared ${checkedIds.length} checked item${checkedIds.length > 1 ? "s" : ""} from your list` });
+      toast({
+        title: `Logged ${boughtIds.length} purchase${boughtIds.length === 1 ? "" : "s"}`,
+        description: skippedIds.length ? `${skippedIds.length} skipped` : undefined,
+      });
       setChecked({});
       await load();
     } catch (e) {
-      toast({ title: "Could not clear checked items", variant: "destructive" });
+      toast({ title: "Could not finish the trip", variant: "destructive" });
     } finally {
       setRestocking(false);
     }
@@ -289,12 +315,14 @@ export default function ShoppingList() {
             items={filteredShopping}
             checked={checked}
             onToggle={toggle}
+            onSkip={skip}
             onRemove={removeFromShopping}
           />
           <RecipeRequestSummary
             items={recipeRequests}
             checked={checked}
             onToggle={toggle}
+            onSkip={skip}
             onRemove={removeFromShopping}
             onSetState={setRecipeItems}
           />
@@ -314,6 +342,7 @@ export default function ShoppingList() {
                   items={group.items}
                   checked={checked}
                   onToggle={toggle}
+                  onSkip={skip}
                   onRemove={removeFromShopping}
                 />
               ))}
@@ -328,18 +357,18 @@ export default function ShoppingList() {
 
               <div className="flex items-center gap-3 pt-2 no-print flex-wrap">
                 <Button variant="outline" size="sm" onClick={toggleAll}>
-                  {allChecked ? "Clear selection" : "Select all"}
+                  {allChecked ? "Clear marks" : "Mark all bought"}
                 </Button>
                 <Button
                   size="sm"
-                  onClick={clearChecked}
-                  disabled={restocking || checkedIds.length === 0}
+                  onClick={finishTrip}
+                  disabled={restocking || markedCount === 0}
                 >
                   {restocking ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <CheckCheck className="w-4 h-4 mr-2" />}
-                  Clear checked ({checkedIds.length})
+                  Finish trip ({markedCount})
                 </Button>
                 <span className="text-sm text-muted-foreground">
-                  {checkedIds.length} of {filteredShopping.length} selected
+                  {boughtIds.length} bought · {skippedIds.length} skipped
                 </span>
               </div>
             </div>
@@ -356,7 +385,7 @@ export default function ShoppingList() {
   );
 }
 
-function CategorySection({ category, items, checked, onToggle, onRemove }) {
+function CategorySection({ category, items, checked, onToggle, onSkip, onRemove }) {
   if (items.length === 0) return null;
   return (
     <div className="print-break">
@@ -372,17 +401,24 @@ function CategorySection({ category, items, checked, onToggle, onRemove }) {
       <Card>
         <CardContent className="p-0 divide-y divide-border">
           {items.map((item) => {
-            const isChecked = !!checked[item.id];
+            const status = checked[item.id];
+            const bought = status === "bought";
+            const skipped = status === "skipped";
             return (
-              <label key={item.id} className="flex items-center gap-3 px-4 py-3 min-h-[44px] cursor-pointer hover:bg-accent/40 transition-colors">
+              <div key={item.id} className="flex items-center gap-2 px-4 py-3 min-h-[44px] hover:bg-accent/40 transition-colors">
                 <input
                   type="checkbox"
-                  checked={isChecked}
+                  checked={bought}
                   onChange={() => onToggle(item.id)}
-                  className="w-4 h-4 rounded border-input accent-primary"
+                  className="w-4 h-4 flex-shrink-0 rounded border-input accent-primary"
+                  aria-label={`Mark ${item.name} as bought`}
                 />
-                <div className="flex-1 min-w-0">
-                  <div className={`font-medium truncate ${isChecked ? "line-through text-muted-foreground" : ""}`}>
+                <button
+                  type="button"
+                  onClick={() => onToggle(item.id)}
+                  className="flex-1 min-w-0 text-left"
+                >
+                  <div className={`font-medium truncate ${bought ? "line-through text-muted-foreground" : skipped ? "text-muted-foreground italic" : ""}`}>
                     {capitalize(item.name)}
                   </div>
                   {item.brand && <span className="text-sm text-muted-foreground truncate block mt-0.5">{item.brand}</span>}
@@ -398,10 +434,21 @@ function CategorySection({ category, items, checked, onToggle, onRemove }) {
                       </span>
                     </div>
                   )}
-                </div>
+                  {skipped && (
+                    <span className="inline-block mt-1 text-[11px] uppercase tracking-wide text-amber-600 no-print">Skipped</span>
+                  )}
+                </button>
                 <button
                   type="button"
-                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); onRemove(item.id); }}
+                  onClick={() => onSkip(item.id)}
+                  className={`no-print transition-colors p-1 min-h-[44px] min-w-[44px] flex items-center justify-center ${skipped ? "text-amber-600" : "text-muted-foreground hover:text-amber-600"}`}
+                  aria-label={skipped ? "Undo skip" : "Skip this item"}
+                >
+                  <SkipForward className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onRemove(item.id)}
                   className="no-print text-muted-foreground hover:text-destructive transition-colors p-1 min-h-[44px] min-w-[44px] flex items-center justify-center"
                   aria-label="Remove from list"
                 >
@@ -411,7 +458,7 @@ function CategorySection({ category, items, checked, onToggle, onRemove }) {
                   {item.recipe_title ? ` · ${item.recipe_title}` : ""}
                   {item.requested_by_name ? ` · by ${item.requested_by_name}` : ""}
                 </span>
-              </label>
+              </div>
             );
           })}
         </CardContent>

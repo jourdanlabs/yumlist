@@ -28,7 +28,7 @@ export default function ConsumptionChart({ familyId }) {
           const d = log.consumed_date ? parseISO(log.consumed_date) : new Date(log.created_date);
           for (const w of weeks) {
             if (isSameWeek(d, w.weekStart, { weekStartsOn: 1 })) {
-              w.count += log.quantity || 1;
+              w.count += 1;
               break;
             }
           }
@@ -49,19 +49,19 @@ export default function ConsumptionChart({ familyId }) {
     <div className="rounded-2xl border border-border bg-card p-5">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="font-heading text-lg font-semibold">Weekly consumption</h2>
-          <p className="text-sm text-muted-foreground">Items your family used up · last {WEEKS} weeks</p>
+          <h2 className="font-heading text-lg font-semibold">Weekly purchases</h2>
+          <p className="text-sm text-muted-foreground">Items bought · last {WEEKS} weeks</p>
         </div>
         <div className="text-right">
           <div className="text-2xl font-heading font-semibold">{total}</div>
-          <div className="text-xs text-muted-foreground">total used</div>
+          <div className="text-xs text-muted-foreground">purchased</div>
         </div>
       </div>
       {loading ? (
         <div className="h-56 rounded-xl bg-muted animate-pulse" />
       ) : total === 0 ? (
         <div className="h-56 flex items-center justify-center text-sm text-muted-foreground text-center border border-dashed border-border rounded-xl">
-          No consumption logged yet. Remove items from your pantry to start tracking.
+          No purchases logged yet. Mark items as bought in your shop list to start tracking.
         </div>
       ) : (
         <ResponsiveContainer width="100%" height={220}>
@@ -72,7 +72,7 @@ export default function ConsumptionChart({ familyId }) {
             <Tooltip
               cursor={{ fill: "hsl(var(--muted))" }}
               contentStyle={{ borderRadius: 8, border: "1px solid hsl(var(--border))", fontSize: 12 }}
-              formatter={(v) => [`${v} item${v !== 1 ? "s" : ""}`, "Consumed"]}
+              formatter={(v) => [`${v} item${v !== 1 ? "s" : ""}`, "Purchased"]}
             />
             <Bar dataKey="count" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} maxBarSize={40} />
           </BarChart>
