@@ -79,17 +79,6 @@ export default function Items() {
 
   useEffect(() => { setVisibleCount(30); }, [query]);
 
-  const handleUpdateQty = async (item, quantity) => {
-    const prevItems = items;
-    setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, quantity } : i));
-    try {
-      await base44.entities.GroceryItem.update(item.id, { quantity });
-    } catch (e) {
-      setItems(prevItems);
-      toast({ title: "Could not update count", variant: "destructive" });
-    }
-  };
-
   const handleDelete = async (item) => {
     const prevItems = items;
     setItems((prev) => prev.filter((i) => i.id !== item.id));
@@ -215,7 +204,6 @@ export default function Items() {
                     counts={countsFor(item.id)}
                     onReact={(r) => react(item.id, r)}
                     onDelete={() => handleDelete(item)}
-                    onUpdate={(quantity) => handleUpdateQty(item, quantity)}
                     onEdit={(it) => setEditing(it)}
                     allergyFlag={flagsByName[(item.name || "").toLowerCase()]}
                     recall={recallByName[(item.name || "").toLowerCase().trim()]}
