@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { ChevronDown, ChefHat, ShoppingBasket, SkipForward, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ChevronDown, ChefHat, ShoppingBasket, Check, X } from "lucide-react";
 import { cn, capitalize } from "@/lib/utils";
 
 // Everything to buy on this trip: individual items plus the recipe ingredients you selected.
@@ -22,13 +23,6 @@ export default function BuyTodayList({ items, checked = {}, onToggle, onSkip, on
         key={item.id}
         className="flex items-center gap-2 px-4 py-2.5 min-h-[44px] hover:bg-accent/40 transition-colors"
       >
-        <input
-          type="checkbox"
-          checked={bought}
-          onChange={() => onToggle?.(item.id)}
-          className="w-4 h-4 flex-shrink-0 rounded border-input accent-primary"
-          aria-label={`Mark ${item.name} as bought`}
-        />
         <button
           type="button"
           onClick={() => onToggle?.(item.id)}
@@ -55,17 +49,17 @@ export default function BuyTodayList({ items, checked = {}, onToggle, onSkip, on
             <span className="inline-block mt-0.5 text-[11px] uppercase tracking-wide text-amber-600">Skipped</span>
           )}
         </button>
-        <button
+        <Button
           type="button"
-          onClick={() => onSkip?.(item.id)}
-          className={cn(
-            "transition-colors p-1 min-h-[44px] min-w-[44px] flex items-center justify-center",
-            skipped ? "text-amber-600" : "text-muted-foreground hover:text-amber-600"
-          )}
-          aria-label={skipped ? "Undo skip" : "Skip this item"}
+          variant={bought ? "default" : "outline"}
+          size="sm"
+          onClick={() => onToggle?.(item.id)}
+          className={cn("text-xs px-2", bought && "bg-emerald-600 hover:bg-emerald-700 text-white")}
+          aria-label={bought ? "Undo bought" : "Mark as bought"}
         >
-          <SkipForward className="w-4 h-4" />
-        </button>
+          <Check className="w-3.5 h-3.5" />
+          Bought
+        </Button>
         <button
           type="button"
           onClick={() => onRemove?.(item.id)}
