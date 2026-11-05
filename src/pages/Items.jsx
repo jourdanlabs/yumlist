@@ -150,17 +150,17 @@ export default function Items() {
           <p className="text-xs sm:text-sm text-muted-foreground">Grocery items your family has added.</p>
         </div>
         <div className="grid grid-cols-3 gap-2 sm:flex sm:items-center sm:flex-shrink-0">
-          <Button variant="outline" onClick={openBarcodeScan} className="px-2">
+          <Button variant="outline" onClick={openBarcodeScan} className="px-2 bg-orange-600 text-white border-orange-600 hover:bg-orange-700 hover:text-white">
             <ScanLine className="w-4 h-4" />
             <span className="ml-1 hidden sm:inline">Scan barcode</span>
             <span className="ml-1 text-xs sm:hidden">Scan</span>
           </Button>
-          <Button variant="outline" onClick={() => setReceiptOpen(true)} className="px-2">
+          <Button variant="outline" onClick={() => setReceiptOpen(true)} className="px-2 bg-orange-600 text-white border-orange-600 hover:bg-orange-700 hover:text-white">
             <Receipt className="w-4 h-4" />
             <span className="ml-1 hidden sm:inline">Scan receipt</span>
             <span className="ml-1 text-xs sm:hidden">Receipt</span>
           </Button>
-          <Button variant="outline" onClick={() => setImportOpen(true)} className="px-2">
+          <Button variant="outline" onClick={() => setImportOpen(true)} className="px-2 bg-orange-600 text-white border-orange-600 hover:bg-orange-700 hover:text-white">
             <Upload className="w-4 h-4" />
             <span className="ml-1 hidden sm:inline">Import</span>
             <span className="ml-1 text-xs sm:hidden">Import</span>
