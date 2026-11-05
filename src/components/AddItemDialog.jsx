@@ -33,6 +33,7 @@ export default function AddItemDialog({ open, onOpenChange, familyId, onAdded, i
 
   const handleDetected = async (code) => {
     setScanning(false);
+    handleTabChange("manual");
     setLooking(true);
     try {
       const res = await base44.functions.invoke("lookupBarcode", { barcode: code });

@@ -1,48 +1,64 @@
 import React, { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Html5Qrcode } from "html5-qrcode";
 import { Button } from "@/components/ui/button";
 import { Loader2, Camera, X } from "lucide-react";
 
+const REGION_ID = "pantry-barcode-region";
+
 export default function BarcodeScanner({ onDetected, onClose }) {
-  const scannerRef = useRef(null);
   const html5Ref = useRef(null);
+  const detectedRef = useRef(onDetected);
   const [error, setError] = useState("");
   const [starting, setStarting] = useState(true);
 
+  // Keep the latest callback without restarting the camera on every re-render.
   useEffect(() => {
-    let active = true;
-    const start = async () => {
-      try {
-        const html5 = new Html5Qrcode("pantry-barcode-region");
-        html5Ref.current = html5;
-        await html5.start(
-          { facingMode: "environment" },
-          { fps: 10, qrbox: { width: 250, height: 150 }, formats: ["EAN_13", "EAN_8", "UPC_A", "UPC_E", "CODE_128"] },
-          (decoded) => {
-            if (!active) return;
-            active = false;
-            onDetected(decoded);
-          },
-          () => {}
-        );
-        if (active) setStarting(false);
-      } catch (e) {
-        setError(e && e.message ? e.message : "Could not access camera");
-        setStarting(false);
-      }
-    };
-    start();
-    return () => {
-      active = false;
-      const html5 = html5Ref.current;
-      if (html5) {
-        html5.stop().then(() => html5.clear()).catch(() => {});
-      }
-    };
+    detectedRef.current = onDetected;
   }, [onDetected]);
 
-  return (
-    <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+  useEffect(() => {
+    let active = true;
+    const html5 = new Html5Qrcode(REGION_ID, { useBarCodeDetectorIfSupported: true });
+    html5Ref.current = html5;
+
+    html5
+      .start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 260, height: 160 } },
+        (decoded) => {
+          if (!active) return;
+          active = false;
+          detectedRef.current?.(decoded);
+        },
+        () => {}
+      )
+      .then(() => {
+        if (active) setStarting(false);
+      })
+      .catch((e) => {
+        if (!active) return;
+        setError(
+          e && typeof e === "string"
+            ? e
+            : (e && e.message) || "Could not access the camera. Check camera permissions for this site."
+        );
+        setStarting(false);
+      });
+
+    return () => {
+      active = false;
+      const instance = html5Ref.current;
+      if (!instance) return;
+      instance
+        .stop()
+        .then(() => instance.clear())
+        .catch(() => {});
+    };
+  }, []);
+
+  return createPortal(
+    <div className="fixed inset-0 z-[100] pointer-events-auto bg-black/90 flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-card rounded-2xl overflow-hidden shadow-2xl">
         <div className="flex items-center justify-between px-4 py-3 border-b border-border">
           <div className="flex items-center gap-2 font-medium">
@@ -53,8 +69,8 @@ export default function BarcodeScanner({ onDetected, onClose }) {
           </Button>
         </div>
         <div className="relative aspect-[4/3] bg-black">
-          <div id="pantry-barcode-region" ref={scannerRef} className="w-full h-full" />
-          {starting && (
+          <div id={REGION_ID} className="w-full h-full overflow-hidden" />
+          {starting && !error && (
             <div className="absolute inset-0 flex flex-col items-center justify-center text-white/80 gap-2">
               <Loader2 className="w-6 h-6 animate-spin" />
               <span className="text-sm">Starting camera…</span>
@@ -67,9 +83,10 @@ export default function BarcodeScanner({ onDetected, onClose }) {
           )}
         </div>
         <div className="p-4 text-sm text-muted-foreground text-center">
-          Point the camera at a product barcode.
+          Hold the barcode steady in the box and move the phone back a little.
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
