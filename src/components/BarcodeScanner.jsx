@@ -47,31 +47,70 @@ export default function BarcodeScanner({ onDetected, onClose }) {
     detectedRef.current?.(code);
   };
 
+  const releaseCamera = (scanner) => {
+    try {
+      if (scanner.isScanning) scanner.stop().then(() => scanner.clear()).catch(() => {});
+      else scanner.clear();
+    } catch (err) {
+      /* camera never started */
+    }
+    // Safety net for mobile WebViews where stop() can never resolve: make sure no
+    // video track keeps holding the camera once the scanner is closed.
+    setTimeout(() => {
+      document.querySelectorAll(`#${REGION_ID} video`).forEach((v) => {
+        const stream = v.srcObject;
+        if (stream && stream.getTracks) stream.getTracks().forEach((t) => t.stop());
+      });
+    }, 500);
+  };
+
   useEffect(() => {
     let active = true;
+    let started = false;
     setStarting(true);
     setCameraError("");
+
+    if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
+      setCameraError(
+        "This browser can't open the camera here. Use the photo option below to scan the barcode."
+      );
+      setStarting(false);
+      return;
+    }
+
     const scanner = new Html5Qrcode(REGION_ID, SCANNER_OPTIONS);
+
+    const timer = setTimeout(() => {
+      if (!active || started) return;
+      setStarting(false);
+      setCameraError(
+        "The camera didn't start. Check camera permission for this app, or scan a photo of the barcode instead."
+      );
+      releaseCamera(scanner);
+    }, 15000);
 
     scanner
       .start(
-        { facingMode: { ideal: "environment" } },
+        { facingMode: "environment" },
         {
-          fps: 12,
+          fps: 10,
           qrbox: (w, h) => ({
             width: Math.max(50, Math.floor(w * 0.85)),
-            height: Math.max(50, Math.floor(h * 0.4)),
+            height: Math.max(50, Math.floor(h * 0.45)),
           }),
-          aspectRatio: 1.777,
           disableFlip: true,
         },
         (decoded) => finish(decoded),
         () => {}
       )
       .then(() => {
+        started = true;
+        clearTimeout(timer);
         if (active) setStarting(false);
+        else releaseCamera(scanner);
       })
       .catch((e) => {
+        clearTimeout(timer);
         if (!active) return;
         const msg = e && typeof e === "string" ? e : (e && e.message) || "";
         setCameraError(
@@ -80,16 +119,13 @@ export default function BarcodeScanner({ onDetected, onClose }) {
             : "Couldn't start the camera on this device. You can scan a photo of the barcode instead."
         );
         setStarting(false);
+        releaseCamera(scanner);
       });
 
     return () => {
       active = false;
-      try {
-        if (scanner.isScanning) scanner.stop().then(() => scanner.clear()).catch(() => {});
-        else scanner.clear();
-      } catch (err) {
-        /* camera never started */
-      }
+      clearTimeout(timer);
+      releaseCamera(scanner);
     };
   }, [attempt]);
 

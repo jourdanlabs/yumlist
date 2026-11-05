@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Receipt, Loader2, Upload, CheckCircle2, AlertTriangle, Trash2 } from "lucide-react";
+import { Receipt, Loader2, Upload, Camera, CheckCircle2, AlertTriangle, Trash2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
 import { normalizeCategory, detectCategory } from "@/lib/groceryCategories";
@@ -26,6 +26,7 @@ export default function ScanReceiptDialog({ open, onOpenChange, familyId, onImpo
 
   const handleFile = async (e) => {
     const file = e.target.files?.[0];
+    e.target.value = "";
     if (!file) return;
     if (!familyId) {
       toast({ title: "No family selected", variant: "destructive" });
@@ -115,12 +116,20 @@ export default function ScanReceiptDialog({ open, onOpenChange, familyId, onImpo
               <p className="text-sm text-muted-foreground">
                 Snap or upload a photo of your grocery receipt. We'll detect the items and add them to your pantry so you can review before saving.
               </p>
-              <label className="cursor-pointer block">
-                <span className="inline-flex items-center justify-center gap-2 rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90 w-full">
-                  <Upload className="w-4 h-4" /> Choose receipt photo
-                </span>
-                <input type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFile} />
-              </label>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <label className="cursor-pointer block">
+                  <span className="inline-flex items-center justify-center gap-2 rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90 w-full min-h-[44px]">
+                    <Camera className="w-4 h-4" /> Take photo
+                  </span>
+                  <input type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFile} />
+                </label>
+                <label className="cursor-pointer block">
+                  <span className="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent w-full min-h-[44px]">
+                    <Upload className="w-4 h-4" /> Choose photo
+                  </span>
+                  <input type="file" accept="image/*" className="hidden" onChange={handleFile} />
+                </label>
+              </div>
             </div>
           )}
 
