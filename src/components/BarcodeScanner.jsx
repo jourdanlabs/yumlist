@@ -19,13 +19,50 @@ const FORMATS = [
   Html5QrcodeSupportedFormats.QR_CODE,
 ];
 
-const SCANNER_OPTIONS = {
-  verbose: false,
-  // The native BarcodeDetector silently misses many 1D barcodes on Android;
-  // the library's own decoder is far more reliable for grocery codes.
-  useBarCodeDetectorIfSupported: false,
-  formatsToSupport: FORMATS,
+const NATIVE_NAMES = {
+  [Html5QrcodeSupportedFormats.QR_CODE]: "qr_code",
+  [Html5QrcodeSupportedFormats.AZTEC]: "aztec",
+  [Html5QrcodeSupportedFormats.CODABAR]: "codabar",
+  [Html5QrcodeSupportedFormats.CODE_39]: "code_39",
+  [Html5QrcodeSupportedFormats.CODE_93]: "code_93",
+  [Html5QrcodeSupportedFormats.CODE_128]: "code_128",
+  [Html5QrcodeSupportedFormats.DATA_MATRIX]: "data_matrix",
+  [Html5QrcodeSupportedFormats.ITF]: "itf",
+  [Html5QrcodeSupportedFormats.EAN_13]: "ean_13",
+  [Html5QrcodeSupportedFormats.EAN_8]: "ean_8",
+  [Html5QrcodeSupportedFormats.PDF_417]: "pdf417",
+  [Html5QrcodeSupportedFormats.UPC_A]: "upc_a",
+  [Html5QrcodeSupportedFormats.UPC_E]: "upc_e",
 };
+
+// Decoding runs on the device's own scanner: Apple's Vision engine behind Safari's
+// BarcodeDetector (iOS 17+), Google Play Services behind Chrome on Android. The bundled
+// JS decoder stays in the loop as the fallback for other browsers. The native detector
+// throws if handed any format it doesn't know (upc_a on iPhone, for example), so it only
+// ever gets the formats this browser actually reports supporting.
+let formatsPromise = null;
+const resolveFormats = () => {
+  if (!formatsPromise) {
+    formatsPromise = (async () => {
+      const detector = window.BarcodeDetector;
+      if (!detector?.getSupportedFormats) return { formats: FORMATS, native: false };
+      try {
+        const supported = await detector.getSupportedFormats();
+        const filtered = FORMATS.filter((f) => supported.includes(NATIVE_NAMES[f]));
+        return filtered.length ? { formats: filtered, native: true } : { formats: FORMATS, native: false };
+      } catch (err) {
+        return { formats: FORMATS, native: false };
+      }
+    })();
+  }
+  return formatsPromise;
+};
+
+const buildOptions = ({ formats, native }) => ({
+  verbose: false,
+  useBarCodeDetectorIfSupported: native,
+  formatsToSupport: formats,
+});
 
 export default function BarcodeScanner({ onDetected, onClose }) {
   const detectedRef = useRef(onDetected);
@@ -67,6 +104,8 @@ export default function BarcodeScanner({ onDetected, onClose }) {
   useEffect(() => {
     let active = true;
     let started = false;
+    let scanner = null;
+    let timer = null;
     setStarting(true);
     setCameraError("");
 
@@ -78,72 +117,76 @@ export default function BarcodeScanner({ onDetected, onClose }) {
       return;
     }
 
-    const scanner = new Html5Qrcode(REGION_ID, SCANNER_OPTIONS);
+    (async () => {
+      const resolved = await resolveFormats();
+      if (!active) return;
+      scanner = new Html5Qrcode(REGION_ID, buildOptions(resolved));
 
-    const timer = setTimeout(() => {
-      if (!active || started) return;
-      setStarting(false);
-      setCameraError(
-        "The camera didn't start. Check camera permission for this app, or scan a photo of the barcode instead."
-      );
-      releaseCamera(scanner);
-    }, 15000);
-
-    scanner
-      .start(
-        { facingMode: "environment" },
-        {
-          fps: 10,
-          qrbox: (w, h) => ({
-            width: Math.max(50, Math.floor(w * 0.85)),
-            height: Math.max(50, Math.floor(h * 0.45)),
-          }),
-          disableFlip: true,
-          // iPhone opens a low-resolution stream by default, which never resolves
-          // 1D grocery barcodes. This must be passed here (not as the camera arg).
-          videoConstraints: {
-            facingMode: { ideal: "environment" },
-            width: { ideal: 1920 },
-            height: { ideal: 1080 },
-          },
-        },
-        (decoded) => finish(decoded),
-        () => {}
-      )
-      .then(() => {
-        started = true;
-        clearTimeout(timer);
-        if (active) setStarting(false);
-        else releaseCamera(scanner);
-        // iPhones usually need a little zoom to sharpen a barcode close up.
-        try {
-          const caps = scanner.getRunningTrackCapabilities?.() || {};
-          const zoom = caps.zoom?.max > 2 ? Math.min(caps.zoom.max, 2) : null;
-          const advanced = [];
-          if (zoom) advanced.push({ zoom });
-          if (caps.focusDistance) advanced.push({ focusDistance: 1 });
-          if (advanced.length) scanner.applyVideoConstraints({ advanced }).catch(() => {});
-        } catch (err) {
-          /* device doesn't expose these capabilities */
-        }
-      })
-      .catch((e) => {
-        clearTimeout(timer);
-        if (!active) return;
-        const msg = e && typeof e === "string" ? e : (e && e.message) || "";
-        setCameraError(
-          /permission|denied|notallowed/i.test(msg)
-            ? "Camera access is blocked. Allow camera access for this site, or scan a photo of the barcode instead."
-            : "Couldn't start the camera on this device. You can scan a photo of the barcode instead."
-        );
+      timer = setTimeout(() => {
+        if (!active || started) return;
         setStarting(false);
+        setCameraError(
+          "The camera didn't start. Check camera permission for this app, or scan a photo of the barcode instead."
+        );
         releaseCamera(scanner);
-      });
+      }, 15000);
+
+      scanner
+        .start(
+          { facingMode: "environment" },
+          {
+            fps: 10,
+            qrbox: (w, h) => ({
+              width: Math.max(50, Math.floor(w * 0.85)),
+              height: Math.max(50, Math.floor(h * 0.45)),
+            }),
+            disableFlip: true,
+            // iPhone opens a low-resolution stream by default, which never resolves
+            // 1D grocery barcodes. This must be passed here (not as the camera arg).
+            videoConstraints: {
+              facingMode: { ideal: "environment" },
+              width: { ideal: 1920 },
+              height: { ideal: 1080 },
+            },
+          },
+          (decoded) => finish(decoded),
+          () => {}
+        )
+        .then(() => {
+          started = true;
+          clearTimeout(timer);
+          if (active) setStarting(false);
+          else releaseCamera(scanner);
+          // iPhones usually need a little zoom to sharpen a barcode close up.
+          try {
+            const caps = scanner.getRunningTrackCapabilities?.() || {};
+            const zoom = caps.zoom?.max > 2 ? Math.min(caps.zoom.max, 2) : null;
+            const advanced = [];
+            if (zoom) advanced.push({ zoom });
+            if (caps.focusDistance) advanced.push({ focusDistance: 1 });
+            if (advanced.length) scanner.applyVideoConstraints({ advanced }).catch(() => {});
+          } catch (err) {
+            /* device doesn't expose these capabilities */
+          }
+        })
+        .catch((e) => {
+          clearTimeout(timer);
+          if (!active) return;
+          const msg = e && typeof e === "string" ? e : (e && e.message) || "";
+          setCameraError(
+            /permission|denied|notallowed/i.test(msg)
+              ? "Camera access is blocked. Allow camera access for this site, or scan a photo of the barcode instead."
+              : "Couldn't start the camera on this device. You can scan a photo of the barcode instead."
+          );
+          setStarting(false);
+          releaseCamera(scanner);
+        });
+    })();
 
     return () => {
       active = false;
       clearTimeout(timer);
-      releaseCamera(scanner);
+      if (scanner) releaseCamera(scanner);
     };
   }, [attempt]);
 
@@ -154,7 +197,8 @@ export default function BarcodeScanner({ onDetected, onClose }) {
     setFileError("");
     setReadingFile(true);
     try {
-      const reader = new Html5Qrcode(FILE_REGION_ID, SCANNER_OPTIONS);
+      const resolved = await resolveFormats();
+      const reader = new Html5Qrcode(FILE_REGION_ID, buildOptions(resolved));
       const result = await reader.scanFile(file, false);
       reader.clear();
       if (result) finish(result);
