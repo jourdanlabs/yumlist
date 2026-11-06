@@ -11,12 +11,14 @@ import BarcodeScanner from "@/components/BarcodeScanner";
 import { GROCERY_CATEGORIES, detectCategory } from "@/lib/groceryCategories";
 import VoiceButton from "@/components/VoiceButton";
 import MobileSelect from "@/components/MobileSelect";
+import DuplicateItemDialog from "@/components/DuplicateItemDialog";
 
 export default function AddItemDialog({ open, onOpenChange, familyId, onAdded, initialTab = "scan", onTabChange }) {
   const { toast } = useToast();
   const [scanning, setScanning] = useState(false);
   const [looking, setLooking] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [duplicate, setDuplicate] = useState(null);
   const [activeTab, setActiveTab] = useState(initialTab);
   const [form, setForm] = useState({ name: "", brand: "", barcode: "", category: "", image_url: "", quantity: 1, unit: "units", expiration_date: "" });
 
@@ -73,13 +75,30 @@ export default function AddItemDialog({ open, onOpenChange, familyId, onAdded, i
     }
   };
 
-  const save = async () => {
+  const save = async (force = false) => {
     if (!form.name.trim()) {
       toast({ title: "Name is required", variant: "destructive" });
       return;
     }
     setSaving(true);
     try {
+      if (!force) {
+        const { items } = await base44.entities.GroceryItem.filter(
+          { family_id: familyId },
+          { limit: 500 }
+        );
+        const name = form.name.trim().toLowerCase();
+        const barcode = form.barcode.trim();
+        const match = (items || []).find(
+          (item) =>
+            item.name?.trim().toLowerCase() === name ||
+            (barcode && item.barcode && item.barcode.trim() === barcode)
+        );
+        if (match) {
+          setDuplicate(match);
+          return;
+        }
+      }
       await base44.entities.GroceryItem.create({ ...form, family_id: familyId });
       toast({ title: "Item added to pantry" });
       reset();
@@ -93,6 +112,7 @@ export default function AddItemDialog({ open, onOpenChange, familyId, onAdded, i
   };
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className="sm:max-w-md max-h-[90vh] flex flex-col"
@@ -120,7 +140,7 @@ export default function AddItemDialog({ open, onOpenChange, familyId, onAdded, i
         </Tabs>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={save} disabled={saving || looking}>
+          <Button onClick={() => save()} disabled={saving || looking}>
             {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
             Add item
           </Button>
@@ -130,6 +150,13 @@ export default function AddItemDialog({ open, onOpenChange, familyId, onAdded, i
         <BarcodeScanner onDetected={handleDetected} onClose={() => setScanning(false)} />
       )}
     </Dialog>
+    <DuplicateItemDialog
+      duplicate={duplicate}
+      open={!!duplicate}
+      onOpenChange={(next) => { if (!next) setDuplicate(null); }}
+      onConfirm={() => { setDuplicate(null); save(true); }}
+    />
+    </>
   );
 }
 
