@@ -7,6 +7,7 @@ import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
 import { normalizeCategory, detectCategory } from "@/lib/groceryCategories";
 import ReceiptCamera from "@/components/ReceiptCamera";
+import ReceiptDuplicatesDialog from "@/components/receipt/ReceiptDuplicatesDialog";
 
 const UNITS = ["units", "packs", "boxes", "bottles", "cans", "bags", "kg", "g", "L", "mL"];
 const normalizeUnit = (u) => (UNITS.includes(u) ? u : "units");
@@ -18,12 +19,20 @@ export default function ScanReceiptDialog({ open, onOpenChange, familyId, onImpo
   const [parsed, setParsed] = useState([]);
   const [result, setResult] = useState(null);
   const [cameraOpen, setCameraOpen] = useState(false);
+  const [pantryNames, setPantryNames] = useState([]);
+  const [showDuplicates, setShowDuplicates] = useState(false);
+
+  const isDuplicate = (name) =>
+    pantryNames.includes((name || "").trim().toLowerCase());
+  const duplicateCount = parsed.filter((p) => isDuplicate(p.name)).length;
 
   const reset = () => {
     setStage("idle");
     setPreviewUrl("");
     setParsed([]);
     setResult(null);
+    setPantryNames([]);
+    setShowDuplicates(false);
   };
 
   const handleFile = (e) => {
@@ -68,6 +77,13 @@ export default function ScanReceiptDialog({ open, onOpenChange, familyId, onImpo
         setStage("idle");
         toast({ title: "No items found", description: "Try a clearer photo of your receipt.", variant: "destructive" });
       } else {
+        const { items } = await base44.entities.GroceryItem.filter(
+          { family_id: familyId },
+          { limit: 500 }
+        );
+        setPantryNames(
+          (items || []).map((i) => (i.name || "").trim().toLowerCase()).filter(Boolean)
+        );
         setParsed(valid);
         setStage("preview");
       }
@@ -85,15 +101,20 @@ export default function ScanReceiptDialog({ open, onOpenChange, familyId, onImpo
     setParsed((prev) => prev.filter((_, i) => i !== idx));
   };
 
-  const confirm = async () => {
-    if (parsed.length === 0) {
-      toast({ title: "Nothing to add", variant: "destructive" });
+  const importItems = async (skipDuplicates) => {
+    const rows = skipDuplicates
+      ? parsed.filter((p) => !isDuplicate(p.name))
+      : parsed;
+    if (rows.length === 0) {
+      setShowDuplicates(false);
+      toast({ title: "All items are already in your pantry", description: "Nothing new to add." });
       return;
     }
+    setShowDuplicates(false);
     setStage("importing");
     try {
-      const created = await base44.entities.GroceryItem.bulkCreate(parsed);
-      setResult({ success: created.length, total: parsed.length });
+      const created = await base44.entities.GroceryItem.bulkCreate(rows);
+      setResult({ success: created.length, total: parsed.length, skipped: parsed.length - rows.length });
       setStage("done");
       toast({ title: `${created.length} items added to pantry` });
       onImported();
@@ -101,6 +122,18 @@ export default function ScanReceiptDialog({ open, onOpenChange, familyId, onImpo
       setStage("preview");
       toast({ title: "Could not add items", description: err.message, variant: "destructive" });
     }
+  };
+
+  const confirm = () => {
+    if (parsed.length === 0) {
+      toast({ title: "Nothing to add", variant: "destructive" });
+      return;
+    }
+    if (duplicateCount > 0) {
+      setShowDuplicates(true);
+      return;
+    }
+    importItems(false);
   };
 
   const close = () => {
@@ -159,6 +192,15 @@ export default function ScanReceiptDialog({ open, onOpenChange, familyId, onImpo
                 <span className="font-medium">{parsed.length} item{parsed.length !== 1 ? "s" : ""} detected</span>
                 <span className="text-muted-foreground">Review and edit before adding.</span>
               </div>
+              {duplicateCount > 0 && (
+                <div className="flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+                  <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                  <span>
+                    {duplicateCount} item{duplicateCount !== 1 ? "s are" : " is"} already in your pantry.
+                    You'll be asked whether to add {duplicateCount !== 1 ? "them" : "it"} again.
+                  </span>
+                </div>
+              )}
               <div className="space-y-2">
                 {parsed.map((p, i) => (
                   <div key={i} className="rounded-md border border-border p-2 space-y-2 bg-card">
@@ -173,6 +215,11 @@ export default function ScanReceiptDialog({ open, onOpenChange, familyId, onImpo
                         <Trash2 className="w-4 h-4 text-destructive" />
                       </Button>
                     </div>
+                    {isDuplicate(p.name) && (
+                      <p className="flex items-center gap-1 text-[11px] font-medium text-amber-700">
+                        <AlertTriangle className="w-3 h-3" /> Already in your pantry
+                      </p>
+                    )}
                     <div className="grid grid-cols-3 gap-2">
                       <Input
                         value={p.brand}
@@ -217,6 +264,11 @@ export default function ScanReceiptDialog({ open, onOpenChange, familyId, onImpo
               <CheckCircle2 className="w-12 h-12 text-emerald-500" />
               <p className="text-lg font-medium">{result.success} items added to pantry</p>
               <p className="text-sm text-muted-foreground">Your pantry has been updated.</p>
+              {result.skipped > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  {result.skipped} duplicate{result.skipped !== 1 ? "s" : ""} skipped.
+                </p>
+              )}
             </div>
           )}
         </div>
@@ -234,6 +286,13 @@ export default function ScanReceiptDialog({ open, onOpenChange, familyId, onImpo
           )}
         </DialogFooter>
       </DialogContent>
+      <ReceiptDuplicatesDialog
+        open={showDuplicates}
+        count={duplicateCount}
+        onOpenChange={setShowDuplicates}
+        onSkip={() => importItems(true)}
+        onAddAnyway={() => importItems(false)}
+      />
       {cameraOpen && (
         <ReceiptCamera
           onClose={() => setCameraOpen(false)}
