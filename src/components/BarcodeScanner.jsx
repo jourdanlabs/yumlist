@@ -99,6 +99,13 @@ export default function BarcodeScanner({ onDetected, onClose }) {
             height: Math.max(50, Math.floor(h * 0.45)),
           }),
           disableFlip: true,
+          // iPhone opens a low-resolution stream by default, which never resolves
+          // 1D grocery barcodes. This must be passed here (not as the camera arg).
+          videoConstraints: {
+            facingMode: { ideal: "environment" },
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
+          },
         },
         (decoded) => finish(decoded),
         () => {}
@@ -108,6 +115,17 @@ export default function BarcodeScanner({ onDetected, onClose }) {
         clearTimeout(timer);
         if (active) setStarting(false);
         else releaseCamera(scanner);
+        // iPhones usually need a little zoom to sharpen a barcode close up.
+        try {
+          const caps = scanner.getRunningTrackCapabilities?.() || {};
+          const zoom = caps.zoom?.max > 2 ? Math.min(caps.zoom.max, 2) : null;
+          const advanced = [];
+          if (zoom) advanced.push({ zoom });
+          if (caps.focusDistance) advanced.push({ focusDistance: 1 });
+          if (advanced.length) scanner.applyVideoConstraints({ advanced }).catch(() => {});
+        } catch (err) {
+          /* device doesn't expose these capabilities */
+        }
       })
       .catch((e) => {
         clearTimeout(timer);
