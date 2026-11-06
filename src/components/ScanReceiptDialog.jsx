@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Receipt, Loader2, Upload, Camera, CheckCircle2, AlertTriangle, Trash2 } from "lucide-react";
+import { Receipt, Loader2, Upload, Camera, ScanLine, CheckCircle2, AlertTriangle, Trash2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
 import { normalizeCategory, detectCategory } from "@/lib/groceryCategories";
+import ReceiptCamera from "@/components/ReceiptCamera";
 
 const UNITS = ["units", "packs", "boxes", "bottles", "cans", "bags", "kg", "g", "L", "mL"];
 const normalizeUnit = (u) => (UNITS.includes(u) ? u : "units");
@@ -16,6 +17,7 @@ export default function ScanReceiptDialog({ open, onOpenChange, familyId, onImpo
   const [previewUrl, setPreviewUrl] = useState("");
   const [parsed, setParsed] = useState([]);
   const [result, setResult] = useState(null);
+  const [cameraOpen, setCameraOpen] = useState(false);
 
   const reset = () => {
     setStage("idle");
@@ -24,10 +26,13 @@ export default function ScanReceiptDialog({ open, onOpenChange, familyId, onImpo
     setResult(null);
   };
 
-  const handleFile = async (e) => {
+  const handleFile = (e) => {
     const file = e.target.files?.[0];
     e.target.value = "";
-    if (!file) return;
+    if (file) processFile(file);
+  };
+
+  const processFile = async (file) => {
     if (!familyId) {
       toast({ title: "No family selected", variant: "destructive" });
       return;
@@ -99,6 +104,7 @@ export default function ScanReceiptDialog({ open, onOpenChange, familyId, onImpo
   };
 
   const close = () => {
+    setCameraOpen(false);
     if (stage === "done") reset();
     onOpenChange(false);
   };
@@ -117,19 +123,20 @@ export default function ScanReceiptDialog({ open, onOpenChange, familyId, onImpo
                 Snap or upload a photo of your grocery receipt. We'll detect the items and add them to your pantry so you can review before saving.
               </p>
               <div className="grid gap-2 sm:grid-cols-2">
+                <Button className="min-h-[44px]" onClick={() => setCameraOpen(true)}>
+                  <ScanLine className="w-4 h-4 mr-2" /> Scan receipt
+                </Button>
                 <label className="cursor-pointer block">
-                  <span className="inline-flex items-center justify-center gap-2 rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90 w-full min-h-[44px]">
+                  <span className="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent w-full min-h-[44px]">
                     <Camera className="w-4 h-4" /> Take photo
                   </span>
                   <input type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFile} />
                 </label>
-                <label className="cursor-pointer block">
-                  <span className="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent w-full min-h-[44px]">
-                    <Upload className="w-4 h-4" /> Choose photo
-                  </span>
-                  <input type="file" accept="image/*" className="hidden" onChange={handleFile} />
-                </label>
               </div>
+              <label className="cursor-pointer flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground py-2">
+                <Upload className="w-4 h-4" /> Choose a photo from your device
+                <input type="file" accept="image/*" className="hidden" onChange={handleFile} />
+              </label>
             </div>
           )}
 
@@ -227,6 +234,15 @@ export default function ScanReceiptDialog({ open, onOpenChange, familyId, onImpo
           )}
         </DialogFooter>
       </DialogContent>
+      {cameraOpen && (
+        <ReceiptCamera
+          onClose={() => setCameraOpen(false)}
+          onCapture={(file) => {
+            setCameraOpen(false);
+            processFile(file);
+          }}
+        />
+      )}
     </Dialog>
   );
 }
