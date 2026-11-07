@@ -7,6 +7,7 @@ import { differenceInCalendarDays } from "date-fns";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { capitalize } from "@/lib/utils";
 import ConsumptionChart from "@/components/ConsumptionChart";
+import WeekMealCalendar from "@/components/mealplan/WeekMealCalendar";
 import RecallBadge from "@/components/RecallBadge";
 import RoleBadge from "@/components/family/RoleBadge";
 import { useRecalls } from "@/hooks/useRecalls";
@@ -78,6 +79,8 @@ export default function Home() {
         <StatCard icon={ChefHat} label="Recipes" value={loading ? "—" : recipes.length} to="/recipes" />
         <StatCard icon={ThumbsUp} label="Share your likes" value="" to="/share" wide />
       </div>
+
+      <WeekMealCalendar familyId={user?.family_id} />
 
       <Link to="/party" className="block">
         <Card className="hover:shadow-md transition-shadow">
