@@ -130,8 +130,10 @@ export default function AddItemDialog({ open, onOpenChange, familyId, onAdded, i
           <TabsContent value="scan" className="pt-4">
             <div className="flex flex-col items-center gap-3 py-6 text-center">
               <ScanLine className="w-10 h-10 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">Use your camera to scan a product barcode and auto-fill the details.</p>
-              <Button onClick={() => setScanning(true)}>Start scanning</Button>
+              <p className="text-sm text-muted-foreground">Take a photo of a product barcode and we'll fill in the details for you.</p>
+              <Button onClick={() => setScanning(true)}>
+                <ScanLine className="w-4 h-4 mr-2" /> Scan barcode
+              </Button>
             </div>
           </TabsContent>
           <TabsContent value="manual" className="pt-4 space-y-4">

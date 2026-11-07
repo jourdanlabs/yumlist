@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from "html5-qrcode";
 import { Button } from "@/components/ui/button";
-import { Loader2, Camera, X, Image as ImageIcon } from "lucide-react";
+import { Loader2, Camera, X, Image as ImageIcon, ScanLine } from "lucide-react";
 
 const REGION_ID = "pantry-barcode-region";
 const FILE_REGION_ID = "pantry-barcode-file-region";
@@ -35,11 +35,10 @@ const NATIVE_NAMES = {
   [Html5QrcodeSupportedFormats.UPC_E]: "upc_e",
 };
 
-// Decoding runs on the device's own scanner: Apple's Vision engine behind Safari's
-// BarcodeDetector (iOS 17+), Google Play Services behind Chrome on Android. The bundled
-// JS decoder stays in the loop as the fallback for other browsers. The native detector
-// throws if handed any format it doesn't know (upc_a on iPhone, for example), so it only
-// ever gets the formats this browser actually reports supporting.
+// A still photo is decoded by the device's own scanner (Apple's Vision engine behind
+// Safari's BarcodeDetector, Google Play Services behind Chrome), with the bundled JS
+// decoder as fallback. The native detector throws on formats it doesn't know, so it only
+// gets the ones this browser reports supporting.
 let formatsPromise = null;
 const resolveFormats = () => {
   if (!formatsPromise) {
@@ -68,8 +67,9 @@ export default function BarcodeScanner({ onDetected, onClose }) {
   const detectedRef = useRef(onDetected);
   const handledRef = useRef(false);
   const fileInputRef = useRef(null);
+  const [mode, setMode] = useState("photo");
   const [attempt, setAttempt] = useState(0);
-  const [starting, setStarting] = useState(true);
+  const [starting, setStarting] = useState(false);
   const [cameraError, setCameraError] = useState("");
   const [fileError, setFileError] = useState("");
   const [readingFile, setReadingFile] = useState(false);
@@ -102,6 +102,7 @@ export default function BarcodeScanner({ onDetected, onClose }) {
   };
 
   useEffect(() => {
+    if (mode !== "live") return;
     let active = true;
     let started = false;
     let scanner = null;
@@ -111,7 +112,7 @@ export default function BarcodeScanner({ onDetected, onClose }) {
 
     if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
       setCameraError(
-        "This browser can't open the camera here. Use the photo option below to scan the barcode."
+        "This browser can't open the live camera here. Take a photo of the barcode instead."
       );
       setStarting(false);
       return;
@@ -126,7 +127,7 @@ export default function BarcodeScanner({ onDetected, onClose }) {
         if (!active || started) return;
         setStarting(false);
         setCameraError(
-          "The camera didn't start. Check camera permission for this app, or scan a photo of the barcode instead."
+          "The camera didn't start. Check camera permission for this app, or take a photo of the barcode instead."
         );
         releaseCamera(scanner);
       }, 15000);
@@ -175,8 +176,8 @@ export default function BarcodeScanner({ onDetected, onClose }) {
           const msg = e && typeof e === "string" ? e : (e && e.message) || "";
           setCameraError(
             /permission|denied|notallowed/i.test(msg)
-              ? "Camera access is blocked. Allow camera access for this site, or scan a photo of the barcode instead."
-              : "Couldn't start the camera on this device. You can scan a photo of the barcode instead."
+              ? "Camera access is blocked. Allow camera access for this site, or take a photo of the barcode instead."
+              : "Couldn't start the live camera on this device. Take a photo of the barcode instead."
           );
           setStarting(false);
           releaseCamera(scanner);
@@ -188,7 +189,7 @@ export default function BarcodeScanner({ onDetected, onClose }) {
       clearTimeout(timer);
       if (scanner) releaseCamera(scanner);
     };
-  }, [attempt]);
+  }, [attempt, mode]);
 
   const handleFile = async (e) => {
     const file = e.target.files?.[0];
@@ -202,9 +203,9 @@ export default function BarcodeScanner({ onDetected, onClose }) {
       const result = await reader.scanFile(file, false);
       reader.clear();
       if (result) finish(result);
-      else setFileError("No barcode found in that photo. Try again with the barcode filling the frame.");
+      else setFileError("No barcode found in that photo. Get the barcode large and sharp, then try again.");
     } catch (err) {
-      setFileError("Couldn't read that photo. Try again with the barcode filling the frame.");
+      setFileError("Couldn't read that photo. Get the barcode large and sharp, then try again.");
     } finally {
       setReadingFile(false);
     }
@@ -222,57 +223,96 @@ export default function BarcodeScanner({ onDetected, onClose }) {
           </Button>
         </div>
 
-        <div className="relative aspect-[4/3] bg-black">
-          <div id={REGION_ID} className="w-full h-full overflow-hidden" />
-          {starting && !cameraError && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-white/80 gap-2">
-              <Loader2 className="w-6 h-6 animate-spin" />
-              <span className="text-sm">Starting camera…</span>
+        {mode === "photo" ? (
+          <div className="p-5 space-y-4">
+            <div className="flex flex-col items-center gap-2 text-center">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                <Camera className="w-6 h-6 text-primary" />
+              </div>
+              <p className="text-sm font-medium">Take a photo of the barcode</p>
+              <p className="text-sm text-muted-foreground">
+                Your phone's camera reads the barcode most reliably. Tap below, fill the frame with
+                the barcode, and hold steady.
+              </p>
             </div>
-          )}
-          {cameraError && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-6 text-center">
-              <p className="text-sm text-white/90">{cameraError}</p>
-              <Button size="sm" variant="secondary" onClick={() => setAttempt((n) => n + 1)}>
-                Try camera again
+
+            <Button
+              className="w-full"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={readingFile}
+            >
+              {readingFile ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Camera className="w-4 h-4 mr-2" />
+              )}
+              {readingFile ? "Reading barcode…" : "Take photo of barcode"}
+            </Button>
+
+            {fileError && <p className="text-sm text-destructive text-center">{fileError}</p>}
+
+            <Button
+              variant="ghost"
+              className="w-full text-muted-foreground"
+              onClick={() => {
+                setFileError("");
+                setMode("live");
+              }}
+            >
+              <ScanLine className="w-4 h-4 mr-2" />
+              Use the live scanner instead
+            </Button>
+          </div>
+        ) : (
+          <>
+            <div className="relative aspect-[4/3] bg-black">
+              <div id={REGION_ID} className="w-full h-full overflow-hidden" />
+              {starting && !cameraError && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-white/80 gap-2">
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                  <span className="text-sm">Starting camera…</span>
+                </div>
+              )}
+              {cameraError && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-6 text-center">
+                  <p className="text-sm text-white/90">{cameraError}</p>
+                  <Button size="sm" variant="secondary" onClick={() => setAttempt((n) => n + 1)}>
+                    Try camera again
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            <div className="p-4 space-y-3">
+              {!cameraError && (
+                <p className="text-sm text-muted-foreground text-center">
+                  Hold the barcode steady in the box and move the phone back a little.
+                </p>
+              )}
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  setCameraError("");
+                  setMode("photo");
+                }}
+              >
+                <ImageIcon className="w-4 h-4 mr-2" />
+                Back to taking a photo
               </Button>
             </div>
-          )}
-        </div>
+          </>
+        )}
 
-        <div className="p-4 space-y-3">
-          {!cameraError && (
-            <p className="text-sm text-muted-foreground text-center">
-              Hold the barcode steady in the box and move the phone back a little.
-            </p>
-          )}
-
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={readingFile}
-          >
-            {readingFile ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            ) : (
-              <ImageIcon className="w-4 h-4 mr-2" />
-            )}
-            Scan a photo of the barcode
-          </Button>
-
-          {fileError && <p className="text-sm text-destructive text-center">{fileError}</p>}
-
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            capture="environment"
-            className="hidden"
-            onChange={handleFile}
-          />
-          <div id={FILE_REGION_ID} className="hidden" />
-        </div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          className="hidden"
+          onChange={handleFile}
+        />
+        <div id={FILE_REGION_ID} className="hidden" />
       </div>
     </div>,
     document.body
