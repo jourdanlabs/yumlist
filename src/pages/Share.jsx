@@ -6,6 +6,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import ShareWithFriendsCard from "@/components/share/ShareWithFriendsCard";
 import ReceivedShares from "@/components/share/ReceivedShares";
+import SharedMealCalendars from "@/components/share/SharedMealCalendars";
 import { buildTasteSummary } from "@/lib/shareText";
 
 export default function Share() {
@@ -169,6 +170,8 @@ export default function Share() {
           )}
         </CardContent>
       </Card>
+
+      <SharedMealCalendars />
 
       <ShareWithFriendsCard
         recipes={recipes}
