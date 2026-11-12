@@ -24,8 +24,7 @@
     }
   },
   "required": [
-    "retailer",
-    "target_url"
+    "retailer"
   ],
   "rls": {
     "create": {

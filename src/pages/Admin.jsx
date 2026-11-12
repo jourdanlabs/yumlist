@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, ShieldAlert, Users, Activity, TrendingUp, Smartphone, Gauge } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import AffiliateProgramsCard from "@/components/admin/AffiliateProgramsCard";
+import RecentAffiliateClicks from "@/components/admin/RecentAffiliateClicks";
 
 const DAY = 86400000;
 
@@ -173,6 +174,7 @@ export default function Admin() {
       </Card>
 
       <AffiliateProgramsCard />
+      <RecentAffiliateClicks />
     </div>
   );
 }

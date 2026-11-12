@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { MapPin, Loader2, Store, Trophy, DollarSign, ShoppingCart } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { buildAffiliateUrl, findProgram } from "@/lib/affiliate";
 import { Card, CardContent } from "@/components/ui/card";
 
 export default function BestPricesDialog({ open, onOpenChange, items }) {
@@ -13,6 +12,28 @@ export default function BestPricesDialog({ open, onOpenChange, items }) {
   const [locating, setLocating] = useState(false);
   const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
+  const [shopBusy, setShopBusy] = useState(null);
+
+  const handleShop = async (store) => {
+    const query = items.map((i) => i.name).filter(Boolean).join(", ").slice(0, 120);
+    setShopBusy(store.name);
+    try {
+      const res = await base44.functions.invoke("logAffiliateClick", { retailer: store.name, query });
+      const url = res?.data?.url;
+      if (url) {
+        window.open(url, "_blank", "noopener,noreferrer");
+      } else {
+        toast({
+          title: `No affiliate link for ${store.name} yet`,
+          description: "Add one under Affiliate links to earn from this store. The choice was still recorded.",
+        });
+      }
+    } catch (e) {
+      toast({ title: "Could not open store link", description: e.message, variant: "destructive" });
+    } finally {
+      setShopBusy(null);
+    }
+  };
 
   const handleSearch = () => {
     setError(null);
@@ -152,6 +173,20 @@ export default function BestPricesDialog({ open, onOpenChange, items }) {
                         </div>
                       ))}
                     </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => handleShop(store)}
+                      disabled={shopBusy === store.name}
+                    >
+                      {shopBusy === store.name ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <ShoppingCart className="w-4 h-4 mr-2" />
+                      )}
+                      Shop at {store.name}
+                    </Button>
                   </CardContent>
                 </Card>
               ))}

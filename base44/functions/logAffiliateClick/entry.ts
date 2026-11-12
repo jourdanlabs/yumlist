@@ -17,28 +17,30 @@ export default async function(req: Request): Promise<Response> {
       const r = (p.retailer || '').toLowerCase().trim();
       return r && (name.includes(r) || r.includes(name));
     });
-    if (!program) return Response.json({ error: 'No affiliate program for this store' }, { status: 404 });
 
-    const target = (program.link_template || '').replace(/\{query\}/g, encodeURIComponent(query));
-    let parsed;
-    try {
-      parsed = new URL(target);
-    } catch {
-      return Response.json({ error: 'Invalid link template' }, { status: 400 });
-    }
-    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-      return Response.json({ error: 'Invalid link template' }, { status: 400 });
+    let target = '';
+    if (program) {
+      target = (program.link_template || '').replace(/\{query\}/g, encodeURIComponent(query));
+      let parsed;
+      try {
+        parsed = new URL(target);
+      } catch {
+        return Response.json({ error: 'Invalid link template' }, { status: 400 });
+      }
+      if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+        return Response.json({ error: 'Invalid link template' }, { status: 400 });
+      }
     }
 
     await base44.asServiceRole.entities.AffiliateClick.create({
-      retailer: program.retailer,
+      retailer: program?.retailer || retailer,
       item_query: query,
       target_url: target,
       family_id: user.data?.family_id || '',
       user_id: user.id
     });
 
-    return Response.json({ url: target });
+    return Response.json({ url: target || null });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
