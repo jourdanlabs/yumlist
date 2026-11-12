@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { MapPin, Loader2, Store, Trophy, DollarSign } from "lucide-react";
+import { MapPin, Loader2, Store, Trophy, DollarSign, ShoppingCart } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { buildAffiliateUrl, findProgram } from "@/lib/affiliate";
 import { Card, CardContent } from "@/components/ui/card";
 
 export default function BestPricesDialog({ open, onOpenChange, items }) {
