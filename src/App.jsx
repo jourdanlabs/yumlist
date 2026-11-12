@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import CookieConsentBanner from '@/components/CookieConsentBanner';
 import Layout from '@/components/Layout';
 import { lazy, Suspense } from 'react';
 const Login = lazy(() => import('@/pages/Login'));
@@ -93,6 +94,7 @@ function App() {
           <TooltipProvider delayDuration={300}>
             <AuthenticatedApp />
           </TooltipProvider>
+          <CookieConsentBanner />
         </Router>
         <Toaster />
       </QueryClientProvider>

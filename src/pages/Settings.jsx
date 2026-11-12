@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { User as UserIcon, Lock, Phone, Loader2, Check, Trash2, AlertTriangle } from "lucide-react";
+import { User as UserIcon, Lock, Phone, Loader2, Check, Trash2, AlertTriangle, Cookie } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
+import { openConsentBanner } from "@/lib/cookieConsent";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -211,6 +212,21 @@ export default function Settings() {
               )}
             </Button>
           </form>
+        </CardContent>
+      </Card>
+
+      {/* Cookie settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Cookie className="w-5 h-5" /> Cookie settings
+          </CardTitle>
+          <CardDescription>Choose whether shopping-partner tracking cookies can be set.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button variant="outline" onClick={openConsentBanner}>
+            Change cookie settings
+          </Button>
         </CardContent>
       </Card>
 
