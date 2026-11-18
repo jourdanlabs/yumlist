@@ -2,6 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
 
 const MAX_GUEST = 60;
 const MAX_ITEM = 80;
+const MAX_BRINGING = 120;
 const MAX_NOTE = 300;
 const MAX_REQUESTS_PER_EVENT = 400;
 
@@ -15,11 +16,15 @@ export default async function (req) {
     const token = String(body.token || '').trim().slice(0, 64);
     const guestName = String(body.guest_name || '').trim().slice(0, MAX_GUEST);
     const itemName = String(body.item_name || '').trim().slice(0, MAX_ITEM);
+    const bringing = String(body.bringing || '').trim().slice(0, MAX_BRINGING);
     const note = String(body.note || '').trim().slice(0, MAX_NOTE);
 
     if (!token) return Response.json({ error: 'Missing invite code' }, { status: 400 });
-    if (!guestName || !itemName) {
-      return Response.json({ error: 'Your name and what you would like are required' }, { status: 400 });
+    if (!guestName || (!itemName && !bringing)) {
+      return Response.json(
+        { error: 'Your name and either something you would like or a recipe you are bringing are required' },
+        { status: 400 }
+      );
     }
 
     const { items } = await base44.asServiceRole.entities.PartyEvent.filter(
@@ -39,6 +44,7 @@ export default async function (req) {
       event_id: event.id,
       guest_name: guestName,
       item_name: itemName,
+      bringing,
       note,
     });
 

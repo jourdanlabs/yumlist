@@ -18,6 +18,10 @@
       "type": "string",
       "title": "Item"
     },
+    "bringing": {
+      "type": "string",
+      "title": "Recipe or dish they are bringing"
+    },
     "note": {
       "type": "string",
       "title": "Note"
@@ -26,8 +30,7 @@
   "required": [
     "family_id",
     "event_id",
-    "guest_name",
-    "item_name"
+    "guest_name"
   ],
   "rls": {
     "create": {

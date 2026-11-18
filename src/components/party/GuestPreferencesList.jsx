@@ -8,6 +8,7 @@ function groupByGuest(preferences) {
   const guests = [];
   const index = {};
   preferences.forEach((p) => {
+    if (!(p.item_name || "").trim()) return;
     const key = (p.guest_name || "").toLowerCase().trim();
     if (!(key in index)) {
       index[key] = guests.length;

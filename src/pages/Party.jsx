@@ -14,6 +14,7 @@ import CreatePartyForm from "@/components/party/CreatePartyForm";
 import PartyInviteCard from "@/components/party/PartyInviteCard";
 import InviteAppUsersCard from "@/components/party/InviteAppUsersCard";
 import GuestPreferencesList from "@/components/party/GuestPreferencesList";
+import BroughtRecipesList from "@/components/party/BroughtRecipesList";
 
 export default function Party() {
   const { user } = useCurrentUser();
@@ -114,6 +115,8 @@ export default function Party() {
           <InviteAppUsersCard event={event} />
 
           <GuestPreferencesList preferences={preferences} onRemove={removePreference} />
+
+          <BroughtRecipesList preferences={preferences} />
 
           <Card>
             <CardContent className="pt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">

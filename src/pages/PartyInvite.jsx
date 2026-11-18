@@ -19,7 +19,7 @@ export default function PartyInvite() {
   const { token } = useParams();
   const [status, setStatus] = useState("loading");
   const [invite, setInvite] = useState(null);
-  const [form, setForm] = useState({ guest_name: "", item_name: "", note: "" });
+  const [form, setForm] = useState({ guest_name: "", item_name: "", bringing: "", note: "" });
   const [added, setAdded] = useState([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -44,16 +44,19 @@ export default function PartyInvite() {
 
   const submit = async (e) => {
     e.preventDefault();
-    if (!form.guest_name.trim() || !form.item_name.trim()) {
-      setError("Add your name and at least one thing you would like.");
+    if (!form.guest_name.trim() || (!form.item_name.trim() && !form.bringing.trim())) {
+      setError("Add your name and either something you would like or a recipe you're bringing.");
       return;
     }
     setError("");
     setSaving(true);
     try {
       await base44.functions.invoke("submitPartyPreference", { token, ...form });
-      setAdded((list) => [...list, form.item_name.trim()]);
-      setForm((f) => ({ ...f, item_name: "", note: "" }));
+      const labels = [];
+      if (form.item_name.trim()) labels.push(form.item_name.trim());
+      if (form.bringing.trim()) labels.push(`Bringing ${form.bringing.trim()}`);
+      setAdded((list) => [...list, ...labels]);
+      setForm((f) => ({ ...f, item_name: "", bringing: "", note: "" }));
     } catch (err) {
       setError("Could not add that just now. Please try again.");
     } finally {
@@ -103,7 +106,7 @@ export default function PartyInvite() {
           <CardContent className="pt-6">
             <form onSubmit={submit} className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Add what you would like at the party. It goes straight onto the host's list.
+                Add what you would like at the party, and tell the host what you're bringing. It goes straight onto their list.
               </p>
               <div className="space-y-2">
                 <Label htmlFor="guest-name">Your name</Label>
@@ -123,6 +126,16 @@ export default function PartyInvite() {
                   onChange={(e) => setForm((f) => ({ ...f, item_name: e.target.value }))}
                   placeholder="Sparkling water"
                   maxLength={80}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="guest-bringing">Recipe or dish you're bringing (optional)</Label>
+                <Input
+                  id="guest-bringing"
+                  value={form.bringing}
+                  onChange={(e) => setForm((f) => ({ ...f, bringing: e.target.value }))}
+                  placeholder="Grandma's potato salad"
+                  maxLength={120}
                 />
               </div>
               <div className="space-y-2">
