@@ -1,6 +1,9 @@
+import { FOOD_QUESTIONS_EXTRA_1 } from "@/lib/foodQuestionsExtra1";
+import { FOOD_QUESTIONS_EXTRA_2 } from "@/lib/foodQuestionsExtra2";
+
 export const QUIZ_LENGTH = 5;
 
-export const FOOD_QUESTIONS = [
+const CORE_QUESTIONS = [
   {
     question: "Which of these is technically a berry?",
     options: ["Strawberry", "Banana", "Cherry"],
@@ -85,6 +88,12 @@ export const FOOD_QUESTIONS = [
     answer: 1,
     fact: "A typical strawberry carries around 200 tiny seeds on its surface, each one technically a separate fruit.",
   },
+];
+
+export const FOOD_QUESTIONS = [
+  ...CORE_QUESTIONS,
+  ...FOOD_QUESTIONS_EXTRA_1,
+  ...FOOD_QUESTIONS_EXTRA_2,
 ];
 
 function shuffle(list) {
