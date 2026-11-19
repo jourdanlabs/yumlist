@@ -14,10 +14,12 @@ import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/comp
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { GROCERY_CATEGORIES, categoryStyle, normalizeCategory } from "@/lib/groceryCategories";
 import { capitalize } from "@/lib/utils";
+import { canSeeAds } from "@/lib/ageRange";
 
 export default function ShoppingList() {
   const { user } = useCurrentUser();
   const familyId = user?.family_id;
+  const adsAllowed = canSeeAds(user);
   const { toast } = useToast();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -248,7 +250,7 @@ export default function ShoppingList() {
             <CalendarPlus className="w-4 h-4 mr-2" /> Schedule Trip
           </Button>
         )}
-        {shopping.length > 0 && (
+        {shopping.length > 0 && adsAllowed && (
           <Button onClick={() => setPricesOpen(true)} className="bg-orange-500 hover:bg-orange-600 text-white">
             <MapPin className="w-4 h-4 mr-2" /> Find Best Prices
           </Button>
@@ -261,7 +263,7 @@ export default function ShoppingList() {
       </div>
 
       <ScheduleTripDialog open={tripOpen} onOpenChange={setTripOpen} itemCount={shopping.length} />
-      <BestPricesDialog open={pricesOpen} onOpenChange={setPricesOpen} items={shopping} />
+      {adsAllowed && <BestPricesDialog open={pricesOpen} onOpenChange={setPricesOpen} items={shopping} />}
 
       <div className="relative rounded-lg border border-border bg-card p-2 no-print">
         <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
