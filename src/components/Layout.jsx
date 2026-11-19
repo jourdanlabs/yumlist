@@ -7,6 +7,7 @@ import { base44 } from "@/api/base44Client";
 import { cn } from "@/lib/utils";
 import NotificationsBell from "@/components/NotificationsBell";
 import PullToRefresh from "@/components/PullToRefresh";
+import AppFooter from "@/components/AppFooter";
 import { queryClientInstance } from "@/lib/query-client";
 
 const nav = [
@@ -185,6 +186,7 @@ export default function Layout() {
               </PullToRefresh>
             </motion.div>
           </AnimatePresence>
+          <AppFooter />
         </div>
       </main>
 
