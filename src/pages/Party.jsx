@@ -95,7 +95,7 @@ export default function Party() {
     <div className="space-y-6 max-w-2xl mx-auto">
       <div>
         <h1 className="font-heading text-2xl font-semibold flex items-center gap-2">
-          <PartyPopper className="w-6 h-6 text-primary" /> Party guest list
+          <PartyPopper className="w-6 h-6 text-primary" /> Plan a Party
         </h1>
         <p className="text-sm text-muted-foreground">
           Collect what your guests want, then clear the list once the party is over.
