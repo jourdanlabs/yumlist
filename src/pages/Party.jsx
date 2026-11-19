@@ -7,7 +7,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { PartyPopper, Trash2 } from "lucide-react";
+import { PartyPopper, Trash2, UtensilsCrossed, ListChecks } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import CreatePartyForm from "@/components/party/CreatePartyForm";
@@ -15,12 +15,14 @@ import PartyInviteCard from "@/components/party/PartyInviteCard";
 import InviteAppUsersCard from "@/components/party/InviteAppUsersCard";
 import GuestPreferencesList from "@/components/party/GuestPreferencesList";
 import BroughtRecipesList from "@/components/party/BroughtRecipesList";
+import PartyHostListCard from "@/components/party/PartyHostListCard";
 
 export default function Party() {
   const { user } = useCurrentUser();
   const familyId = user?.family_id;
   const [event, setEvent] = useState(null);
   const [preferences, setPreferences] = useState([]);
+  const [partyItems, setPartyItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -33,16 +35,25 @@ export default function Party() {
       );
       const current = (page.items || [])[0] || null;
       let guestList = [];
+      let hostList = [];
       if (current) {
-        const prefs = await base44.entities.PartyPreference.filter(
-          { event_id: current.id },
-          { sort: "-created_date", limit: 300 }
-        );
+        const [prefs, own] = await Promise.all([
+          base44.entities.PartyPreference.filter(
+            { event_id: current.id },
+            { sort: "-created_date", limit: 300 }
+          ),
+          base44.entities.PartyItem.filter(
+            { event_id: current.id },
+            { sort: "-created_date", limit: 200 }
+          ),
+        ]);
         guestList = prefs.items || [];
+        hostList = own.items || [];
       }
       if (!active) return;
       setEvent(current);
       setPreferences(guestList);
+      setPartyItems(hostList);
       setLoading(false);
     })();
     return () => { active = false; };
@@ -57,6 +68,7 @@ export default function Party() {
     });
     setEvent(created);
     setPreferences([]);
+    setPartyItems([]);
   };
 
   const removePreference = async (pref) => {
@@ -70,13 +82,36 @@ export default function Party() {
     }
   };
 
+  const addPartyItem = async (kind, title) => {
+    const created = await base44.entities.PartyItem.create({
+      family_id: familyId,
+      event_id: event.id,
+      kind,
+      title,
+    });
+    setPartyItems((list) => [created, ...list]);
+  };
+
+  const removePartyItem = async (item) => {
+    const previous = partyItems;
+    setPartyItems((list) => list.filter((p) => p.id !== item.id));
+    try {
+      await base44.entities.PartyItem.delete(item.id);
+    } catch (e) {
+      setPartyItems(previous);
+      toast({ title: "Could not remove that", variant: "destructive" });
+    }
+  };
+
   const clearList = async () => {
     if (!event) return;
     try {
       await base44.entities.PartyPreference.deleteMany({ event_id: event.id });
+      await base44.entities.PartyItem.deleteMany({ event_id: event.id });
       await base44.entities.PartyEvent.delete(event.id);
       setEvent(null);
       setPreferences([]);
+      setPartyItems([]);
       toast({ title: "Party list cleared", description: "The guest link no longer works." });
     } catch (e) {
       toast({ title: "Could not clear the list", variant: "destructive" });
@@ -113,6 +148,28 @@ export default function Party() {
           />
 
           <InviteAppUsersCard event={event} />
+
+          <PartyHostListCard
+            icon={UtensilsCrossed}
+            title="What we're bringing"
+            description="Recipes or dishes your household is making for the party."
+            items={partyItems.filter((item) => item.kind === "bringing")}
+            placeholder="Grandma's potato salad"
+            emptyText="Nothing added yet. Add what your household will bring."
+            onAdd={(title) => addPartyItem("bringing", title)}
+            onRemove={removePartyItem}
+          />
+
+          <PartyHostListCard
+            icon={ListChecks}
+            title="Needed for the party"
+            description="Recipes or items still needed so nothing gets forgotten."
+            items={partyItems.filter((item) => item.kind === "needed")}
+            placeholder="Ice, paper plates, apple pie"
+            emptyText="Nothing needed yet. Add the recipes or items you still need."
+            onAdd={(title) => addPartyItem("needed", title)}
+            onRemove={removePartyItem}
+          />
 
           <GuestPreferencesList preferences={preferences} onRemove={removePreference} />
 
