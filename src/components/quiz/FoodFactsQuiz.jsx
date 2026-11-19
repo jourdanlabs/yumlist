@@ -1,16 +1,38 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { base44 } from "@/api/base44Client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Lightbulb, Check, X, RotateCcw, ArrowRight } from "lucide-react";
+import { Lightbulb, Check, X, RotateCcw, ArrowRight, Trophy, ChevronDown } from "lucide-react";
 import { pickQuestions } from "@/lib/foodQuiz";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import QuizLeaderboard from "@/components/quiz/QuizLeaderboard";
 
 export default function FoodFactsQuiz() {
+  const { user } = useCurrentUser();
   const [questions, setQuestions] = useState(() => pickQuestions());
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState(null);
   const [score, setScore] = useState(0);
+  const [showBoard, setShowBoard] = useState(false);
+  const [boardVersion, setBoardVersion] = useState(0);
+  const savedRound = useRef(false);
 
   const finished = index >= questions.length;
+
+  useEffect(() => {
+    if (!finished || savedRound.current) return;
+    savedRound.current = true;
+    if (!user?.family_id) return;
+    base44.entities.QuizScore.create({
+      family_id: user.family_id,
+      user_id: user.id,
+      user_name: user.full_name || user.email || "Family member",
+      correct: score,
+      total: questions.length,
+    })
+      .then(() => setBoardVersion((v) => v + 1))
+      .catch(() => {});
+  }, [finished, user, score, questions.length]);
   const q = questions[index];
   const answered = selected !== null;
 
@@ -30,6 +52,7 @@ export default function FoodFactsQuiz() {
     setIndex(0);
     setSelected(null);
     setScore(0);
+    savedRound.current = false;
   };
 
   return (
@@ -114,6 +137,19 @@ export default function FoodFactsQuiz() {
             )}
           </>
         )}
+
+        <Button
+          variant="ghost"
+          className="w-full justify-between text-sm"
+          onClick={() => setShowBoard((v) => !v)}
+        >
+          <span className="flex items-center gap-2">
+            <Trophy className="w-4 h-4" /> Family leaderboard
+          </span>
+          <ChevronDown className={`w-4 h-4 transition-transform ${showBoard ? "rotate-180" : ""}`} />
+        </Button>
+
+        {showBoard && <QuizLeaderboard refreshKey={boardVersion} />}
       </CardContent>
     </Card>
   );
