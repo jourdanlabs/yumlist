@@ -1,25 +1,67 @@
 import React from "react";
+import { ShieldCheck } from "lucide-react";
+
+const toc = [
+  { id: "info-we-collect", title: "Information we collect" },
+  { id: "how-we-use", title: "How we use it" },
+  { id: "legal-bases", title: "Legal bases" },
+  { id: "sharing", title: "How we share it" },
+  { id: "data-retention", title: "Data retention" },
+  { id: "your-rights", title: "Your rights" },
+  { id: "children", title: "Children's privacy" },
+  { id: "security", title: "Security" },
+  { id: "international", title: "International transfers" },
+  { id: "contact", title: "Contact us" },
+  { id: "changes", title: "Changes to this policy" },
+];
+
+const Section = ({ id, title, children }) => (
+  <section id={id} className="scroll-mt-24 rounded-xl border border-border bg-card p-5 sm:p-6 shadow-sm">
+    <h2 className="font-heading text-lg sm:text-xl font-semibold text-foreground mb-3 pb-2 border-b border-border">
+      {title}
+    </h2>
+    <div className="space-y-3 text-sm sm:text-base text-muted-foreground leading-relaxed">{children}</div>
+  </section>
+);
 
 export default function PrivacyPolicy() {
   const lastUpdated = "September 30, 2026";
 
-  const Section = ({ id, title, children }) => (
-    <section id={id} className="scroll-mt-20">
-      <h2 className="text-xl font-semibold text-foreground mb-3">{title}</h2>
-      <div className="space-y-3 text-muted-foreground leading-relaxed">{children}</div>
-    </section>
-  );
-
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-muted/30">
       <div className="max-w-3xl mx-auto px-4 py-10 sm:px-6 sm:py-16">
-        <header className="mb-10 border-b border-border pb-6">
-          <h1 className="text-3xl sm:text-4xl font-bold text-foreground">Privacy Policy</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Last updated: {lastUpdated}</p>
+        <header className="mb-8 rounded-xl border border-border bg-card p-5 sm:p-8 shadow-sm">
+          <div className="flex items-center gap-3">
+            <span className="w-11 h-11 rounded-full bg-green-100 text-green-700 flex items-center justify-center shrink-0">
+              <ShieldCheck className="w-6 h-6" />
+            </span>
+            <div className="min-w-0">
+              <h1 className="font-heading text-2xl sm:text-4xl font-bold text-foreground leading-tight">
+                Privacy Policy
+              </h1>
+              <p className="mt-1 text-xs sm:text-sm text-muted-foreground">Last updated: {lastUpdated}</p>
+            </div>
+          </div>
         </header>
 
-        <div className="space-y-10">
-          <p className="text-muted-foreground leading-relaxed">
+        <nav className="mb-8 rounded-xl border border-border bg-card p-5 shadow-sm">
+          <h2 className="font-heading text-sm font-semibold uppercase tracking-wide text-foreground mb-3">
+            On this page
+          </h2>
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
+            {toc.map((item, i) => (
+              <li key={item.id}>
+                <a href={`#${item.id}`} className="text-muted-foreground hover:text-green-700 hover:underline">
+                  <span className="text-green-700 font-medium mr-1.5">{i + 1}.</span>
+                  {item.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        <div className="space-y-5">
+          <p className="text-sm sm:text-base text-muted-foreground leading-relaxed bg-card rounded-xl border border-border p-5">
             YumList ("we," "us," or "our") operates the YumList mobile application
             and web service (the "App"). This Privacy Policy describes how we collect, use,
             disclose, and safeguard your information when you use the App. By using the App, you
@@ -39,7 +81,7 @@ export default function PrivacyPolicy() {
 
           <Section id="how-we-use" title="2. How We Use Your Information">
             <p>We use the information we collect to:</p>
-            <ul className="list-disc pl-6 space-y-2">
+            <ul className="list-disc pl-5 space-y-2 marker:text-green-600">
               <li>Provide the pantry, shopping-list, recipe, and family-sharing features of the App.</li>
               <li>Recognize products from barcodes and pre-fill item details.</li>
               <li>Let family members collaborate on shared grocery and recipe data.</li>
@@ -51,7 +93,7 @@ export default function PrivacyPolicy() {
 
           <Section id="legal-bases" title="3. Legal Bases for Processing (GDPR)">
             <p>For users in the European Economic Area, the United Kingdom, and Switzerland, we process personal data on the following legal bases:</p>
-            <ul className="list-disc pl-6 space-y-2">
+            <ul className="list-disc pl-5 space-y-2 marker:text-green-600">
               <li><strong className="text-foreground">Performance of a contract:</strong> to operate the App features you requested.</li>
               <li><strong className="text-foreground">Consent:</strong> for optional analytics, notifications, and calendar integration you turn on.</li>
               <li><strong className="text-foreground">Legitimate interests:</strong> to secure the service and prevent misuse.</li>
@@ -73,7 +115,7 @@ export default function PrivacyPolicy() {
 
           <Section id="your-rights" title="6. Your Privacy Rights">
             <p>Depending on where you live, you may have the right to:</p>
-            <ul className="list-disc pl-6 space-y-2">
+            <ul className="list-disc pl-5 space-y-2 marker:text-green-600">
               <li>Access the personal data we hold about you.</li>
               <li>Correct inaccurate or incomplete data.</li>
               <li>Request deletion of your data or your account.</li>
@@ -82,7 +124,7 @@ export default function PrivacyPolicy() {
               <li>Request a portable copy of your data.</li>
             </ul>
             <p>You can delete your account directly in the App's settings. To exercise other rights, contact us using the details in Section 10. We will respond within the timeframe required by applicable law.</p>
-            <p className="text-sm">California residents: We do not sell personal information as defined under the CCPA/CPRA, and you have the right to know, delete, and correct your personal information.</p>
+            <p className="text-sm rounded-lg bg-muted/60 p-3">California residents: We do not sell personal information as defined under the CCPA/CPRA, and you have the right to know, delete, and correct your personal information.</p>
           </Section>
 
           <Section id="children" title="7. Children's Privacy">
@@ -106,7 +148,7 @@ export default function PrivacyPolicy() {
           </Section>
         </div>
 
-        <footer className="mt-12 border-t border-border pt-6 text-sm text-muted-foreground">
+        <footer className="mt-10 border-t border-border pt-6 text-sm text-muted-foreground text-center">
           <p>YumList — Less Guessing. More Yum!</p>
         </footer>
       </div>
