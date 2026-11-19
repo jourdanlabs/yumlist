@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { MapPin, Loader2, Store, Trophy, DollarSign, ShoppingCart } from "lucide-react";
+import { MapPin, Loader2, Store, RefreshCw, Trophy, TrendingDown } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { Card, CardContent } from "@/components/ui/card";
+import StorePriceCard from "@/components/prices/StorePriceCard";
 
 export default function BestPricesDialog({ open, onOpenChange, items }) {
-  const { toast } = useToast();
+  const toast = useToast().toast;
   const [loading, setLoading] = useState(false);
   const [locating, setLocating] = useState(false);
   const [results, setResults] = useState(null);
@@ -86,117 +86,121 @@ export default function BestPricesDialog({ open, onOpenChange, items }) {
     onOpenChange(open);
   };
 
+  const stores = results?.stores || [];
+  const ranked = [...stores].sort((a, b) => {
+    const av = a.total == null ? Infinity : a.total;
+    const bv = b.total == null ? Infinity : b.total;
+    return av - bv;
+  });
+  const totals = ranked.map((s) => s.total).filter((t) => typeof t === "number");
+  const savings = totals.length > 1 ? Math.max(...totals) - Math.min(...totals) : 0;
+  const bestStore = ranked.find((s) => s.total != null);
+  const previewNames = items.map((i) => i.name).filter(Boolean);
+
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <MapPin className="w-5 h-5 text-primary" /> Best Local Prices
+      <DialogContent className="flex flex-col gap-3 max-h-[92vh] p-4 sm:p-6 w-full max-w-full inset-x-0 bottom-0 top-auto translate-x-0 translate-y-0 rounded-b-none rounded-t-2xl overflow-hidden sm:inset-auto sm:left-[50%] sm:top-[50%] sm:bottom-auto sm:max-w-2xl sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-lg">
+        <div className="mx-auto h-1.5 w-12 shrink-0 rounded-full bg-muted sm:hidden" />
+
+        <DialogHeader className="pr-8 text-left space-y-1">
+          <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" /> Best Local Prices
           </DialogTitle>
-          <DialogDescription>
-            Compare prices for your {items.length} shopping list item{items.length > 1 ? "s" : ""} at nearby stores.
+          <DialogDescription className="text-xs sm:text-sm">
+            Comparing {items.length} item{items.length > 1 ? "s" : ""} at grocery stores near you.
           </DialogDescription>
         </DialogHeader>
 
-        {!results && !loading && !locating && (
-          <div className="space-y-4">
-            {error && (
-              <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
-                {error}
+        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain space-y-3 -mr-1 pr-1">
+          {!results && !loading && !locating && (
+            <div className="space-y-4 py-2">
+              {error && (
+                <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+                  {error}
+                </div>
+              )}
+
+              <div className="rounded-xl border border-border bg-muted/40 p-4 text-center space-y-3">
+                <Store className="w-9 h-9 mx-auto text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">
+                  We use your current location once to estimate prices at nearby stores.
+                </p>
+                {previewNames.length > 0 && (
+                  <div className="flex flex-wrap justify-center gap-1.5">
+                    {previewNames.slice(0, 5).map((name, i) => (
+                      <span key={i} className="rounded-full bg-background border border-border px-2 py-0.5 text-xs text-foreground">
+                        {name}
+                      </span>
+                    ))}
+                    {previewNames.length > 5 && (
+                      <span className="rounded-full bg-background border border-border px-2 py-0.5 text-xs text-muted-foreground">
+                        +{previewNames.length - 5} more
+                      </span>
+                    )}
+                  </div>
+                )}
+                <Button onClick={handleSearch} className="w-full sm:w-auto">
+                  <MapPin className="w-4 h-4 mr-2" /> Share location & find prices
+                </Button>
               </div>
-            )}
-            <div className="text-center py-6 space-y-3">
-              <Store className="w-10 h-10 mx-auto text-muted-foreground" />
+            </div>
+          )}
+
+          {(locating || loading) && (
+            <div className="flex flex-col items-center justify-center py-16 gap-3">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
               <p className="text-sm text-muted-foreground">
-                We'll use your current location to find the best prices at grocery stores near you.
+                {locating ? "Getting your location…" : "Searching local store prices…"}
               </p>
-              <Button onClick={handleSearch}>
-                <MapPin className="w-4 h-4 mr-2" /> Share location & find prices
+            </div>
+          )}
+
+          {results && (
+            <div className="space-y-3">
+              {bestStore && (
+                <div className="rounded-xl border border-green-400 bg-green-50 dark:bg-green-950/30 dark:border-green-800 p-3 sm:p-4 flex items-start gap-3">
+                  <Trophy className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
+                  <div className="min-w-0">
+                    <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Cheapest overall</div>
+                    <div className="font-semibold text-base text-foreground break-words">{bestStore.name}</div>
+                    <div className="text-sm text-muted-foreground">
+                      Estimated total{" "}
+                      <span className="font-bold text-green-700 dark:text-green-400">
+                        ${bestStore.total.toFixed(2)}
+                      </span>
+                    </div>
+                    {savings > 0 && (
+                      <div className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-green-700 dark:text-green-400">
+                        <TrendingDown className="w-3.5 h-3.5" /> Save up to ${savings.toFixed(2)} vs. other stores
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {results.notes && (
+                <p className="text-xs text-muted-foreground italic px-1">{results.notes}</p>
+              )}
+
+              <div className="space-y-2.5">
+                {ranked.map((store, idx) => (
+                  <StorePriceCard
+                    key={idx}
+                    store={store}
+                    rank={idx}
+                    isBest={idx === 0 && store.total != null}
+                    busy={shopBusy === store.name}
+                    onShop={handleShop}
+                  />
+                ))}
+              </div>
+
+              <Button variant="outline" className="w-full" onClick={handleSearch}>
+                <RefreshCw className="w-4 h-4 mr-2" /> Refresh prices
               </Button>
             </div>
-          </div>
-        )}
-
-        {(locating || loading) && (
-          <div className="flex flex-col items-center justify-center py-12 gap-3">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            <p className="text-sm text-muted-foreground">
-              {locating ? "Getting your location…" : "Searching local store prices…"}
-            </p>
-          </div>
-        )}
-
-        {results && (
-          <div className="space-y-4">
-            {results.best_store && (
-              <Card className="border-primary/30 bg-primary/5">
-                <CardContent className="py-4 flex items-center gap-3">
-                  <Trophy className="w-6 h-6 text-primary shrink-0" />
-                  <div>
-                    <div className="text-sm text-muted-foreground">Best overall price</div>
-                    <div className="font-semibold text-lg">{results.best_store}</div>
-                    <div className="text-sm text-muted-foreground">
-                      Estimated total: <span className="font-bold text-primary">${results.best_total?.toFixed(2)}</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {results.notes && (
-              <p className="text-xs text-muted-foreground italic">{results.notes}</p>
-            )}
-
-            <div className="space-y-3">
-              {(results.stores || []).map((store, idx) => (
-                <Card key={idx}>
-                  <CardContent className="py-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="font-semibold">{store.name}</div>
-                        {store.distance_miles != null && (
-                          <div className="text-xs text-muted-foreground">{store.distance_miles.toFixed(1)} miles away</div>
-                        )}
-                      </div>
-                      <div className="text-right">
-                        <div className="text-xs text-muted-foreground">Estimated total</div>
-                        <div className="font-bold text-lg">${store.total?.toFixed(2)}</div>
-                      </div>
-                    </div>
-                    <div className="border-t border-border pt-2 space-y-1">
-                      {(store.items || []).map((item, i) => (
-                        <div key={i} className="flex items-center justify-between text-sm">
-                          <span className="text-muted-foreground truncate pr-2">{item.name}</span>
-                          <span className={item.price == null ? "text-muted-foreground/50" : "font-medium"}>
-                            {item.price == null ? "N/A" : `$${item.price.toFixed(2)}`}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => handleShop(store)}
-                      disabled={shopBusy === store.name}
-                    >
-                      {shopBusy === store.name ? (
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      ) : (
-                        <ShoppingCart className="w-4 h-4 mr-2" />
-                      )}
-                      Shop at {store.name}
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-            <Button variant="outline" className="w-full" onClick={handleSearch}>
-              <DollarSign className="w-4 h-4 mr-2" /> Refresh prices
-            </Button>
-          </div>
-        )}
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );
