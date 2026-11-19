@@ -22,6 +22,14 @@
       "type": "string",
       "title": "Recipe or dish they are bringing"
     },
+    "dislikes": {
+      "type": "string",
+      "title": "Foods they dislike"
+    },
+    "allergies": {
+      "type": "string",
+      "title": "Allergies or sensitivities"
+    },
     "note": {
       "type": "string",
       "title": "Note"

@@ -22,7 +22,14 @@ export default function PartyInvite() {
   const { token } = useParams();
   const [status, setStatus] = useState("loading");
   const [invite, setInvite] = useState(null);
-  const [form, setForm] = useState({ guest_name: "", item_name: "", bringing: "", note: "" });
+  const [form, setForm] = useState({
+    guest_name: "",
+    item_name: "",
+    bringing: "",
+    dislikes: "",
+    allergies: "",
+    note: "",
+  });
   const [mine, setMine] = useState([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -51,8 +58,16 @@ export default function PartyInvite() {
 
   const submit = async (e) => {
     e.preventDefault();
-    if (!form.guest_name.trim() || (!form.item_name.trim() && !form.bringing.trim())) {
-      setError("Add your name and either something you would like or a recipe you're bringing.");
+    if (
+      !form.guest_name.trim() ||
+      (!form.item_name.trim() &&
+        !form.bringing.trim() &&
+        !form.dislikes.trim() &&
+        !form.allergies.trim())
+    ) {
+      setError(
+        "Add your name and at least one thing: something you would like, a dish you're bringing, or a food you avoid."
+      );
       return;
     }
     setError("");
@@ -61,7 +76,7 @@ export default function PartyInvite() {
       const res = await base44.functions.invoke("submitPartyPreference", { token, ...form });
       const saved = res.data && res.data.preference;
       if (saved) persistMine([...mine, saved]);
-      setForm((f) => ({ ...f, item_name: "", bringing: "", note: "" }));
+      setForm((f) => ({ ...f, item_name: "", bringing: "", dislikes: "", allergies: "", note: "" }));
     } catch (err) {
       setError("Could not add that just now. Please try again.");
     } finally {
@@ -185,6 +200,26 @@ export default function PartyInvite() {
                   onChange={(e) => setForm((f) => ({ ...f, bringing: e.target.value }))}
                   placeholder="Grandma's potato salad"
                   maxLength={120}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="guest-dislikes">Foods you don't like (optional)</Label>
+                <Input
+                  id="guest-dislikes"
+                  value={form.dislikes}
+                  onChange={(e) => setForm((f) => ({ ...f, dislikes: e.target.value }))}
+                  placeholder="Mushrooms, blue cheese"
+                  maxLength={200}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="guest-allergies">Allergies or sensitivities (optional)</Label>
+                <Input
+                  id="guest-allergies"
+                  value={form.allergies}
+                  onChange={(e) => setForm((f) => ({ ...f, allergies: e.target.value }))}
+                  placeholder="Peanuts, shellfish"
+                  maxLength={200}
                 />
               </div>
               <div className="space-y-2">

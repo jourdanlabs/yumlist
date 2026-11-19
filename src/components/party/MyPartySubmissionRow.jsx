@@ -11,6 +11,8 @@ export default function MyPartySubmissionRow({ item, onSave, onRemove }) {
   const [draft, setDraft] = useState({
     item_name: item.item_name || "",
     bringing: item.bringing || "",
+    dislikes: item.dislikes || "",
+    allergies: item.allergies || "",
     note: item.note || "",
   });
 
@@ -18,6 +20,8 @@ export default function MyPartySubmissionRow({ item, onSave, onRemove }) {
     setDraft({
       item_name: item.item_name || "",
       bringing: item.bringing || "",
+      dislikes: item.dislikes || "",
+      allergies: item.allergies || "",
       note: item.note || "",
     });
     setEditing(true);
@@ -25,7 +29,13 @@ export default function MyPartySubmissionRow({ item, onSave, onRemove }) {
 
   const save = async (e) => {
     e.preventDefault();
-    if (!draft.item_name.trim() && !draft.bringing.trim()) return;
+    if (
+      !draft.item_name.trim() &&
+      !draft.bringing.trim() &&
+      !draft.dislikes.trim() &&
+      !draft.allergies.trim()
+    )
+      return;
     setSaving(true);
     try {
       await onSave(draft);
@@ -63,6 +73,28 @@ export default function MyPartySubmissionRow({ item, onSave, onRemove }) {
           />
         </div>
         <div className="space-y-1.5">
+          <Label htmlFor={`dislikes-${item.id}`} className="text-xs">
+            Foods you don't like
+          </Label>
+          <Input
+            id={`dislikes-${item.id}`}
+            value={draft.dislikes}
+            onChange={(e) => setDraft((d) => ({ ...d, dislikes: e.target.value }))}
+            maxLength={200}
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor={`allergies-${item.id}`} className="text-xs">
+            Allergies or sensitivities
+          </Label>
+          <Input
+            id={`allergies-${item.id}`}
+            value={draft.allergies}
+            onChange={(e) => setDraft((d) => ({ ...d, allergies: e.target.value }))}
+            maxLength={200}
+          />
+        </div>
+        <div className="space-y-1.5">
           <Label htmlFor={`note-${item.id}`} className="text-xs">
             Note
           </Label>
@@ -91,6 +123,12 @@ export default function MyPartySubmissionRow({ item, onSave, onRemove }) {
         {item.item_name && <p className="text-sm break-words">{capitalize(item.item_name)}</p>}
         {item.bringing && (
           <p className="text-sm break-words text-muted-foreground">Bringing {capitalize(item.bringing)}</p>
+        )}
+        {item.dislikes && (
+          <p className="text-xs text-muted-foreground break-words">Avoids {item.dislikes}</p>
+        )}
+        {item.allergies && (
+          <p className="text-xs text-muted-foreground break-words">Allergies: {item.allergies}</p>
         )}
         {item.note && <p className="text-xs text-muted-foreground break-words">{item.note}</p>}
       </div>

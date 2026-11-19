@@ -14,12 +14,14 @@ import CreatePartyForm from "@/components/party/CreatePartyForm";
 import PartyInviteCard from "@/components/party/PartyInviteCard";
 import InviteAppUsersCard from "@/components/party/InviteAppUsersCard";
 import GuestPreferencesList from "@/components/party/GuestPreferencesList";
+import useGuestFoodInfo from "@/hooks/useGuestFoodInfo";
 import BroughtRecipesList from "@/components/party/BroughtRecipesList";
 import PartyHostListCard from "@/components/party/PartyHostListCard";
 
 export default function Party() {
   const { user } = useCurrentUser();
   const familyId = user?.family_id;
+  const guestFood = useGuestFoodInfo(familyId);
   const [event, setEvent] = useState(null);
   const [preferences, setPreferences] = useState([]);
   const [partyItems, setPartyItems] = useState([]);
@@ -171,7 +173,11 @@ export default function Party() {
             onRemove={removePartyItem}
           />
 
-          <GuestPreferencesList preferences={preferences} onRemove={removePreference} />
+          <GuestPreferencesList
+            preferences={preferences}
+            onRemove={removePreference}
+            foodInfo={guestFood}
+          />
 
           <BroughtRecipesList preferences={preferences} />
 
