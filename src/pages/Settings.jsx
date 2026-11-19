@@ -9,6 +9,7 @@ import { User as UserIcon, Lock, Phone, Loader2, Check, Trash2, AlertTriangle, C
 import { Link } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
 import { openConsentBanner } from "@/lib/cookieConsent";
+import AgeRangeCard from "@/components/settings/AgeRangeCard";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -161,6 +162,8 @@ export default function Settings() {
           </form>
         </CardContent>
       </Card>
+
+      <AgeRangeCard />
 
       {/* Change password */}
       <Card>

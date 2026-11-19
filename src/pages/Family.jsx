@@ -11,6 +11,7 @@ import { useCurrentUser } from "@/hooks/useCurrentUser";
 import FamilySharing from "@/components/FamilySharing";
 import AddMemberCard from "@/components/AddMemberCard";
 import MemberRolesCard from "@/components/family/MemberRolesCard";
+import MemberAgeRangesCard from "@/components/family/MemberAgeRangesCard";
 
 function makeCode() {
   return Math.random().toString(36).slice(2, 8).toUpperCase();
@@ -111,6 +112,12 @@ export default function Family() {
           </CardContent>
         </Card>
         <MemberRolesCard members={members} currentUser={user} onUpdated={refresh} />
+        <MemberAgeRangesCard
+          members={members}
+          currentUser={user}
+          canManage={user?.role === "admin" || family?.created_by_id === user?.id}
+          onUpdated={refresh}
+        />
         <AddMemberCard onAdded={() => {
           base44.entities.User.filter({ family_id: user.family_id }).then(setMembers).catch(() => {});
         }} />

@@ -89,6 +89,43 @@
       "type": "string",
       "title": "Last active",
       "format": "date-time"
+    },
+    "age_range": {
+      "type": "string",
+      "title": "Age range",
+      "description": "The age range the person declared for themselves.",
+      "enum": [
+        "under_13",
+        "13_15",
+        "16_17",
+        "18_plus"
+      ],
+      "enumColors": [
+        "red",
+        "yellow",
+        "orange",
+        "green"
+      ]
+    },
+    "parent_age_range": {
+      "type": "string",
+      "title": "Parent-set age range",
+      "description": "Set by the family owner. Wins over the self-declared range.",
+      "enum": [
+        "under_13",
+        "13_15",
+        "16_17",
+        "18_plus"
+      ],
+      "enumColors": [
+        "red",
+        "yellow",
+        "orange",
+        "green"
+      ],
+      "rls": {
+        "write": false
+      }
     }
   },
   "required": [
