@@ -87,8 +87,16 @@ export const FOOD_QUESTIONS = [
   },
 ];
 
+function shuffle(list) {
+  return [...list].sort(() => Math.random() - 0.5);
+}
+
 export function pickQuestions() {
-  return [...FOOD_QUESTIONS]
-    .sort(() => Math.random() - 0.5)
-    .slice(0, QUIZ_LENGTH);
+  return shuffle(FOOD_QUESTIONS)
+    .slice(0, QUIZ_LENGTH)
+    .map((q) => {
+      const correct = q.options[q.answer];
+      const options = shuffle(q.options);
+      return { ...q, options, answer: options.indexOf(correct) };
+    });
 }
