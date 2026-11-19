@@ -62,12 +62,12 @@ export default function Home() {
   }, [user?.family_id]);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-5 md:space-y-8">
       <div className="text-center">
-        <h1 className="font-heading text-3xl font-semibold tracking-tight text-green-600">
+        <h1 className="font-heading text-2xl md:text-3xl font-semibold tracking-tight text-green-600">
           Our List
         </h1>
-        <p className="text-orange-700 mt-1 font-bold uppercase tracking-wide">Less Guessing. More Yum!</p>
+        <p className="text-orange-700 mt-1 text-sm md:text-base font-bold uppercase tracking-wide">Less Guessing. More Yum!</p>
         {user?.family_role && (
           <div className="mt-3 flex justify-center">
             <RoleBadge value={user.family_role} className="text-sm px-3 py-1" />
@@ -75,7 +75,7 @@ export default function Home() {
         )}
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
         <StatCard icon={Carrot} label="Grocery items" value={loading ? "—" : items.length} to="/items" />
         <StatCard icon={ChefHat} label="Recipes" value={loading ? "—" : recipes.length} to="/recipes" />
         <StatCard icon={ThumbsUp} label="Share your likes" value="" to="/share" wide />
@@ -84,15 +84,15 @@ export default function Home() {
       <WeekMealCalendar familyId={user?.family_id} />
 
       <Card className="hover:shadow-md transition-shadow">
-        <CardContent className="py-4 flex flex-wrap items-center gap-3">
+        <CardContent className="p-4 md:px-6 md:py-4 flex flex-wrap items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
             <PartyPopper className="w-5 h-5" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="font-medium">Plan a Party</div>
-            <div className="text-sm text-muted-foreground">Ask guests by email what they would like, then clear it after the party.</div>
+            <div className="text-xs md:text-sm text-muted-foreground">Ask guests by email what they would like, then clear it after the party.</div>
           </div>
-          <Button asChild className="shrink-0">
+          <Button asChild className="w-full sm:w-auto shrink-0">
             <Link to="/party">
               Open party planning <ArrowRight className="w-4 h-4 ml-1" />
             </Link>
@@ -101,9 +101,9 @@ export default function Home() {
       </Card>
 
       {!loading && expiring.length > 0 && (
-        <section className="rounded-2xl border border-amber-500/30 bg-amber-50 dark:bg-amber-950/30 p-5">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="font-heading text-lg font-semibold flex items-center gap-2 text-amber-700 dark:text-amber-400">
+        <section className="rounded-2xl border border-amber-500/30 bg-amber-50 dark:bg-amber-950/30 p-4 md:p-5">
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <h2 className="font-heading text-base md:text-lg font-semibold flex items-center gap-2 text-amber-700 dark:text-amber-400">
               <AlertTriangle className="w-5 h-5" /> Use them soon · {expiring.length}
             </h2>
             <Link to="/items" className="text-sm text-amber-700/80 dark:text-amber-400/80 hover:text-amber-700 dark:hover:text-amber-400 flex items-center gap-1">
@@ -128,7 +128,7 @@ export default function Home() {
       <div className="grid md:grid-cols-2 gap-6">
         <section>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="font-heading text-lg font-semibold">Recent items</h2>
+            <h2 className="font-heading text-base md:text-lg font-semibold">Recent items</h2>
             <Link to="/items" className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1">
               All <ArrowRight className="w-3.5 h-3.5" />
             </Link>
@@ -148,7 +148,7 @@ export default function Home() {
                       onDismiss={dismissRecall}
                     />
                   </div>
-                  <span className="text-xs text-muted-foreground truncate ml-2">{it.brand}</span>
+                  <span className="text-xs text-muted-foreground truncate ml-2 max-w-[40%] shrink-0">{it.brand}</span>
                 </CardContent></Card>
               ))
             )}
@@ -157,7 +157,7 @@ export default function Home() {
 
         <section>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="font-heading text-lg font-semibold">Recent recipes</h2>
+            <h2 className="font-heading text-base md:text-lg font-semibold">Recent recipes</h2>
             <Link to="/recipes" className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1">
               All <ArrowRight className="w-3.5 h-3.5" />
             </Link>
@@ -186,13 +186,13 @@ function StatCard({ icon: Icon, label, value, to, wide }) {
   return (
     <Link to={to} className={`${wide ? "col-span-2 md:col-span-1" : ""}`}>
       <Card className="h-full hover:shadow-md transition-shadow">
-        <CardContent className="py-5 flex items-center gap-4">
-          <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-            <Icon className="w-5 h-5" />
+        <CardContent className="p-3 md:px-6 md:py-5 flex items-center gap-3 md:gap-4">
+          <div className="w-9 h-9 md:w-11 md:h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+            <Icon className="w-4 h-4 md:w-5 md:h-5" />
           </div>
-          <div>
-            <div className="text-2xl font-heading font-semibold leading-none">{value}</div>
-            <div className="text-sm text-muted-foreground mt-1">{label}</div>
+          <div className="min-w-0">
+            <div className="text-xl md:text-2xl font-heading font-semibold leading-none">{value}</div>
+            <div className="text-xs md:text-sm text-muted-foreground mt-1">{label}</div>
           </div>
         </CardContent>
       </Card>

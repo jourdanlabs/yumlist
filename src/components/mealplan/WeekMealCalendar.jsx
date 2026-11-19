@@ -116,18 +116,19 @@ export default function WeekMealCalendar({ familyId }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3">
+      <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-7">
         {days.map((day) => {
           const iso = format(day, "yyyy-MM-dd");
           return (
-            <MealDayCard
-              key={iso}
-              day={day}
-              isToday={isSameDay(day, today)}
-              meals={meals.filter((m) => m.planned_date === iso)}
-              onAdd={setPickerDate}
-              onRemove={removeMeal}
-            />
+            <div key={iso} className="min-w-[76%] snap-start sm:min-w-0">
+              <MealDayCard
+                day={day}
+                isToday={isSameDay(day, today)}
+                meals={meals.filter((m) => m.planned_date === iso)}
+                onAdd={setPickerDate}
+                onRemove={removeMeal}
+              />
+            </div>
           );
         })}
       </div>
