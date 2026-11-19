@@ -10,6 +10,7 @@ import { capitalize } from "@/lib/utils";
 import ConsumptionChart from "@/components/ConsumptionChart";
 import WeekMealCalendar from "@/components/mealplan/WeekMealCalendar";
 import RecallBadge from "@/components/RecallBadge";
+import FoodFactsQuiz from "@/components/quiz/FoodFactsQuiz";
 import RoleBadge from "@/components/family/RoleBadge";
 import { useRecalls } from "@/hooks/useRecalls";
 
@@ -99,6 +100,8 @@ export default function Home() {
           </Button>
         </CardContent>
       </Card>
+
+      <FoodFactsQuiz />
 
       {!loading && expiring.length > 0 && (
         <section className="rounded-2xl border border-amber-500/30 bg-amber-50 dark:bg-amber-950/30 p-4 md:p-5">
