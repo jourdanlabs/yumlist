@@ -25,6 +25,10 @@
     "note": {
       "type": "string",
       "title": "Note"
+    },
+    "manage_token": {
+      "type": "string",
+      "title": "Guest edit token"
     }
   },
   "required": [

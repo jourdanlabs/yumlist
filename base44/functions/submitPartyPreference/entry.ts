@@ -39,16 +39,31 @@ export default async function (req) {
       return Response.json({ error: 'This list is full' }, { status: 429 });
     }
 
-    await base44.asServiceRole.entities.PartyPreference.create({
+    const manageToken = crypto.randomUUID().replace(/-/g, '');
+
+    const created = await base44.asServiceRole.entities.PartyPreference.create({
       family_id: event.family_id,
       event_id: event.id,
       guest_name: guestName,
       item_name: itemName,
       bringing,
       note,
+      manage_token: manageToken,
     });
 
-    return Response.json({ ok: true });
+    // The manage token is handed back only to the guest who added the row, so
+    // they can change or remove it later without an account.
+    return Response.json({
+      ok: true,
+      preference: {
+        id: created.id,
+        manage_token: manageToken,
+        guest_name: guestName,
+        item_name: itemName,
+        bringing,
+        note,
+      },
+    });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

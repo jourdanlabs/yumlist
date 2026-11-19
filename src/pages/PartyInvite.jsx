@@ -6,7 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
-import { Check, PartyPopper } from "lucide-react";
+import { PartyPopper } from "lucide-react";
+import { toast } from "@/components/ui/use-toast";
+import MyPartySubmissions from "@/components/party/MyPartySubmissions";
+import { loadGuestSubmissions, saveGuestSubmissions } from "@/lib/partyGuestSubmissions";
 
 function dateLabel(value) {
   if (!value) return "";
@@ -20,9 +23,13 @@ export default function PartyInvite() {
   const [status, setStatus] = useState("loading");
   const [invite, setInvite] = useState(null);
   const [form, setForm] = useState({ guest_name: "", item_name: "", bringing: "", note: "" });
-  const [added, setAdded] = useState([]);
+  const [mine, setMine] = useState([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    setMine(loadGuestSubmissions(token));
+  }, [token]);
 
   useEffect(() => {
     if (!token) { setStatus("invalid"); return; }
@@ -51,16 +58,58 @@ export default function PartyInvite() {
     setError("");
     setSaving(true);
     try {
-      await base44.functions.invoke("submitPartyPreference", { token, ...form });
-      const labels = [];
-      if (form.item_name.trim()) labels.push(form.item_name.trim());
-      if (form.bringing.trim()) labels.push(`Bringing ${form.bringing.trim()}`);
-      setAdded((list) => [...list, ...labels]);
+      const res = await base44.functions.invoke("submitPartyPreference", { token, ...form });
+      const saved = res.data && res.data.preference;
+      if (saved) persistMine([...mine, saved]);
       setForm((f) => ({ ...f, item_name: "", bringing: "", note: "" }));
     } catch (err) {
       setError("Could not add that just now. Please try again.");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const persistMine = (list) => {
+    setMine(list);
+    saveGuestSubmissions(token, list);
+  };
+
+  const saveMine = async (item, draft) => {
+    try {
+      const res = await base44.functions.invoke("managePartyPreference", {
+        token,
+        manage_token: item.manage_token,
+        action: "update",
+        ...draft,
+      });
+      const updated = { ...item, ...((res.data && res.data.preference) || draft) };
+      persistMine(mine.map((entry) => (entry.id === item.id ? updated : entry)));
+    } catch (err) {
+      toast({
+        title: "Could not save that change",
+        description: (err.response && err.response.data && err.response.data.error) || "Please try again.",
+        variant: "destructive",
+      });
+      throw err;
+    }
+  };
+
+  const removeMine = async (item) => {
+    const previous = mine;
+    persistMine(mine.filter((entry) => entry.id !== item.id));
+    try {
+      await base44.functions.invoke("managePartyPreference", {
+        token,
+        manage_token: item.manage_token,
+        action: "delete",
+      });
+    } catch (err) {
+      persistMine(previous);
+      toast({
+        title: "Could not remove that",
+        description: (err.response && err.response.data && err.response.data.error) || "Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -157,20 +206,7 @@ export default function PartyInvite() {
           </CardContent>
         </Card>
 
-        {added.length > 0 && (
-          <Card>
-            <CardContent className="pt-5">
-              <p className="text-sm font-medium mb-2">You added</p>
-              <ul className="space-y-1">
-                {added.map((item, i) => (
-                  <li key={`${item}-${i}`} className="text-sm text-muted-foreground flex items-center gap-2">
-                    <Check className="w-4 h-4 text-primary shrink-0" /> {item}
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        )}
+        <MyPartySubmissions items={mine} onSave={saveMine} onRemove={removeMine} />
 
         <p className="text-center text-xs text-muted-foreground pb-4">Powered by YumList</p>
       </div>
