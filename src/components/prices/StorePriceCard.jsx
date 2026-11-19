@@ -5,6 +5,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ChevronDown, Loader2, ShoppingCart, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+// Store names from the price search can include a street address after a comma or dash.
+function storeLabel(name = "") {
+  const short = String(name).split(/,| - | – /)[0].trim();
+  return short || name;
+}
+
 export default function StorePriceCard({ store, rank, isBest, busy, onShop }) {
   const [expanded, setExpanded] = useState(false);
   const items = store.items || [];
@@ -86,7 +92,7 @@ export default function StorePriceCard({ store, rank, isBest, busy, onShop }) {
           ) : (
             <ShoppingCart className="w-4 h-4 mr-2" />
           )}
-          Shop at {store.name}
+          Shop at {storeLabel(store.name)}
         </Button>
       </CardContent>
     </Card>
