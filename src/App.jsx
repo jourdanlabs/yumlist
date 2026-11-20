@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import AgeGate from '@/components/AgeGate';
 import CookieConsentBanner from '@/components/CookieConsentBanner';
 import Layout from '@/components/Layout';
 import { lazy, Suspense } from 'react';
@@ -63,6 +64,7 @@ const AuthenticatedApp = () => {
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="/party-invite/:token" element={<PartyInvite />} />
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
+        <Route element={<AgeGate />}>
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
           <Route path="/items" element={<Items />} />
@@ -75,6 +77,7 @@ const AuthenticatedApp = () => {
           <Route path="/settings" element={<Settings />} />
           <Route path="/party" element={<Party />} />
           <Route path="/diets" element={<Diets />} />
+        </Route>
         </Route>
       </Route>
       <Route path="*" element={<PageNotFound />} />

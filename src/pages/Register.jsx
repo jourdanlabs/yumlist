@@ -11,6 +11,7 @@ import GoogleIcon from "@/components/GoogleIcon";
 import { toast } from "@/components/ui/use-toast";
 import { safeReturnTo } from "@/lib/authReturnTo";
 import RolePicker from "@/components/family/RolePicker";
+import AgeRangePicker from "@/components/AgeRangePicker";
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -21,12 +22,17 @@ export default function Register() {
   const [showOtp, setShowOtp] = useState(false);
   const [otpCode, setOtpCode] = useState("");
   const [familyRole, setFamilyRole] = useState("");
+  const [ageRange, setAgeRange] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     if (password !== confirmPassword) {
       setError("Passwords do not match");
+      return;
+    }
+    if (!ageRange) {
+      setError("Choose your age range to create your account");
       return;
     }
     setLoading(true);
@@ -47,12 +53,12 @@ export default function Register() {
       const result = await base44.auth.verifyOtp({ email, otpCode });
       if (result?.access_token) {
         base44.auth.setToken(result.access_token);
-        if (familyRole) {
-          try {
-            await base44.auth.updateMe({ family_role: familyRole });
-          } catch (err) {
-            // Role can still be picked later from the Family tab
-          }
+        const updates = { age_range: ageRange };
+        if (familyRole) updates.family_role = familyRole;
+        try {
+          await base44.auth.updateMe(updates);
+        } catch (err) {
+          // The app asks for the age range again before it lets anyone in
         }
       }
       window.location.href = safeReturnTo();
@@ -224,6 +230,12 @@ export default function Register() {
               required
             />
           </div>
+        </div>
+        <div className="space-y-2">
+          <Label>
+            Your age range <span className="text-destructive">*</span>
+          </Label>
+          <AgeRangePicker value={ageRange} onChange={setAgeRange} disabled={loading} />
         </div>
         <div className="space-y-2">
           <Label>Pick your family role</Label>
