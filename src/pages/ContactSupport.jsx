@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { LifeBuoy, Mail, MapPin, ShieldCheck } from "lucide-react";
+import { LifeBuoy, Mail, ShieldCheck } from "lucide-react";
 import ContactSupportForm from "@/components/support/ContactSupportForm";
 
 export default function ContactSupport() {
@@ -39,10 +39,6 @@ export default function ContactSupport() {
                     info@ratemyrep.co
                   </a>
                 </span>
-              </li>
-              <li className="flex items-start gap-3">
-                <MapPin className="w-4 h-4 mt-0.5 text-green-700 shrink-0" />
-                <span>Rate My Rep LLC, 2506 Ralph St, Houston, TX 77006</span>
               </li>
               <li className="flex items-start gap-3">
                 <ShieldCheck className="w-4 h-4 mt-0.5 text-green-700 shrink-0" />
