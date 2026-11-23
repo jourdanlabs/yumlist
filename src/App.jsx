@@ -27,9 +27,16 @@ const SharedFamily = lazy(() => import('@/pages/SharedFamily'));
 const Settings = lazy(() => import('@/pages/Settings'));
 const PrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'));
 const ContactSupport = lazy(() => import('@/pages/ContactSupport'));
+const Welcome = lazy(() => import('@/pages/Welcome'));
 const Party = lazy(() => import('@/pages/Party'));
 const PartyInvite = lazy(() => import('@/pages/PartyInvite'));
 const Diets = lazy(() => import('@/pages/Diets'));
+
+// Public marketing homepage for visitors; members go straight to their dashboard.
+const HomeEntry = () => {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? <Navigate to="/dashboard" replace /> : <Welcome />;
+};
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -65,10 +72,11 @@ const AuthenticatedApp = () => {
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="/contact" element={<ContactSupport />} />
       <Route path="/party-invite/:token" element={<PartyInvite />} />
+      <Route path="/" element={<HomeEntry />} />
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
         <Route element={<AgeGate />}>
         <Route element={<Layout />}>
-          <Route path="/" element={<Home />} />
+          <Route path="/dashboard" element={<Home />} />
           <Route path="/items" element={<Items />} />
           <Route path="/shopping-list" element={<ShoppingList />} />
           <Route path="/recipes" element={<Recipes />} />

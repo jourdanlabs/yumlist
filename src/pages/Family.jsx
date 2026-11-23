@@ -42,7 +42,7 @@ export default function Family() {
       await base44.functions.invoke('createFamily', { name: name.trim() });
       await refresh();
       toast({ title: "Family created" });
-      navigate("/");
+      navigate("/dashboard");
     } catch (e) {
       toast({ title: "Could not create family", description: e.message, variant: "destructive" });
     } finally {
@@ -59,7 +59,7 @@ export default function Family() {
       if (!fam?.found) { toast({ title: "No family found with that code", variant: "destructive" }); setBusy(false); return; }
       await refresh();
       toast({ title: `Joined ${fam.name}` });
-      navigate("/");
+      navigate("/dashboard");
     } catch (e) {
       toast({ title: "Could not join family", description: e.message, variant: "destructive" });
     } finally {

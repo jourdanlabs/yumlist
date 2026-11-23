@@ -11,7 +11,7 @@ import AppFooter from "@/components/AppFooter";
 import { queryClientInstance } from "@/lib/query-client";
 
 const nav = [
-  { to: "/", label: "Home", icon: HomeIcon },
+  { to: "/dashboard", label: "Home", icon: HomeIcon },
   { to: "/items", label: "Pantry", icon: Carrot },
   { to: "/shopping-list", label: "Shop", icon: ShoppingCart },
   { to: "/recipes", label: "Recipes", icon: ChefHat },
@@ -26,7 +26,7 @@ function tabForPath(path) {
   for (const item of nav) {
     if (path === item.to) return item.to;
   }
-  if (path.startsWith("/shared/")) return "/";
+  if (path.startsWith("/shared/")) return "/dashboard";
   return null;
 }
 
@@ -37,7 +37,7 @@ export default function Layout() {
 
   // Per-tab stack: track last visited location per tab
   const tabLocations = useRef({});
-  const [activeTab, setActiveTab] = useState("/");
+  const [activeTab, setActiveTab] = useState("/dashboard");
 
   useEffect(() => {
     if (!user?.id) return;
