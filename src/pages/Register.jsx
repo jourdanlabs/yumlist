@@ -259,6 +259,10 @@ export default function Register() {
         <Link to="/privacy-policy" className="text-primary font-medium hover:underline">
           Privacy Policy
         </Link>
+        . Need help?{" "}
+        <Link to="/contact" className="text-primary font-medium hover:underline">
+          Contact support
+        </Link>
         .
       </p>
     </AuthLayout>

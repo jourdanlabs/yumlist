@@ -26,6 +26,7 @@ const Admin = lazy(() => import('@/pages/Admin'));
 const SharedFamily = lazy(() => import('@/pages/SharedFamily'));
 const Settings = lazy(() => import('@/pages/Settings'));
 const PrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'));
+const ContactSupport = lazy(() => import('@/pages/ContactSupport'));
 const Party = lazy(() => import('@/pages/Party'));
 const PartyInvite = lazy(() => import('@/pages/PartyInvite'));
 const Diets = lazy(() => import('@/pages/Diets'));
@@ -62,6 +63,7 @@ const AuthenticatedApp = () => {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+      <Route path="/contact" element={<ContactSupport />} />
       <Route path="/party-invite/:token" element={<PartyInvite />} />
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
         <Route element={<AgeGate />}>

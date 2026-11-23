@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { User as UserIcon, Lock, Phone, Loader2, Check, Trash2, AlertTriangle, Cookie, FileText } from "lucide-react";
+import { User as UserIcon, Lock, Phone, Loader2, Check, Trash2, AlertTriangle, Cookie, FileText, LifeBuoy } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
 import { openConsentBanner } from "@/lib/cookieConsent";
@@ -245,6 +245,21 @@ export default function Settings() {
         <CardContent>
           <Button variant="outline" asChild>
             <Link to="/privacy-policy">Read the privacy policy</Link>
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Contact support */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <LifeBuoy className="w-5 h-5" /> Contact support
+          </CardTitle>
+          <CardDescription>Have a question or run into an issue? Send us a message.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button variant="outline" asChild>
+            <Link to="/contact">Contact support</Link>
           </Button>
         </CardContent>
       </Card>

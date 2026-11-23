@@ -127,6 +127,12 @@ export default function Login() {
           )}
         </Button>
       </form>
+      <p className="text-center text-xs text-muted-foreground mt-4">
+        Need help?{" "}
+        <Link to="/contact" className="text-primary font-medium hover:underline">
+          Contact support
+        </Link>
+      </p>
     </AuthLayout>
   );
 }
