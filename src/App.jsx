@@ -72,6 +72,7 @@ const AuthenticatedApp = () => {
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="/contact" element={<ContactSupport />} />
       <Route path="/party-invite/:token" element={<PartyInvite />} />
+      <Route path="/welcome" element={<Welcome />} />
       <Route path="/" element={<HomeEntry />} />
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
         <Route element={<AgeGate />}>
